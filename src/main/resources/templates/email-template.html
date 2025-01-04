@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: rgba(102, 0, 0, 0.9); /* Couleur de fond professionnelle */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            background-color: rgba(255, 255, 255, 0.9); /* Fond clair pour le contenu */
+            color: #333; /* Texte en noir pour le contraste */
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .content h2 {
+            color: rgba(102, 0, 0, 0.9); /* Titre avec la couleur définie */
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: gray;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: rgba(102, 0, 0, 0.9); /* Couleur forte pour les labels */
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Bienvenue sur notre plateforme PI</h1>
+
+</div>
+<div class="content">
+    <strong>  <p>Bonjour <span th:text="${nomInstructor}"></span>,</strong></p>
+    <p>Nous avons le plaisir de vous inviter à utiliser notre plateforme PI dédiée aux projets d'intégration.</p>
+    <p>Notre objectif est de vous offrir une expérience enrichissante et de vous aider à atteindre vos objectifs pédagogiques.</p>
+    <p>Voici vos informations de connexion :</p>
+    <ul>
+        <li><strong>Identifiant unique :</strong> <span th:text="${identifiantUnique}"></span></li>
+        <li><strong>CIN :</strong> <span th:text="${cin}"></span></li>
+    </ul>
+    <p>Veuillez vous connecter et valider votre compte pour commencer à utiliser notre plateforme PI.</p>
+    <p>Pour des raisons de sécurité, nous vous recommandons de changer votre mot de passe après la connexion.</p>
+    <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+    <p><strong> Cordialement,<br>Direction d'etude</strong></p>
+</div>
+<div class="footer">
+    <p> <strong> © 2025 Esprit </strong></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+package com.abdessalem.finetudeingenieurworkflow.Entites;
+
+public enum Role {
+    ADMIN,CLIENT,INSTRUCTOR
+}
