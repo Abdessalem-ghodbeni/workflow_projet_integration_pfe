@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/form")
@@ -27,4 +29,19 @@ public class FormController {
 
 
     }
+
+    @GetMapping(path = "all/forms")
+    public  ResponseEntity<?>getallFormulaire(){
+        try{
+            List<Form> formulaires = formService.getAllForms();
+            if (formulaires.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body("Liste des formulaire est vide ");
+            }
+            return ResponseEntity.ok(formulaires);
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
+
 }

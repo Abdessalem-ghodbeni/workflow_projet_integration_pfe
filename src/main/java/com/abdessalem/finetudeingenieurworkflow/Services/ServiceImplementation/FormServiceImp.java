@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -26,5 +28,10 @@ public class FormServiceImp implements IFormService {
 
         log.info("Form and associated FormFields saved successfully: {}", savedForm);
         return savedForm;
+    }
+
+    @Override
+    public List<Form> getAllForms() {
+        return formRepository.findAll();
     }
 }
