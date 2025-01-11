@@ -52,4 +52,13 @@ public class FormController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
         }
     }
+
+    @GetMapping(path = "/by/id/{id}")
+    public ResponseEntity<?>getFormulaireById(@PathVariable("id")long id){
+            Form formulaire=formService.getFormById(id);
+            return ResponseEntity.ok(formulaire);
+
+    }
+
+
 }
