@@ -34,4 +34,13 @@ public class FormServiceImp implements IFormService {
     public List<Form> getAllForms() {
         return formRepository.findAll();
     }
+
+    @Override
+    public void deleteFormById(Long id) {
+        if (formRepository.existsById(id)) {
+            formRepository.deleteById(id);
+        } else {
+            throw new IllegalArgumentException("Form with ID " + id + " does not exist.");
+        }
+    }
 }

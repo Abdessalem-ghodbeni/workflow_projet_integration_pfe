@@ -43,5 +43,13 @@ public class FormController {
         }
 
     }
-
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> deleteForm(@PathVariable Long id) {
+        try {
+            formService.deleteFormById(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        }
+    }
 }

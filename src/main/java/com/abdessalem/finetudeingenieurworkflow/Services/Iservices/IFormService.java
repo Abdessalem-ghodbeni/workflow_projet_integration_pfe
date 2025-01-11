@@ -8,5 +8,5 @@ public interface IFormService {
 
     Form ajouterForm(Form formulaire);
     List<Form> getAllForms();
-
+    void deleteFormById(Long id);
 }
