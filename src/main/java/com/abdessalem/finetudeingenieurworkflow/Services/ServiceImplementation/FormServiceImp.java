@@ -9,6 +9,7 @@ import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IFormService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,4 +52,53 @@ public class FormServiceImp implements IFormService {
         return formRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFound("Le formulaire avec l'ID " + id + " n'existe pas."));
     }
+
+    @Override
+    @Transactional
+    public Form updateForm(Form updatedForm) {
+
+        Form existingForm = formRepository.findById(updatedForm.getId())
+                .orElseThrow(() -> new RessourceNotFound("Formulaire avec l'ID " + updatedForm.getId() + " non trouvé"));
+
+
+        existingForm.setTitre(updatedForm.getTitre());
+        existingForm.setDescription(updatedForm.getDescription());
+        existingForm.setColor(updatedForm.getColor());
+
+
+        List<FormField> updatedFields = updatedForm.getFormFields();
+        List<FormField> existingFields = existingForm.getFormFields();
+
+
+        existingFields.removeIf(existingField ->
+                updatedFields.stream().noneMatch(updatedField -> updatedField.getId() != null && updatedField.getId().equals(existingField.getId()))
+        );
+
+
+        for (FormField updatedField : updatedFields) {
+            if (updatedField.getId() == null) {
+
+                updatedField.setForm(existingForm);
+                existingFields.add(updatedField);
+            } else {
+
+                existingFields.stream()
+                        .filter(existingField -> existingField.getId().equals(updatedField.getId()))
+                        .findFirst()
+                        .ifPresent(existingField -> {
+                            existingField.setType(updatedField.getType());
+                            existingField.setLabel(updatedField.getLabel());
+                            existingField.setIcon(updatedField.getIcon());
+                            existingField.setPlaceholder(updatedField.getPlaceholder());
+                            existingField.setRequired(updatedField.isRequired());
+                            existingField.setOptions(updatedField.getOptions());
+                            existingField.setIndex(updatedField.getIndex());
+                        });
+            }
+        }
+
+
+        return formRepository.save(existingForm);
+    }
+
 }

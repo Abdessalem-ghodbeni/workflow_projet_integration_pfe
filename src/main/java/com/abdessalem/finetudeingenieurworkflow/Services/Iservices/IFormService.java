@@ -11,4 +11,5 @@ public interface IFormService {
     List<Form> getAllForms();
     void deleteFormById(Long id);
    Form getFormById(Long id);
+    Form updateForm(Form updatedForm);
 }

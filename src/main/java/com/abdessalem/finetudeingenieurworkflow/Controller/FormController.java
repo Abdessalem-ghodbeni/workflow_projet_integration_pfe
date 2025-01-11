@@ -20,12 +20,10 @@ public class FormController {
 
     @PostMapping(path = "ajouter-formulaire")
     public ResponseEntity<?> ajouterForm(@Valid @RequestBody Form formulaire) {
-       try{
+
            Form savedForm = formService.ajouterForm(formulaire);
            return new ResponseEntity(savedForm,HttpStatus.CREATED);
-       }catch (Exception exception){
-           return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-       }
+
 
 
     }
@@ -58,6 +56,12 @@ public class FormController {
             Form formulaire=formService.getFormById(id);
             return ResponseEntity.ok(formulaire);
 
+    }
+
+    @PutMapping("update")
+    public ResponseEntity<Form> updateForm(@Valid @RequestBody Form updatedForm) {
+        Form updated = formService.updateForm(updatedForm);
+        return ResponseEntity.ok(updated);
     }
 
 
