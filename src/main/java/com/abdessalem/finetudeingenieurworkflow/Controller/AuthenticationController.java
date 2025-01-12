@@ -1,14 +1,21 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IInstructorRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.PasswordResetService;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.TwoFactorAuthenticationService;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +38,10 @@ public class AuthenticationController {
 
   private final IAuthenticationServices authenticationServices;
   private final SendEmailServiceImp sendEmailService;
+  private final IUserRepository userRepository;
+  private final IInstructorRepository instructorRepository;
+  private final TwoFactorAuthenticationService tfaService;
+  private final PasswordEncoder passwordEncoder;
 
   @PostMapping("/registerInstructor")
   public ResponseEntity<Instructor> registerInstructor(@RequestParam("nom") String nom,
@@ -99,15 +110,55 @@ public class AuthenticationController {
       return authenticationServices.refreshToken(refreshToken);
   }
 
-  @PostMapping("/forgetpassword")
-  public HashMap<String,String> forgetPassword(@RequestBody String email){
-        return authenticationServices.forgetPassword(email);
+//  @PostMapping("/forgetpassword")
+//  public HashMap<String,String> forgetPassword(@RequestBody String email){
+//        return authenticationServices.forgetPassword(email);
+//  }
+
+//    @PostMapping("/resetPassword/{passwordResetToken}")
+//    public HashMap<String,String> resetPassword(@PathVariable String passwordResetToken, String newPassword){
+//        return authenticationServices.resetPassword(passwordResetToken, newPassword);
+//    }
+//////////////
+@PostMapping("/forgot-password")
+public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+  User user = userRepository.findByEmail(email)
+          .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+
+  String resetToken = UUID.randomUUID().toString();
+  user.setPasswordResetToken(resetToken);
+  userRepository.save(user);
+
+  String resetLink = "http://localhost:4200/reset-password?token=" + resetToken;
+  sendEmailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+
+  return ResponseEntity.ok("Password reset email sent.");
+}
+
+  @PostMapping("/validate-otp")
+  public ResponseEntity<String> validateOtp(@RequestParam String email, @RequestParam String code) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+    if (!tfaService.isOtpValid(user.getSecret(), code)) {
+      return ResponseEntity.badRequest().body("Invalid OTP code");
+    }
+
+    // Redirect to reset password
+    return ResponseEntity.ok("OTP verified. Redirecting to reset password...");
   }
 
-    @PostMapping("/resetPassword/{passwordResetToken}")
-    public HashMap<String,String> resetPassword(@PathVariable String passwordResetToken, String newPassword){
-        return authenticationServices.resetPassword(passwordResetToken, newPassword);
-    }
+  @PostMapping("/reset-password")
+  public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+    User user = userRepository.findByPasswordResetToken(token)
+            .orElseThrow(() -> new EntityNotFoundException("Invalid reset token"));
+
+    user.setPassword(passwordEncoder.encode(newPassword));
+    user.setPasswordResetToken(null);
+    userRepository.save(user);
+
+    return ResponseEntity.ok("Password reset successful.");
+  }
 
 
 }

@@ -6,6 +6,12 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IJWTServices;
+import dev.samstevens.totp.code.HashingAlgorithm;
+import dev.samstevens.totp.exceptions.QrGenerationException;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+
+import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 @Service
 @Slf4j
@@ -25,6 +33,25 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
     private final AuthenticationManager authenticationManager;
     private final IJWTServices jwtServices;
     private final IInstructorRepository instructorRepository;
+
+    public String generateQRCodeForUser(User user) throws QrGenerationException {
+        String secret = new DefaultSecretGenerator().generate();
+        user.setSecret(secret);
+        // Save the user's secret to the database
+
+        QrData data = new QrData.Builder()
+                .label(user.getEmail())
+                .secret(secret)
+                .issuer("MyApp")
+                .algorithm(HashingAlgorithm.SHA1)
+                .digits(6)
+                .period(30)
+                .build();
+
+        QrGenerator generator = new ZxingPngQrGenerator();
+        byte[] imageData = generator.generate(data);
+        return getDataUriForImage(imageData, generator.getImageMimeType());
+    }
 
     @Override
     public Instructor RegisterInstructor(Instructor instructor) {

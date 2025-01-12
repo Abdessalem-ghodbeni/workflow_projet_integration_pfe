@@ -33,6 +33,7 @@ public class User implements Serializable, UserDetails {
     String identifiantEsprit;
     String passwordResetToken;
     String password;
+     String secret;
     @Enumerated(EnumType.STRING)
     Role role;
 
