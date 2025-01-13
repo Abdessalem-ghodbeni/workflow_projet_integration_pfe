@@ -4,11 +4,15 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IInstructorRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.AuthenticatorService;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IJWTServicesImp;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.PasswordResetService;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.TwoFactorAuthenticationService;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base32;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,14 +28,14 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.UUID;
+import java.security.SecureRandom;
+import java.util.*;
 
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
 
   public static String uploadDirectory = System.getProperty("user.dir") + "/uploadUser";
@@ -42,6 +46,9 @@ public class AuthenticationController {
   private final IInstructorRepository instructorRepository;
   private final TwoFactorAuthenticationService tfaService;
   private final PasswordEncoder passwordEncoder;
+  private final PasswordResetService passwordResetService;
+  private final AuthenticatorService authenticatorService;
+  private final IJWTServicesImp jwtServices;
 
   @PostMapping("/registerInstructor")
   public ResponseEntity<Instructor> registerInstructor(@RequestParam("nom") String nom,
@@ -122,42 +129,83 @@ public class AuthenticationController {
 //////////////
 @PostMapping("/forgot-password")
 public ResponseEntity<String> forgotPassword(@RequestParam String email) {
-  User user = userRepository.findByEmail(email)
-          .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
-
-  String resetToken = UUID.randomUUID().toString();
-  user.setPasswordResetToken(resetToken);
-  userRepository.save(user);
-
-  String resetLink = "http://localhost:4200/reset-password?token=" + resetToken;
-  sendEmailService.sendPasswordResetEmail(user.getEmail(), resetLink);
-
-  return ResponseEntity.ok("Password reset email sent.");
+  Optional<User> userOptional = userRepository.findByEmail(email); if (userOptional.isPresent()) { String token = UUID.randomUUID().toString(); User user = userOptional.get(); passwordResetService.createPasswordResetTokenForUser(user, token); passwordResetService.sendPasswordResetEmail(email, token); return ResponseEntity.ok("Email de réinitialisation envoyé!"); } else { return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé"); }
 }
 
-  @PostMapping("/validate-otp")
-  public ResponseEntity<String> validateOtp(@RequestParam String email, @RequestParam String code) {
-    User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+//  @PostMapping("/validate-otp")
+//  public ResponseEntity<String> validateOtp(@RequestParam String email, @RequestParam String code) {
+//    User user = userRepository.findByEmail(email)
+//            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+//
+//    if (!tfaService.isOtpValid(user.getSecret(), code)) {
+//      return ResponseEntity.badRequest().body("Invalid OTP code");
+//    }
+//
+//    // Redirect to reset password
+//    return ResponseEntity.ok("OTP verified. Redirecting to reset password...");
+//  }
 
-    if (!tfaService.isOtpValid(user.getSecret(), code)) {
-      return ResponseEntity.badRequest().body("Invalid OTP code");
+  @PostMapping("/verify-otp")
+  public ResponseEntity<Map<String, Object>> verifyOtp(@RequestParam("email") String email, @RequestParam("code") int code) {
+    log.info("Recherche de l'utilisateur avec l'email : {}", email);
+
+    Optional<User> userOptional = userRepository.findByEmail(email);
+
+    if (userOptional.isPresent()) {
+      User user = userOptional.get();
+
+      // Vérifier si le code OTP est valide
+      boolean isCodeValid = authenticatorService.verifyCode(user.getSecret(), code);
+      log.info("Résultat de la vérification du code OTP pour l'utilisateur {}: {}", email, isCodeValid);
+
+      if (isCodeValid) {
+        String token = jwtServices.generateToken(user);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", user);
+        return ResponseEntity.ok(response);
+      } else {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "Code OTP invalide"));
+      }
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "Utilisateur non trouvé"));
     }
-
-    // Redirect to reset password
-    return ResponseEntity.ok("OTP verified. Redirecting to reset password...");
   }
 
-  @PostMapping("/reset-password")
-  public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
-    User user = userRepository.findByPasswordResetToken(token)
-            .orElseThrow(() -> new EntityNotFoundException("Invalid reset token"));
 
-    user.setPassword(passwordEncoder.encode(newPassword));
-    user.setPasswordResetToken(null);
-    userRepository.save(user);
 
-    return ResponseEntity.ok("Password reset successful.");
+
+
+
+
+
+
+
+
+
+  @GetMapping("/reset-password")
+  public ResponseEntity<String> showResetPasswordPage(@RequestParam String token) {
+    Optional<User> userOptional = userRepository.findByPasswordResetToken(token);
+    if (userOptional.isPresent()) {
+      User user = userOptional.get();
+      if (user.getSecret() == null) {
+        user.setSecret(generateSecret());
+        userRepository.save(user);
+      }
+      String qrCodeUrl = authenticatorService.generateQRCode(user.getSecret(), user.getEmail());
+      log.info("QR Code URL: " + qrCodeUrl);
+      return ResponseEntity.ok("<html><body><img src=\"" + qrCodeUrl + "\"></body></html>");
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Jeton invalide");
+    }
+  }
+
+  public String generateSecret() {
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[10];
+    random.nextBytes(bytes);
+    Base32 base32 = new Base32();
+    return base32.encodeToString(bytes);
   }
 
 
