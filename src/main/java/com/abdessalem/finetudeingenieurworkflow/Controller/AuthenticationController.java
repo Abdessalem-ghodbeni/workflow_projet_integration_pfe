@@ -146,32 +146,46 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
 //  }
 
   @PostMapping("/verify-otp")
-  public ResponseEntity<Map<String, Object>> verifyOtp(@RequestParam("email") String email, @RequestParam("code") int code) {
-    log.info("Recherche de l'utilisateur avec l'email : {}", email);
+  public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody VerificationRequest verificationRequest) {
+    String email = verificationRequest.getEmail();
+    Integer code = verificationRequest.getCode();
+    log.info("sehla" ,email);
+
+    // Vérifiez si les paramètres nécessaires sont présents
+    if (email == null || code == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Collections.singletonMap("message", "Les paramètres 'email' et 'code' sont requis"));
+    }
+
+    log.info("Vérification de l'utilisateur avec l'email : {}", email);
 
     Optional<User> userOptional = userRepository.findByEmail(email);
-
-    if (userOptional.isPresent()) {
-      User user = userOptional.get();
-
-      // Vérifier si le code OTP est valide
-      boolean isCodeValid = authenticatorService.verifyCode(user.getSecret(), code);
-      log.info("Résultat de la vérification du code OTP pour l'utilisateur {}: {}", email, isCodeValid);
-
-      if (isCodeValid) {
-        String token = jwtServices.generateToken(user);
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", user);
-        return ResponseEntity.ok(response);
-      } else {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "Code OTP invalide"));
-      }
-    } else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "Utilisateur non trouvé"));
+    if (userOptional.isEmpty()) {
+      log.warn("Utilisateur non trouvé : {}", email);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Collections.singletonMap("message", "Utilisateur non trouvé"));
     }
-  }
 
+    User user = userOptional.get();
+    log.info("Utilisateur trouvé : {}", user.getEmail());
+
+    // Vérifiez si le code OTP est valide
+    boolean isCodeValid = authenticatorService.verifyCode(user.getSecret(), code);
+    if (!isCodeValid) {
+      log.warn("Code OTP invalide pour l'utilisateur : {}", email);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Collections.singletonMap("message", "Code OTP invalide ou expiré"));
+    }
+
+    // Génération du token JWT
+    String token = jwtServices.generateToken(user);
+    Map<String, Object> response = new HashMap<>();
+    response.put("token", token);
+    response.put("user", user);
+
+    log.info("Authentification réussie pour l'utilisateur : {}", email);
+    return ResponseEntity.ok(response);
+  }
 
 
 
