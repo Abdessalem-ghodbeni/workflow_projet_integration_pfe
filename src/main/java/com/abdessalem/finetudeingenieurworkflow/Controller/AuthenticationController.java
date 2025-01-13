@@ -223,4 +223,24 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
   }
 
 
+  @PostMapping("/update-password")
+  public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody PasswordResetRequest passwordResetRequest) {
+    String email = passwordResetRequest.getEmail();
+    String newPassword = passwordResetRequest.getNewPassword();
+    String token = passwordResetRequest.getToken();
+
+    if (email == null || newPassword == null || token == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Collections.singletonMap("message", "Les champs 'email', 'nouveau mot de passe' et 'token' sont requis"));
+    }
+
+    try {
+      passwordResetService.resetPassword(email, newPassword, token);
+      return ResponseEntity.ok(Collections.singletonMap("message", "Mot de passe réinitialisé avec succès"));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Collections.singletonMap("message", e.getMessage()));
+    }
+  }
+
 }
