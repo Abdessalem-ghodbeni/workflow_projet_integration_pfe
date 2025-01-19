@@ -4,6 +4,7 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponseDTO;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.FormResponseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class FormResponseController {
                                                                           @RequestBody List<FormFieldResponse> responses)
     {
         formResponseService.addFormResponse(formId, responses);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("all/response/{formId}")

@@ -5,6 +5,7 @@ import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IFormService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,42 +21,34 @@ public class FormController {
 
     @PostMapping(path = "ajouter-formulaire")
     public ResponseEntity<?> ajouterForm(@Valid @RequestBody Form formulaire) {
-
-           Form savedForm = formService.ajouterForm(formulaire);
+        Form savedForm = formService.ajouterForm(formulaire);
            return new ResponseEntity(savedForm,HttpStatus.CREATED);
-
-
-
     }
-
-    @GetMapping(path = "all/forms")
-    public  ResponseEntity<?>getallFormulaire(){
-        try{
+    @GetMapping(path = "/all/forms")
+    public ResponseEntity<?> getallFormulaire() {
+        try {
             List<Form> formulaires = formService.getAllForms();
-            if (formulaires.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.OK).body("Liste des formulaire est vide ");
-            }
-            return ResponseEntity.ok(formulaires);
-        }catch (Exception exception){
+            return ResponseEntity.ok()
+                    .body(formulaires);
+        } catch (Exception exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
-
     }
+
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteForm(@PathVariable Long id) {
         try {
             formService.deleteFormById(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    @GetMapping(path = "/by/id/{id}")
+    @GetMapping(path = "by/id/{id}")
     public ResponseEntity<?>getFormulaireById(@PathVariable("id")long id){
             Form formulaire=formService.getFormById(id);
             return ResponseEntity.ok(formulaire);
-
     }
 
     @PutMapping("update")

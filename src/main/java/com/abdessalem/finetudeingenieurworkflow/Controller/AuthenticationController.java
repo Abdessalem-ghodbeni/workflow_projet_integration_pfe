@@ -117,33 +117,22 @@ public class AuthenticationController {
       return authenticationServices.refreshToken(refreshToken);
   }
 
-//  @PostMapping("/forgetpassword")
-//  public HashMap<String,String> forgetPassword(@RequestBody String email){
-//        return authenticationServices.forgetPassword(email);
-//  }
 
-//    @PostMapping("/resetPassword/{passwordResetToken}")
-//    public HashMap<String,String> resetPassword(@PathVariable String passwordResetToken, String newPassword){
-//        return authenticationServices.resetPassword(passwordResetToken, newPassword);
-//    }
-//////////////
 @PostMapping("/forgot-password")
 public ResponseEntity<String> forgotPassword(@RequestParam String email) {
-  Optional<User> userOptional = userRepository.findByEmail(email); if (userOptional.isPresent()) { String token = UUID.randomUUID().toString(); User user = userOptional.get(); passwordResetService.createPasswordResetTokenForUser(user, token); passwordResetService.sendPasswordResetEmail(email, token); return ResponseEntity.ok("Email de réinitialisation envoyé!"); } else { return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé"); }
+  Optional<User> userOptional = userRepository.findByEmail(email);
+  if (userOptional.isPresent()) {
+    String token = UUID.randomUUID().toString();
+    User user = userOptional.get();
+    passwordResetService.createPasswordResetTokenForUser(user, token);
+    String resetLink = "http://localhost:4200/resetpassword?token=" + token;
+    passwordResetService.sendPasswordResetEmail(email, resetLink);
+    return ResponseEntity.ok("Email de réinitialisation envoyé!");
+  } else {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé"); }
 }
 
-//  @PostMapping("/validate-otp")
-//  public ResponseEntity<String> validateOtp(@RequestParam String email, @RequestParam String code) {
-//    User user = userRepository.findByEmail(email)
-//            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//
-//    if (!tfaService.isOtpValid(user.getSecret(), code)) {
-//      return ResponseEntity.badRequest().body("Invalid OTP code");
-//    }
-//
-//    // Redirect to reset password
-//    return ResponseEntity.ok("OTP verified. Redirecting to reset password...");
-//  }
+
 
   @PostMapping("/verify-otp")
   public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody VerificationRequest verificationRequest) {
@@ -186,17 +175,6 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
     log.info("Authentification réussie pour l'utilisateur : {}", email);
     return ResponseEntity.ok(response);
   }
-
-
-
-
-
-
-
-
-
-
-
   @GetMapping("/reset-password")
   public ResponseEntity<String> showResetPasswordPage(@RequestParam String token) {
     Optional<User> userOptional = userRepository.findByPasswordResetToken(token);

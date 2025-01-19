@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -26,6 +27,8 @@ public class Instructor extends User implements Serializable{
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
 
-
+/// relations
+@OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Sujet> sujets;
 
 }
