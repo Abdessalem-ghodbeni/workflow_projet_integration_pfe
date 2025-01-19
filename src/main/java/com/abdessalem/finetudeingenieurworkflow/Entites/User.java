@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Entity
@@ -32,9 +33,13 @@ public class User implements Serializable, UserDetails {
 
     String identifiantEsprit;
     String passwordResetToken;
+    @Column(name = "password_reset_token_expiration")
+    LocalDateTime passwordResetTokenExpiration;
     String password;
+     String secret;
     @Enumerated(EnumType.STRING)
     Role role;
+
 
 //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {

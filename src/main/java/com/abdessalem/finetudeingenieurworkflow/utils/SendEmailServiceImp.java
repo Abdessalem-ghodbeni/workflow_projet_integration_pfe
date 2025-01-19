@@ -11,8 +11,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -51,4 +49,28 @@ public class SendEmailServiceImp {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+    ////
+    public void sendPasswordResetEmail(String email, String resetLink) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(fromEmailId);
+            helper.setTo(email);
+            helper.setSubject("Password Reset Request");
+
+            Context context = new Context();
+            context.setVariable("resetLink", resetLink);
+            String htmlContent = templateEngine.process("password-reset-template", context);
+
+            helper.setText(htmlContent, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send password reset email", e);
+        }
+    }
+
+
+
+
+
 }
