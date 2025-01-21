@@ -13,11 +13,11 @@ import java.util.List;
 @Builder
 @Data
 
-@Table(name = "Instructor")
-public class Instructor extends User implements Serializable{
+@Table(name = "Tuteur")
+public class Tuteur extends User implements Serializable{
 
     @Column(name = "is_Chef_Options")
-    private boolean is_Chef_Options=false;
+    private boolean is_Chef_Options;
     @Column(name="specialite_up")
     private String specialiteUp;
     @Column(name="nationality")
@@ -26,8 +26,10 @@ public class Instructor extends User implements Serializable{
 
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
+    @Column(name = "is_active")
+    private boolean isActive = true;
 
-/// relations
+
 @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
 private List<Sujet> sujets;
 

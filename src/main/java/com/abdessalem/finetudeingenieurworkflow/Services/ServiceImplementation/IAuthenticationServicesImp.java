@@ -1,7 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
-import com.abdessalem.finetudeingenieurworkflow.Repository.IInstructorRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
@@ -18,8 +18,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.UUID;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
@@ -32,7 +38,7 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final IJWTServices jwtServices;
-    private final IInstructorRepository instructorRepository;
+    private final ITuteurRepository tuteurRepository;
 
     public String generateQRCodeForUser(User user) throws QrGenerationException {
         String secret = new DefaultSecretGenerator().generate();
@@ -54,16 +60,16 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
     }
 
     @Override
-    public Instructor RegisterInstructor(Instructor instructor) {
-        if (userRepository.findByEmail(instructor.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("un instructor avec cet email existe déja");
+    public Tuteur RegisterInstructor(Tuteur tuteur) {
+        if (userRepository.findByEmail(tuteur.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("un tuteur avec cet email existe déja");
         }
 
-        if (userRepository.findByIdentifiantEsprit(instructor.getIdentifiantEsprit()).isPresent()) {
-            throw new IllegalArgumentException("un instructor existe deja avec l'identifiant esprit ");
+        if (userRepository.findByIdentifiantEsprit(tuteur.getIdentifiantEsprit()).isPresent()) {
+            throw new IllegalArgumentException("un tuteur  existe deja avec l'identifiant esprit ");
         }
-        instructor.setPassword(passwordEncoder.encode(instructor.getPassword()));
-        return instructorRepository.save(instructor);
+        tuteur.setPassword(passwordEncoder.encode(tuteur.getPassword()));
+        return tuteurRepository.save(tuteur);
     }
 
     @Override
@@ -78,10 +84,10 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         authenticationResponse.setAccessToken(jwt);
         authenticationResponse.setRefreshToken(refreshToken);
 
-        if (user.getRole() == Role.INSTRUCTOR) {
-            Instructor instructor = (Instructor) user;
-            Instructor instructorDto = convertToInstructorDto(instructor);
-            authenticationResponse.setUserDetails(instructorDto);
+        if (user.getRole() == Role.TUTEUR) {
+            Tuteur tuteur = (Tuteur) user;
+            Tuteur tuteurDto = convertToInstructorDto(tuteur);
+            authenticationResponse.setUserDetails(tuteurDto);
         }
 //        else if (user.getRole()==Role.CLIENT) {
 //            Client client = (Client) user;
@@ -136,21 +142,50 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         dto.setNumeroTelephone(user.getNumeroTelephone());
     return dto;
     }
-    private Instructor convertToInstructorDto(Instructor instructor) {
-        Instructor dto = new Instructor();
-        dto.setId(instructor.getId());
-        dto.setNom(instructor.getNom());
-        dto.setPrenom(instructor.getPrenom());
-        dto.setEmail(instructor.getEmail());
-        dto.setPassword(instructor.getPassword());
-        dto.setRole(instructor.getRole());
-     dto.setSpecialiteUp(instructor.getSpecialiteUp());
-        dto.setNumeroTelephone(instructor.getNumeroTelephone());
-        dto.setDateEmbauche(instructor.getDateEmbauche());
-        dto.setImage(instructor.getImage());
-        dto.setNationality(instructor.getNationality());
+    private Tuteur convertToInstructorDto(Tuteur tuteur) {
+        Tuteur dto = new Tuteur();
+        dto.setId(tuteur.getId());
+        dto.setNom(tuteur.getNom());
+        dto.setPrenom(tuteur.getPrenom());
+        dto.setEmail(tuteur.getEmail());
+        dto.setPassword(tuteur.getPassword());
+        dto.setRole(tuteur.getRole());
+     dto.setSpecialiteUp(tuteur.getSpecialiteUp());
+        dto.setNumeroTelephone(tuteur.getNumeroTelephone());
+        dto.setDateEmbauche(tuteur.getDateEmbauche());
+        dto.setImage(tuteur.getImage());
+        dto.setNationality(tuteur.getNationality());
         return dto;
     }
+
+// modifier account user
+public User updateUser(Long userId, User updatedUser, MultipartFile image) throws IOException {
+    // Rechercher l'utilisateur existant
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+    // Mettre à jour les informations
+    if (updatedUser.getNom() != null) user.setNom(updatedUser.getNom());
+    if (updatedUser.getPrenom() != null) user.setPrenom(updatedUser.getPrenom());
+    if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
+    if (updatedUser.getNumeroTelephone() != null) user.setNumeroTelephone(updatedUser.getNumeroTelephone());
+
+    // Gestion de l'image (si fournie)
+    if (image != null && !image.isEmpty()) {
+        String originalFilename = image.getOriginalFilename();
+        String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = Paths.get("upload-directory", uniqueFilename);
+        Files.createDirectories(filePath.getParent());
+        Files.write(filePath, image.getBytes());
+        if (user instanceof Tuteur) {
+            ((Tuteur) user).setImage(uniqueFilename);
+        }
+    }
+
+    // Sauvegarder l'utilisateur mis à jour
+    return userRepository.save(user);
+}
+
 
 
 }

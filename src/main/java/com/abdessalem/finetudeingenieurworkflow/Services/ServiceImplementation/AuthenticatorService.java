@@ -17,7 +17,7 @@ public class AuthenticatorService {
     public String generateQRCode(String secret, String email) {
 
         GoogleAuthenticatorConfig config = new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder()
-                .setTimeStepSizeInMillis(180000) // 60 seconds
+                .setTimeStepSizeInMillis(240000) // 60 seconds
                 .setWindowSize(3)
                 .build();
 
@@ -32,7 +32,7 @@ public class AuthenticatorService {
         log.info("Vérification du code OTP avec la clé : {}, code : {}", secret, code);
 
         GoogleAuthenticatorConfig config = new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder()
-                .setTimeStepSizeInMillis(180000)
+                .setTimeStepSizeInMillis(240000)
                 .setWindowSize(5) // Tolérance pour 5 intervalles
                 .build();
 

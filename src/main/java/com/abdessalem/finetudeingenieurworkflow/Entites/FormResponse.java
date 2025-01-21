@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 public class FormResponse implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     @JoinColumn(name = "form_id")

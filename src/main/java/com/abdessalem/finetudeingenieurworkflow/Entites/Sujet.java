@@ -46,5 +46,5 @@ public class Sujet implements Serializable {
 //, nullable = false
     @ManyToOne
     @JoinColumn(name = "utilisateur_id")
-    private Instructor utilisateur;
+    private Tuteur utilisateur;
 }

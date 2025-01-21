@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Setter
 public class FormFieldResponse implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; private String value;
     @ManyToOne
     @JoinColumn(name = "form_field_id")

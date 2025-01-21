@@ -36,7 +36,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/**")
                                 .permitAll()
-                                .requestMatchers("/**").hasAnyRole(Role.ADMIN.name(), Role.CLIENT.name())
+                                .requestMatchers("/**").hasAnyRole(Role.ADMIN.name(), Role.ETUDIANT.name(),Role.TUTEUR.name())
                                 .anyRequest()
                                 .authenticated()
                 )

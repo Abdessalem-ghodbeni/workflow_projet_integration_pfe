@@ -3,6 +3,8 @@ package com.abdessalem.finetudeingenieurworkflow.Entites;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -21,8 +23,10 @@ import java.util.Collection;
         @UniqueConstraint(name = "unique_email_identifiantEsprit", columnNames = {"email", "identifiantEsprit"})
 })
 public class User implements Serializable, UserDetails {
-    @Id
-    @GeneratedValue(strategy =GenerationType.AUTO)
+     @Id
+//    @GeneratedValue(strategy =GenerationType.IDENTITY)
+      @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+      @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
     Long id;
 
     String nom;
@@ -39,6 +43,13 @@ public class User implements Serializable, UserDetails {
      String secret;
     @Enumerated(EnumType.STRING)
     Role role;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime dateCreation;
+
+    @UpdateTimestamp
+    private LocalDateTime dateModification;
 
 
 //    @Override

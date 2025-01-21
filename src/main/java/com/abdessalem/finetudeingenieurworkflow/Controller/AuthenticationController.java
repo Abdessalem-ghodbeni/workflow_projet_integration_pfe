@@ -1,15 +1,12 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
-import com.abdessalem.finetudeingenieurworkflow.Repository.IInstructorRepository;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
-import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.AuthenticatorService;
-import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IJWTServicesImp;
-import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.PasswordResetService;
-import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.TwoFactorAuthenticationService;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.*;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base32;
@@ -23,11 +20,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -40,55 +41,130 @@ public class AuthenticationController {
 
   public static String uploadDirectory = System.getProperty("user.dir") + "/uploadUser";
 
-  private final IAuthenticationServices authenticationServices;
+  private final IAuthenticationServicesImp authenticationServices;
   private final SendEmailServiceImp sendEmailService;
   private final IUserRepository userRepository;
-  private final IInstructorRepository instructorRepository;
+  private final ITuteurRepository instructorRepository;
   private final TwoFactorAuthenticationService tfaService;
   private final PasswordEncoder passwordEncoder;
   private final PasswordResetService passwordResetService;
   private final AuthenticatorService authenticatorService;
   private final IJWTServicesImp jwtServices;
+  private final ITuteurRepository tuteurRepository;
 
-  @PostMapping("/registerInstructor")
-  public ResponseEntity<Instructor> registerInstructor(@RequestParam("nom") String nom,
-                                             @RequestParam("prenom") String prenom,
-                                             @RequestParam("email") String email,
-                                             @RequestParam("password") String password,
-                                             @RequestParam("numeroTelephone") String numeroTelephone,
-                                             @RequestParam("identifiantEsprit") String identifiantEsprit,
-                                             @RequestParam("specialiteUp") String specialiteUp,
-                                             @RequestParam("nationality") String nationality,
-                                             @RequestParam("is_Chef_Options") boolean is_Chef_Options,
-                                             @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche,
-                                             @RequestParam("image") MultipartFile file) throws IOException {
-    Instructor instructor = new Instructor();
-    instructor.setNom(nom);
-    instructor.setPrenom(prenom);
-    instructor.setEmail(email);
-    instructor.setPassword(password);
-    instructor.setIdentifiantEsprit(identifiantEsprit);
-    instructor.setNumeroTelephone(numeroTelephone);
-    instructor.setDateEmbauche(dateEmbauche);
-    instructor.setRole(Role.INSTRUCTOR);
-    instructor.setSpecialiteUp(specialiteUp);
-    instructor.setNationality(nationality);
-    String originalFilename = file.getOriginalFilename();
-    String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-    Path fileNameAndPath = Paths.get(uploadDirectory, uniqueFilename);
-    if (!Files.exists(fileNameAndPath.getParent())) {
-       Files.createDirectories(fileNameAndPath.getParent());
+//  @PostMapping("/registerInstructor")
+//  public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
+//                                                   @RequestParam("prenom") String prenom,
+//                                                   @RequestParam("email") String email,
+//                                                   @RequestParam("password") String password,
+//                                                   @RequestParam("numeroTelephone") String numeroTelephone,
+//                                                   @RequestParam("identifiantEsprit") String identifiantEsprit,
+//                                                   @RequestParam("specialiteUp") String specialiteUp,
+//                                                   @RequestParam("nationality") String nationality,
+//                                                   @RequestParam("is_Chef_Options") boolean is_Chef_Options,
+//                                                   @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche,
+//                                                   @RequestParam("image") MultipartFile file) throws IOException {
+//    Tuteur tuteur = new Tuteur();
+//    tuteur.setNom(nom);
+//    tuteur.setPrenom(prenom);
+//    tuteur.setEmail(email);
+//    tuteur.setPassword(password);
+//    tuteur.setIdentifiantEsprit(identifiantEsprit);
+//    tuteur.setNumeroTelephone(numeroTelephone);
+//    tuteur.setDateEmbauche(dateEmbauche);
+//    tuteur.setRole(Role.TUTEUR);
+//    tuteur.setSpecialiteUp(specialiteUp);
+//    tuteur.setNationality(nationality);
+//tuteur.set_Chef_Options(tuteur.is_Chef_Options());
+//    String originalFilename = file.getOriginalFilename();
+//    String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+//    Path fileNameAndPath = Paths.get(uploadDirectory, uniqueFilename);
+//    if (!Files.exists(fileNameAndPath.getParent())) {
+//       Files.createDirectories(fileNameAndPath.getParent());
+//  }
+//  Files.write(fileNameAndPath, file.getBytes());
+//    tuteur.setImage(uniqueFilename);
+//    Tuteur savedTuteur = authenticationServices.RegisterInstructor(tuteur);
+//    if (savedTuteur != null) {
+//      String identifiantUnique = savedTuteur.getIdentifiantEsprit();
+//      String cin = savedTuteur.getNumeroTelephone(); // Remplacez par la variable CIN correcte
+//      sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
+//    }
+//    return ResponseEntity.ok(savedTuteur);
+//  }
+@PostMapping("/registerInstructor")
+public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
+                                                 @RequestParam("prenom") String prenom,
+                                                 @RequestParam("email") String email,
+                                                 @RequestParam("password") String password,
+                                                 @RequestParam("numeroTelephone") String numeroTelephone,
+                                                 @RequestParam("identifiantEsprit") String identifiantEsprit,
+                                                 @RequestParam("specialiteUp") String specialiteUp,
+                                                 @RequestParam("nationality") String nationality,
+                                                 @RequestParam("is_Chef_Options") boolean is_Chef_Options,
+                                                 @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche) throws IOException {
+  Tuteur tuteur = new Tuteur();
+  tuteur.setNom(nom);
+  tuteur.setPrenom(prenom);
+  tuteur.setEmail(email);
+  tuteur.setPassword(password);
+  tuteur.setIdentifiantEsprit(identifiantEsprit);
+  tuteur.setNumeroTelephone(numeroTelephone);
+  tuteur.setDateEmbauche(dateEmbauche);
+  tuteur.setRole(Role.TUTEUR);
+  tuteur.setSpecialiteUp(specialiteUp);
+  tuteur.setNationality(nationality);
+  tuteur.set_Chef_Options(is_Chef_Options);
+
+  // Génération de l'image des initiales
+  String avatarFilename = generateInitialsAvatar(nom, prenom);
+  tuteur.setImage(avatarFilename);
+
+  // Sauvegarde du tuteur
+  Tuteur savedTuteur = authenticationServices.RegisterInstructor(tuteur);
+  if (savedTuteur != null) {
+    String identifiantUnique = savedTuteur.getIdentifiantEsprit();
+    String cin = savedTuteur.getNumeroTelephone();
+    sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
   }
-  Files.write(fileNameAndPath, file.getBytes());
-    instructor.setImage(uniqueFilename);
-    Instructor savedInstructor = authenticationServices.RegisterInstructor(instructor);
-    if (savedInstructor != null) {
-      String identifiantUnique = savedInstructor.getIdentifiantEsprit();
-      String cin = savedInstructor.getNumeroTelephone(); // Remplacez par la variable CIN correcte
-      sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
+  return ResponseEntity.ok(savedTuteur);
+}
+
+  /**
+   * Génère une image avec les initiales et un fond de couleur aléatoire.
+   */
+  private String generateInitialsAvatar(String nom, String prenom) throws IOException {
+    int width = 200;
+    int height = 200;
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    Graphics2D graphics = image.createGraphics();
+
+    // Générer une couleur de fond aléatoire
+    Color backgroundColor = new Color((int) (Math.random() * 0x1000000));
+    graphics.setColor(backgroundColor);
+    graphics.fillRect(0, 0, width, height);
+
+    // Ajouter les initiales
+    String initials = prenom.charAt(0) + "" + nom.charAt(0);
+    graphics.setColor(Color.WHITE);
+    graphics.setFont(new Font("Arial", Font.BOLD, 100));
+    FontMetrics fontMetrics = graphics.getFontMetrics();
+    int x = (width - fontMetrics.stringWidth(initials)) / 2;
+    int y = ((height - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+    graphics.drawString(initials.toUpperCase(), x, y);
+
+    graphics.dispose();
+
+    // Sauvegarder l'image
+    String filename = UUID.randomUUID().toString() + "_avatar.png";
+    Path filePath = Paths.get(uploadDirectory, filename);
+    if (!Files.exists(filePath.getParent())) {
+      Files.createDirectories(filePath.getParent());
     }
-    return ResponseEntity.ok(savedInstructor);
+    ImageIO.write(image, "png", filePath.toFile());
+    return filename;
   }
+
 
   @GetMapping("/{filename:.+}")
   @ResponseBody
@@ -125,7 +201,7 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
     String token = UUID.randomUUID().toString();
     User user = userOptional.get();
     passwordResetService.createPasswordResetTokenForUser(user, token);
-    String resetLink = "http://localhost:4200/resetpassword?token=" + token;
+    String resetLink = "http://localhost:4200/confirmer-reset-password?token=" + token+ "&email=" + email;
     passwordResetService.sendPasswordResetEmail(email, resetLink);
     return ResponseEntity.ok("Email de réinitialisation envoyé!");
   } else {
@@ -137,7 +213,7 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
   @PostMapping("/verify-otp")
   public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody VerificationRequest verificationRequest) {
     String email = verificationRequest.getEmail();
-    Integer code = verificationRequest.getCode();
+    String code = verificationRequest.getCode();
     log.info("sehla" ,email);
 
     // Vérifiez si les paramètres nécessaires sont présents
@@ -159,7 +235,7 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
     log.info("Utilisateur trouvé : {}", user.getEmail());
 
     // Vérifiez si le code OTP est valide
-    boolean isCodeValid = authenticatorService.verifyCode(user.getSecret(), code);
+    boolean isCodeValid = authenticatorService.verifyCode(user.getSecret(), Integer.parseInt(code));
     if (!isCodeValid) {
       log.warn("Code OTP invalide pour l'utilisateur : {}", email);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -218,6 +294,62 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
               .body(Collections.singletonMap("message", e.getMessage()));
+    }
+  }
+
+  @PutMapping("/updateTuteur/{id}")
+  public ResponseEntity<Tuteur> updateTuteur(@PathVariable Long id,
+                                             @RequestParam(required = false) String nom,
+                                             @RequestParam(required = false) String prenom,
+                                             @RequestParam(required = false) String email,
+                                             @RequestParam(required = false) String password,
+                                             @RequestParam(required = false) String numeroTelephone,
+                                             @RequestParam(required = false) String specialiteUp,
+                                             @RequestParam(required = false) String nationality,
+                                             @RequestParam(required = false) Boolean is_Chef_Options,
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche,
+                                             @RequestParam(required = false) MultipartFile image) {
+    Optional<Tuteur> optionalTuteur = tuteurRepository.findById(id);
+
+    if (!optionalTuteur.isPresent()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Tuteur tuteur = optionalTuteur.get();
+
+    // Mettre à jour les informations si elles sont fournies
+    if (nom != null) tuteur.setNom(nom);
+    if (prenom != null) tuteur.setPrenom(prenom);
+    if (email != null) tuteur.setEmail(email);
+    if (password != null) tuteur.setPassword(password);
+    if (numeroTelephone != null) tuteur.setNumeroTelephone(numeroTelephone);
+    if (specialiteUp != null) tuteur.setSpecialiteUp(specialiteUp);
+    if (nationality != null) tuteur.setNationality(nationality);
+    if (is_Chef_Options != null) tuteur.set_Chef_Options(is_Chef_Options);
+    if (dateEmbauche != null) tuteur.setDateEmbauche(dateEmbauche);
+
+    // Gestion de l'image
+    if (image != null && !image.isEmpty()) {
+      String imageName = saveImage(image); // Méthode pour sauvegarder l'image
+      tuteur.setImage(imageName);
+    }
+
+    // Sauvegarder les modifications
+    Tuteur updatedTuteur = tuteurRepository.save(tuteur);
+
+    return ResponseEntity.ok(updatedTuteur);
+  }
+
+  private String saveImage(MultipartFile image) {
+    // Implémentez votre logique de sauvegarde ici
+    // Par exemple, en sauvegardant l'image dans un répertoire spécifique
+    try {
+      String filename = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+      Path filePath = Paths.get(uploadDirectory, filename);
+      Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+      return filename; // Retourner le nom du fichier sauvegardé
+    } catch (IOException e) {
+      throw new RuntimeException("Erreur lors de la sauvegarde de l'image", e);
     }
   }
 
