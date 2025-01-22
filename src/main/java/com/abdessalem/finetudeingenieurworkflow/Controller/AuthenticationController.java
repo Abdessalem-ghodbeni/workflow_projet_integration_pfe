@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
@@ -51,6 +52,7 @@ public class AuthenticationController {
   private final AuthenticatorService authenticatorService;
   private final IJWTServicesImp jwtServices;
   private final ITuteurRepository tuteurRepository;
+  private final IEtudiantRepository etudiantRepository;
 @PostMapping("/registerInstructor")
 public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
                                                  @RequestParam("prenom") String prenom,
@@ -361,7 +363,50 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
 
 
 
+  @PutMapping("/updateEtudiant/{id}")
+  public ResponseEntity<Etudiant> updateEtudiant(@PathVariable Long id,
+                                             @RequestParam(required = false) String nom,
+                                             @RequestParam(required = false) String prenom,
+                                             @RequestParam(required = false) String email,
+                                             @RequestParam(required = false) String password,
+                                             @RequestParam(required = false) String numeroTelephone,
+                                             @RequestParam(required = false) String specialite,
+                                             @RequestParam(required = false) String nationality,
+                                             @RequestParam(required = false) String classe,
+                                               @RequestParam(required = false) Long niveau,
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateNaissance,
+                                             @RequestParam(required = false) MultipartFile image) {
+    Optional<Etudiant> optionalEtudiant = etudiantRepository.findById(id);
 
+    if (!optionalEtudiant.isPresent()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Etudiant etudiant = optionalEtudiant.get();
+
+    // Mettre à jour les informations si elles sont fournies
+    if (nom != null) etudiant.setNom(nom);
+    if (prenom != null) etudiant.setPrenom(prenom);
+    if (email != null) etudiant.setEmail(email);
+    if (password != null) etudiant.setPassword(password);
+    if (numeroTelephone != null) etudiant.setNumeroTelephone(numeroTelephone);
+    if (specialite != null) etudiant.setSpecialite(specialite);
+    if (nationality != null) etudiant.setNationality(nationality);
+    if (classe != null) etudiant.setClasse(classe);
+    if (niveau != null) etudiant.setNiveau(niveau);
+    if (dateNaissance != null) etudiant.setDateNaissance(dateNaissance);
+
+    // Gestion de l'image
+    if (image != null && !image.isEmpty()) {
+      String imageName = saveImage(image); // Méthode pour sauvegarder l'image
+      etudiant.setImage(imageName);
+    }
+
+    // Sauvegarder les modifications
+    Etudiant updatedEtudiant = etudiantRepository.save(etudiant);
+
+    return ResponseEntity.ok(updatedEtudiant);
+  }
 
 
 }
