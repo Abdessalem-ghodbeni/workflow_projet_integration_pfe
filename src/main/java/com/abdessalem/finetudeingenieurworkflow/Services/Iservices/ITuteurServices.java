@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ITuteurServices {
     List<Tuteur> getAllTuteur();
+    Tuteur getTuteurById(Long id);
 }

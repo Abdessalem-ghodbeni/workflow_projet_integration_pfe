@@ -3,6 +3,7 @@ package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.AuthenticationResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Entites.RefreshTokenRequest;
 
@@ -14,6 +15,6 @@ public interface IAuthenticationServices {
     AuthenticationResponse refreshToken(RefreshTokenRequest refreshToken);
     HashMap<String,String> forgetPassword(String email);
     HashMap<String,String> resetPassword(String passwordResetToken, String newPassword);
-//    Instructor addInstructor(Instructor Instructor);
+    Etudiant registerEtudiant(Etudiant etudiant);
     Tuteur RegisterInstructor(Tuteur tuteur);
 }

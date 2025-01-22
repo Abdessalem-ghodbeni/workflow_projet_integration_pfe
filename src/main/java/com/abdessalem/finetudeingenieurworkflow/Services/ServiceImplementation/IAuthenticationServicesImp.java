@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 
@@ -39,6 +40,7 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
     private final AuthenticationManager authenticationManager;
     private final IJWTServices jwtServices;
     private final ITuteurRepository tuteurRepository;
+    private final IEtudiantRepository etudiantRepository;
 
     public String generateQRCodeForUser(User user) throws QrGenerationException {
         String secret = new DefaultSecretGenerator().generate();
@@ -89,11 +91,11 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
             Tuteur tuteurDto = convertToInstructorDto(tuteur);
             authenticationResponse.setUserDetails(tuteurDto);
         }
-//        else if (user.getRole()==Role.CLIENT) {
-//            Client client = (Client) user;
-//            Client agentDto = convertToClientDto(client);
-//            authenticationResponse.setUserDetails(agentDto);
-//        }
+        else if (user.getRole()==Role.ETUDIANT) {
+            Etudiant etudiant = (Etudiant) user;
+            Etudiant etudiantDto = convertToEtudiantDto(etudiant);
+            authenticationResponse.setUserDetails(etudiantDto);
+        }
         else {
             User userDetails = convertToUserDto(user);
             authenticationResponse.setUserDetails(userDetails);
@@ -128,7 +130,18 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         return null;
     }
 
+    @Override
+    public Etudiant registerEtudiant(Etudiant etudiant) {
+        if (userRepository.findByEmail(etudiant.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("un éléve ingénieur  avec cet email existe déja");
+        }
 
+        if (userRepository.findByIdentifiantEsprit(etudiant.getIdentifiantEsprit()).isPresent()) {
+            throw new IllegalArgumentException("un etudiant  existe deja avec l'identifiant esprit ");
+        }
+        etudiant.setPassword(passwordEncoder.encode(etudiant.getPassword()));
+        return etudiantRepository.save(etudiant);
+    }
 
 
     private User convertToUserDto(User user) {
@@ -158,34 +171,21 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         return dto;
     }
 
-// modifier account user
-public User updateUser(Long userId, User updatedUser, MultipartFile image) throws IOException {
-    // Rechercher l'utilisateur existant
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-    // Mettre à jour les informations
-    if (updatedUser.getNom() != null) user.setNom(updatedUser.getNom());
-    if (updatedUser.getPrenom() != null) user.setPrenom(updatedUser.getPrenom());
-    if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
-    if (updatedUser.getNumeroTelephone() != null) user.setNumeroTelephone(updatedUser.getNumeroTelephone());
-
-    // Gestion de l'image (si fournie)
-    if (image != null && !image.isEmpty()) {
-        String originalFilename = image.getOriginalFilename();
-        String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-        Path filePath = Paths.get("upload-directory", uniqueFilename);
-        Files.createDirectories(filePath.getParent());
-        Files.write(filePath, image.getBytes());
-        if (user instanceof Tuteur) {
-            ((Tuteur) user).setImage(uniqueFilename);
-        }
+    private Etudiant convertToEtudiantDto(Etudiant etudiant) {
+        Etudiant dto = new Etudiant();
+        dto.setId(etudiant.getId());
+        dto.setNom(etudiant.getNom());
+        dto.setPrenom(etudiant.getPrenom());
+        dto.setEmail(etudiant.getEmail());
+        dto.setPassword(etudiant.getPassword());
+        dto.setRole(etudiant.getRole());
+        dto.setSpecialite(etudiant.getSpecialite());
+        dto.setNumeroTelephone(etudiant.getNumeroTelephone());
+        dto.setDateNaissance(etudiant.getDateNaissance());
+        dto.setImage(etudiant.getImage());
+        dto.setNationality(etudiant.getNationality());
+        return dto;
     }
-
-    // Sauvegarder l'utilisateur mis à jour
-    return userRepository.save(user);
-}
-
-
 
 }

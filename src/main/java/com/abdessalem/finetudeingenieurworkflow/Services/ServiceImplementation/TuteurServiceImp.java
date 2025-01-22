@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITuteurServices;
 import lombok.RequiredArgsConstructor;
@@ -17,5 +18,10 @@ public class TuteurServiceImp implements ITuteurServices {
     @Override
     public List<Tuteur> getAllTuteur() {
         return tuteurRepository.findAll();
+    }
+
+    @Override
+    public Tuteur getTuteurById(Long id) {
+        return tuteurRepository.findById(id).orElseThrow(() -> new RessourceNotFound("Le tuteur avec l'ID " + id + " n'existe pas."));
     }
 }

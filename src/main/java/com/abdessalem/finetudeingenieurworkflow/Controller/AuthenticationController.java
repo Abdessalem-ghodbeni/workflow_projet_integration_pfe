@@ -51,47 +51,6 @@ public class AuthenticationController {
   private final AuthenticatorService authenticatorService;
   private final IJWTServicesImp jwtServices;
   private final ITuteurRepository tuteurRepository;
-
-//  @PostMapping("/registerInstructor")
-//  public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
-//                                                   @RequestParam("prenom") String prenom,
-//                                                   @RequestParam("email") String email,
-//                                                   @RequestParam("password") String password,
-//                                                   @RequestParam("numeroTelephone") String numeroTelephone,
-//                                                   @RequestParam("identifiantEsprit") String identifiantEsprit,
-//                                                   @RequestParam("specialiteUp") String specialiteUp,
-//                                                   @RequestParam("nationality") String nationality,
-//                                                   @RequestParam("is_Chef_Options") boolean is_Chef_Options,
-//                                                   @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche,
-//                                                   @RequestParam("image") MultipartFile file) throws IOException {
-//    Tuteur tuteur = new Tuteur();
-//    tuteur.setNom(nom);
-//    tuteur.setPrenom(prenom);
-//    tuteur.setEmail(email);
-//    tuteur.setPassword(password);
-//    tuteur.setIdentifiantEsprit(identifiantEsprit);
-//    tuteur.setNumeroTelephone(numeroTelephone);
-//    tuteur.setDateEmbauche(dateEmbauche);
-//    tuteur.setRole(Role.TUTEUR);
-//    tuteur.setSpecialiteUp(specialiteUp);
-//    tuteur.setNationality(nationality);
-//tuteur.set_Chef_Options(tuteur.is_Chef_Options());
-//    String originalFilename = file.getOriginalFilename();
-//    String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-//    Path fileNameAndPath = Paths.get(uploadDirectory, uniqueFilename);
-//    if (!Files.exists(fileNameAndPath.getParent())) {
-//       Files.createDirectories(fileNameAndPath.getParent());
-//  }
-//  Files.write(fileNameAndPath, file.getBytes());
-//    tuteur.setImage(uniqueFilename);
-//    Tuteur savedTuteur = authenticationServices.RegisterInstructor(tuteur);
-//    if (savedTuteur != null) {
-//      String identifiantUnique = savedTuteur.getIdentifiantEsprit();
-//      String cin = savedTuteur.getNumeroTelephone(); // Remplacez par la variable CIN correcte
-//      sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
-//    }
-//    return ResponseEntity.ok(savedTuteur);
-//  }
 @PostMapping("/registerInstructor")
 public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
                                                  @RequestParam("prenom") String prenom,
@@ -164,6 +123,52 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
     ImageIO.write(image, "png", filePath.toFile());
     return filename;
   }
+
+
+
+  // ajout etudiant
+  @PostMapping("/registerEtudiant")
+  public ResponseEntity<Etudiant> registerEtudiant(@RequestParam("nom") String nom,
+                                                   @RequestParam("prenom") String prenom,
+                                                   @RequestParam("email") String email,
+                                                   @RequestParam("password") String password,
+                                                   @RequestParam("numeroTelephone") String numeroTelephone,
+                                                   @RequestParam("identifiantEsprit") String identifiantEsprit,
+                                                   @RequestParam("specialite") String specialite,
+                                                   @RequestParam("nationality") String nationality,
+                                                   @RequestParam("classe") String classe,
+                                                 @RequestParam("niveau") Long niveau,
+                                                   @RequestParam("dateNaissance") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateNaissance) throws IOException {
+    Etudiant etudiant = new Etudiant();
+    etudiant.setNom(nom);
+    etudiant.setPrenom(prenom);
+    etudiant.setEmail(email);
+    etudiant.setPassword(password);
+    etudiant.setIdentifiantEsprit(identifiantEsprit);
+    etudiant.setNumeroTelephone(numeroTelephone);
+    etudiant.setDateNaissance(dateNaissance);
+    etudiant.setRole(Role.ETUDIANT);
+    etudiant.setSpecialite(specialite);
+    etudiant.setNationality(nationality);
+    etudiant.setClasse(classe);
+    etudiant.setNiveau(niveau);
+
+
+    String avatarFilename = generateInitialsAvatar(nom, prenom);
+    etudiant.setImage(avatarFilename);
+
+    // Sauvegarde du tuteur
+    Etudiant savedEtudiant = authenticationServices.registerEtudiant(etudiant);
+    if (savedEtudiant != null) {
+      String identifiantUnique = savedEtudiant.getIdentifiantEsprit();
+      String cin = savedEtudiant.getNumeroTelephone();
+      sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
+    }
+    return ResponseEntity.ok(savedEtudiant);
+  }
+
+
+
 
 
   @GetMapping("/{filename:.+}")
@@ -352,5 +357,11 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
       throw new RuntimeException("Erreur lors de la sauvegarde de l'image", e);
     }
   }
+
+
+
+
+
+
 
 }
