@@ -126,8 +126,86 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
     return filename;
   }
 
+  @PostMapping("/registerSociete")
+  public ResponseEntity<Societe> registerSociete(@RequestParam("nom") String nom,
+                                                   @RequestParam(name="email") String email,
+                                                   @RequestParam("password") String password,
+                                                   @RequestParam("numeroTelephone") String numeroTelephone,
+                                                 @RequestParam("codePostal") String codePostal,
+                                                   @RequestParam(name="adresse",required = false) String adresse,
+                                                   @RequestParam("ville") String ville,
+                                                 @RequestParam(name="siteWeb",required = false) String siteWeb,
+                                                 @RequestParam(name="pays",required = false) String pays,
+                                                 @RequestParam(name="secteurActivite",required = false) String secteurActivite) throws IOException {
+    Societe societe = new Societe();
+    societe.setNom(nom);
+    societe.setEmail(email);
+    societe.setPassword(password);
+    societe.setNumeroTelephone(numeroTelephone);
+    societe.setRole(Role.SOCIETE);
+societe.setSecteurActivite(secteurActivite);
+societe.setCodePostal(codePostal);
+societe.setAdresse(adresse);
+societe.setVille(ville);
+societe.setSiteWeb(siteWeb);
+societe.setPays(pays);
 
 
+    // Génération de l'image des initiales
+    String avatarFilename = generateInitialsAvatarSociete(nom);
+    societe.setLogo(avatarFilename);
+
+    // Sauvegarde du tuteur
+    Societe savedSociete = authenticationServices.RegisterSociete(societe);
+    if (savedSociete != null) {
+      String passwordd = societe.getPassword();
+      String emaill = savedSociete.getEmail();
+      sendEmailService.sendSocieteEmail(emaill, nom , passwordd);
+    }
+    return ResponseEntity.ok(savedSociete);
+  }
+
+  private String generateInitialsAvatarSociete(String nom) throws IOException {
+    int width = 200;
+    int height = 200;
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    Graphics2D graphics = image.createGraphics();
+
+    // Générer une couleur de fond aléatoire
+    Color backgroundColor = new Color((int) (Math.random() * 0x1000000));
+    graphics.setColor(backgroundColor);
+    graphics.fillRect(0, 0, width, height);
+
+    // Extraire les initiales
+    String[] parts = nom.split(" ");
+    String initials;
+    if (parts.length > 1) {
+      // Si le nom contient un espace, prendre la première lettre du prénom et la première lettre du nom
+      initials = parts[0].charAt(0) + "" + parts[1].charAt(0);
+    } else {
+      // Sinon, prendre les deux premières lettres du nom
+      initials = nom.substring(0, Math.min(2, nom.length()));
+    }
+
+    // Ajouter les initiales à l'image
+    graphics.setColor(Color.WHITE);
+    graphics.setFont(new Font("Arial", Font.BOLD, 100));
+    FontMetrics fontMetrics = graphics.getFontMetrics();
+    int x = (width - fontMetrics.stringWidth(initials)) / 2;
+    int y = ((height - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+    graphics.drawString(initials.toUpperCase(), x, y);
+
+    graphics.dispose();
+
+    // Sauvegarder l'image
+    String filename = UUID.randomUUID().toString() + "_avatar.png";
+    Path filePath = Paths.get(uploadDirectory, filename);
+    if (!Files.exists(filePath.getParent())) {
+      Files.createDirectories(filePath.getParent());
+    }
+    ImageIO.write(image, "png", filePath.toFile());
+    return filename;
+  }
   // ajout etudiant
   @PostMapping("/registerEtudiant")
   public ResponseEntity<Etudiant> registerEtudiant(@RequestParam("nom") String nom,
@@ -159,7 +237,7 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
     String avatarFilename = generateInitialsAvatar(nom, prenom);
     etudiant.setImage(avatarFilename);
 
-    // Sauvegarde du tuteur
+
     Etudiant savedEtudiant = authenticationServices.registerEtudiant(etudiant);
     if (savedEtudiant != null) {
       String identifiantUnique = savedEtudiant.getIdentifiantEsprit();

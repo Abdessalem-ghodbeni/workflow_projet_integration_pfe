@@ -72,5 +72,40 @@ public class SendEmailServiceImp {
 
 
 
+    public void sendSocieteEmail(String recipient, String nomSociete, String password ) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(fromEmailId);
+            helper.setTo(recipient);
+            helper.setSubject("Invitation à rejoindre notre plateforme");
+
+            // Préparer le contexte pour Thymeleaf
+            Context context = new Context();
+            context.setVariable("nomSociete", nomSociete);
+            context.setVariable("password", password);
+            context.setVariable("recipient", recipient);
+
+            // Charger le contenu HTML
+            String htmlContent = templateEngine.process("email-template", context);
+
+            // Ajouter le contenu HTML à l'email
+            helper.setText(htmlContent, true);
+
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 
 }

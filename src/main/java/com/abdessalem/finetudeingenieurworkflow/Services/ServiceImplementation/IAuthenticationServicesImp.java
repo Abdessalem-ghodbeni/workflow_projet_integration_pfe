@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 
@@ -34,7 +35,7 @@ import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 @Slf4j
 @RequiredArgsConstructor
 public class IAuthenticationServicesImp implements IAuthenticationServices {
-
+private final ISocieteRepository societeRepository;
     private final IUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -75,6 +76,17 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
     }
 
     @Override
+    public Societe RegisterSociete(Societe societe) {
+        if (userRepository.findByEmail(societe.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("un tuteur avec cet email existe déja");
+        }
+
+
+        societe.setPassword(passwordEncoder.encode(societe.getPassword()));
+        return societeRepository.save(societe);
+    }
+
+    @Override
     public AuthenticationResponse login(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         var user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
@@ -95,6 +107,11 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
             Etudiant etudiant = (Etudiant) user;
             Etudiant etudiantDto = convertToEtudiantDto(etudiant);
             authenticationResponse.setUserDetails(etudiantDto);
+        }
+        else if (user.getRole()==Role.SOCIETE) {
+            Societe societe = (Societe) user;
+            Societe societeDto = convertToSocieteDto(societe);
+            authenticationResponse.setUserDetails(societeDto);
         }
         else {
             User userDetails = convertToUserDto(user);
@@ -155,6 +172,9 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         dto.setNumeroTelephone(user.getNumeroTelephone());
     return dto;
     }
+
+
+
     private Tuteur convertToInstructorDto(Tuteur tuteur) {
         Tuteur dto = new Tuteur();
         dto.setId(tuteur.getId());
@@ -171,7 +191,27 @@ public class IAuthenticationServicesImp implements IAuthenticationServices {
         return dto;
     }
 
+    private Societe convertToSocieteDto(Societe societe) {
+        Societe dto = new Societe();
+        dto.setId(societe.getId());
+        dto.setNom(societe.getNom());
+        dto.setPrenom(societe.getPrenom());
+        dto.setEmail(societe.getEmail());
+        dto.setPassword(societe.getPassword());
+        dto.setRole(societe.getRole());
+        dto.setNumeroTelephone(societe.getNumeroTelephone());
+        dto.setLogo(societe.getLogo());
+        dto.setPays(societe.getPays());
+        dto.setAdresse(societe.getAdresse());
+        dto.setVille(societe.getVille());
+        dto.setCodePostal(societe.getCodePostal());
+        dto.setSiteWeb(societe.getSiteWeb());
+        dto.setSecteurActivite(societe.getSecteurActivite());
 
+
+
+        return dto;
+    }
     private Etudiant convertToEtudiantDto(Etudiant etudiant) {
         Etudiant dto = new Etudiant();
         dto.setId(etudiant.getId());

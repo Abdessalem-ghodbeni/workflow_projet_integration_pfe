@@ -27,8 +27,10 @@ public class Sujet implements Serializable {
     @CollectionTable(name = "sujet_exigences", joinColumns = @JoinColumn(name = "sujet_id"))
     @Column(name = "exigence")
     private List<String> exigences;
-
-    private String technologie;
+    @ElementCollection
+    @CollectionTable(name = "sujet_technologies", joinColumns = @JoinColumn(name = "sujet_id"))
+    @Column(name = "technologies")
+    private List<String>  technologies;
 
     private String thematique;
 

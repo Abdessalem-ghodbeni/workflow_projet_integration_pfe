@@ -2,10 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
 
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.AuthenticationResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
-import com.abdessalem.finetudeingenieurworkflow.Entites.RefreshTokenRequest;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 
 import java.util.HashMap;
 
@@ -17,4 +14,5 @@ public interface IAuthenticationServices {
     HashMap<String,String> resetPassword(String passwordResetToken, String newPassword);
     Etudiant registerEtudiant(Etudiant etudiant);
     Tuteur RegisterInstructor(Tuteur tuteur);
+    Societe RegisterSociete(Societe societe);
 }

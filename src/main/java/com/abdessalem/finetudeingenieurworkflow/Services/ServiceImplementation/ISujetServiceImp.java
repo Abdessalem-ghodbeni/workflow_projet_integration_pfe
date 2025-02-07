@@ -49,13 +49,30 @@ private final ISujetRepository sujetRepository;
     public Sujet updateSujet(Sujet sujet) {
         Sujet existingSujet = sujetRepository.findById(sujet.getId())
                 .orElseThrow(() -> new RessourceNotFound("Sujet avec l'ID " + sujet.getId() + " non trouvé."));
+        if (sujet.getExigences() != null) {
+            existingSujet.setExigences(sujet.getExigences());
+        }
+        if(sujet.getTitre()!=null){
+                existingSujet.setTitre(sujet.getTitre());
+         }
+        if(sujet.getDescription()!=null){
+            existingSujet.setDescription(sujet.getDescription());
+        }
 
-        existingSujet.setTitre(sujet.getTitre());
-        existingSujet.setDescription(sujet.getDescription());
-        existingSujet.setExigences(sujet.getExigences());
-        existingSujet.setTechnologie(sujet.getTechnologie());
-        existingSujet.setThematique(sujet.getThematique());
-        existingSujet.setSpecialite(sujet.getSpecialite());
+        if (sujet.getTechnologies() != null) {
+            existingSujet.setTechnologies(sujet.getTechnologies());
+        }
+
+
+        if(sujet.getThematique()!=null){
+            existingSujet.setThematique(sujet.getThematique());
+
+        }
+
+        if(sujet.getSpecialite()!=null){
+            existingSujet.setThematique(sujet.getThematique());
+        }
+
 
         return sujetRepository.save(existingSujet);
     }
