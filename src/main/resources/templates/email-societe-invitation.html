@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation à rejoindre notre plateforme - ESPRIT</title>
+    <style>
+        /* Reset CSS */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Conteneur principal */
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* En-tête */
+        .header {
+            background-color: #003A70; /* Bleu ESPRIT */
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .header img {
+            max-width: 150px;
+        }
+
+        /* Corps du message */
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .content h1 {
+            color: #003A70;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #333333;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        /* Bouton */
+        .btn {
+            display: inline-block;
+            background-color: #FDB813; /* Jaune ESPRIT */
+            color: #003A70;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        /* Pied de page */
+        .footer {
+            background-color: #003A70;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://www.esprit.tn/assets/images/logo.png" alt="Logo ESPRIT">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <h1>Bienvenue chez ESPRIT Innovation Platform</h1>
+        <p>Chère société <strong>${nomSociete}</strong>,</p>
+        <p>Nous sommes ravis de vous inviter à rejoindre notre plateforme dédiée à l'innovation et au développement technologique.</p>
+        <p>Vos informations de connexion sont les suivantes :</p>
+        <ul>
+            <li><strong>Email :</strong> ${recipient}</li>
+            <li><strong>Mot de passe :</strong> ${password}</li>
+        </ul>
+        <p>Utilisez ces informations pour accéder à votre compte et commencer à explorer les fonctionnalités disponibles.</p>
+        <a href="#" class="btn">Se connecter maintenant</a>
+        <p>Si vous avez des questions ou besoin d'aide, n'hésitez pas à nous contacter à <a href="mailto:support@esprit.tn">support@esprit.tn</a>.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2023 ESPRIT. Tous droits réservés.</p>
+    </div>
+</div>
+</body>
+</html>
