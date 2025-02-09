@@ -87,7 +87,7 @@ public class SendEmailServiceImp {
             context.setVariable("recipient", recipient);
 
             // Charger le contenu HTML
-            String htmlContent = templateEngine.process("email-template", context);
+            String htmlContent = templateEngine.process("email-societe-invitation.html", context);
 
             // Ajouter le contenu HTML à l'email
             helper.setText(htmlContent, true);

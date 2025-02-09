@@ -53,9 +53,11 @@ public class AuthenticationController {
   private final IJWTServicesImp jwtServices;
   private final ITuteurRepository tuteurRepository;
   private final IEtudiantRepository etudiantRepository;
+  private final IHistoriqueServiceImp historiqueServiceImp;
 @PostMapping("/registerInstructor")
 public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
                                                  @RequestParam("prenom") String prenom,
+                                                 @RequestParam("idUser") Long idUser,
                                                  @RequestParam("email") String email,
                                                  @RequestParam("password") String password,
                                                  @RequestParam("numeroTelephone") String numeroTelephone,
@@ -87,6 +89,10 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
     String identifiantUnique = savedTuteur.getIdentifiantEsprit();
     String cin = savedTuteur.getNumeroTelephone();
     sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
+
+    historiqueServiceImp.enregistrerAction(idUser, "CREATION",
+            "Ajout d'un Tuteur avec ID " + savedTuteur.getId());
+
   }
   return ResponseEntity.ok(savedTuteur);
 }
@@ -129,18 +135,21 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
   @PostMapping("/registerSociete")
   public ResponseEntity<Societe> registerSociete(@RequestParam("nom") String nom,
                                                    @RequestParam(name="email") String email,
-                                                   @RequestParam("password") String password,
+                                                 @RequestParam("idUser") Long idUser,
+
                                                    @RequestParam("numeroTelephone") String numeroTelephone,
-                                                 @RequestParam("codePostal") String codePostal,
+                                                 @RequestParam(name ="codePostal",required = false) String codePostal,
                                                    @RequestParam(name="adresse",required = false) String adresse,
                                                    @RequestParam("ville") String ville,
                                                  @RequestParam(name="siteWeb",required = false) String siteWeb,
                                                  @RequestParam(name="pays",required = false) String pays,
+                                                 @RequestParam(name="logo",required = false) MultipartFile file,
                                                  @RequestParam(name="secteurActivite",required = false) String secteurActivite) throws IOException {
+    String generatedPassword = generateRandomPassword();
     Societe societe = new Societe();
     societe.setNom(nom);
     societe.setEmail(email);
-    societe.setPassword(password);
+    societe.setPassword(generatedPassword);
     societe.setNumeroTelephone(numeroTelephone);
     societe.setRole(Role.SOCIETE);
 societe.setSecteurActivite(secteurActivite);
@@ -150,21 +159,50 @@ societe.setVille(ville);
 societe.setSiteWeb(siteWeb);
 societe.setPays(pays);
 
+if (file != null && !file.isEmpty()){
+  String originalFilename = file.getOriginalFilename();
+  String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+  Path fileNameAndPath = Paths.get(uploadDirectory, uniqueFilename);
+  if (!Files.exists(fileNameAndPath.getParent())) {
+    Files.createDirectories(fileNameAndPath.getParent());
+  }
+  Files.write(fileNameAndPath, file.getBytes());
+  societe.setLogo(uniqueFilename);
+}
 
-    // Génération de l'image des initiales
-    String avatarFilename = generateInitialsAvatarSociete(nom);
-    societe.setLogo(avatarFilename);
+else {
+  // Génération de l'image des initiales
+  String avatarFilename = generateInitialsAvatarSociete(nom);
+  societe.setLogo(avatarFilename);
+}
+
 
     // Sauvegarde du tuteur
     Societe savedSociete = authenticationServices.RegisterSociete(societe);
     if (savedSociete != null) {
-      String passwordd = societe.getPassword();
+//      String passwordd = savedSociete.getPassword();
       String emaill = savedSociete.getEmail();
-      sendEmailService.sendSocieteEmail(emaill, nom , passwordd);
+      String nomm=savedSociete.getNom();
+      sendEmailService.sendSocieteEmail(emaill, nomm, generatedPassword);
+      historiqueServiceImp.enregistrerAction(idUser, "CREATION",
+              "Ajout d'un compte entrprise partenaire avec ID " + savedSociete.getId());
+
+
     }
     return ResponseEntity.ok(savedSociete);
   }
+  private String generateRandomPassword() {
+    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+    StringBuilder password = new StringBuilder();
+    Random random = new Random();
+    int length = 12;
 
+    for (int i = 0; i < length; i++) {
+      password.append(chars.charAt(random.nextInt(chars.length())));
+    }
+
+    return password.toString();
+  }
   private String generateInitialsAvatarSociete(String nom) throws IOException {
     int width = 200;
     int height = 200;
@@ -216,7 +254,7 @@ societe.setPays(pays);
                                                    @RequestParam("identifiantEsprit") String identifiantEsprit,
                                                    @RequestParam("specialite") String specialite,
                                                    @RequestParam("nationality") String nationality,
-                                                   @RequestParam("classe") String classe,
+                                                   @RequestParam("classe") String classe, @RequestParam("idUser") Long idUser,
                                                  @RequestParam("niveau") Long niveau,
                                                    @RequestParam("dateNaissance") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateNaissance) throws IOException {
     Etudiant etudiant = new Etudiant();
@@ -243,6 +281,10 @@ societe.setPays(pays);
       String identifiantUnique = savedEtudiant.getIdentifiantEsprit();
       String cin = savedEtudiant.getNumeroTelephone();
       sendEmailService.sendInstructorEmail(email, nom + " " + prenom, identifiantUnique, cin);
+      historiqueServiceImp.enregistrerAction(idUser, "CREATION",
+              "Ajout d'un etudiant avec ID " + savedEtudiant.getId());
+
+
     }
     return ResponseEntity.ok(savedEtudiant);
   }
