@@ -26,8 +26,8 @@ public class Tuteur extends User implements Serializable{
 
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
-    @Column(name = "is_active")
-    private boolean isActive = true;
+//    @Column(name = "is_active")
+//    private boolean isActive = true;
 
 
 @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)

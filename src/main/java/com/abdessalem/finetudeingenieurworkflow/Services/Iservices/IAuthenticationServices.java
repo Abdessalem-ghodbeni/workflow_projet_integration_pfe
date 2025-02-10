@@ -15,4 +15,5 @@ public interface IAuthenticationServices {
     Etudiant registerEtudiant(Etudiant etudiant);
     Tuteur RegisterInstructor(Tuteur tuteur);
     Societe RegisterSociete(Societe societe);
+    void toggleUserStatus(Long id,Long userId);
 }

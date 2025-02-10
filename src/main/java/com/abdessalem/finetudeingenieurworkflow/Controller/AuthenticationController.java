@@ -46,6 +46,7 @@ public class AuthenticationController {
   private final SendEmailServiceImp sendEmailService;
   private final IUserRepository userRepository;
   private final ITuteurRepository instructorRepository;
+
   private final TwoFactorAuthenticationService tfaService;
   private final PasswordEncoder passwordEncoder;
   private final PasswordResetService passwordResetService;
@@ -54,6 +55,24 @@ public class AuthenticationController {
   private final ITuteurRepository tuteurRepository;
   private final IEtudiantRepository etudiantRepository;
   private final IHistoriqueServiceImp historiqueServiceImp;
+
+
+  @PutMapping("/toogleStatus/{id}/{userId}")
+  public ResponseEntity<?> toogleStatusUser(@PathVariable("id") Long id,@PathVariable("userId") Long userId) {
+    try {
+      authenticationServices.toggleUserStatus(id,userId);
+
+      return ResponseEntity.status(HttpStatus.OK).body("utilisateur status changed successfullllly");
+
+    } catch (RessourceNotFound e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("Une erreur interne est survenue. Veuillez réessayer.");
+    }
+  }
+
+
 @PostMapping("/registerInstructor")
 public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom,
                                                  @RequestParam("prenom") String prenom,

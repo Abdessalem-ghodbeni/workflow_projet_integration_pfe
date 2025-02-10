@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
@@ -42,7 +45,7 @@ private final ISocieteRepository societeRepository;
     private final IJWTServices jwtServices;
     private final ITuteurRepository tuteurRepository;
     private final IEtudiantRepository etudiantRepository;
-
+private final IHistoriqueServiceImp historiqueServiceImp;
     public String generateQRCodeForUser(User user) throws QrGenerationException {
         String secret = new DefaultSecretGenerator().generate();
         user.setSecret(secret);
@@ -84,6 +87,23 @@ private final ISocieteRepository societeRepository;
 
         societe.setPassword(passwordEncoder.encode(societe.getPassword()));
         return societeRepository.save(societe);
+    }
+
+    @Override
+    @Transactional
+    public void toggleUserStatus(Long id,Long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new RessourceNotFound("Utilisateur avec l'ID " + userId + " n'existe pas."));
+        Optional<User> utilisateurOptional = userRepository.findById(id);
+        if (utilisateurOptional.isPresent()) {
+            User utilisateur = utilisateurOptional.get();
+            utilisateur.setActive(!utilisateur.isActive());
+            User utilisateurUpdated=  userRepository.save(utilisateur);
+            historiqueServiceImp.enregistrerAction(userId, "Modification Status",
+                    "modification de status  utilisateur avec ID " + utilisateurUpdated.getId());
+        } else {
+            throw new RuntimeException("Utilisateur non trouvé avec l'ID : " + id);
+        }
+
     }
 
     @Override

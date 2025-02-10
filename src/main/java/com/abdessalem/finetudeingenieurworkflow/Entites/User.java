@@ -50,7 +50,8 @@ public class User implements Serializable, UserDetails {
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
-
+    @Column(name = "is_active")
+    private boolean isActive = true;
 
 //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {

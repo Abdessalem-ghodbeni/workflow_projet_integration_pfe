@@ -38,6 +38,5 @@ public class Societe extends User implements Serializable {
     @Column(name = "logo")
     private String logo;
 
-    @Column(name = "is_active")
-    private boolean isActive = true;
+
 }

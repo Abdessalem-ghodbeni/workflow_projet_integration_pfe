@@ -31,8 +31,8 @@ public class Etudiant extends User implements Serializable {
 
     @Temporal(TemporalType.DATE)
     private Date dateNaissance;
-    @Column(name = "is_active")
-    private boolean isActive = true;
+//    @Column(name = "is_active")
+//    private boolean isActive = true;
 
 
 
