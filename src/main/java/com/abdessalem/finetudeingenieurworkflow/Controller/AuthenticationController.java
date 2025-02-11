@@ -3,6 +3,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
@@ -46,7 +47,7 @@ public class AuthenticationController {
   private final IAuthenticationServicesImp authenticationServices;
   private final SendEmailServiceImp sendEmailService;
   private final IUserRepository userRepository;
-  private final ITuteurRepository instructorRepository;
+
 
   private final TwoFactorAuthenticationService tfaService;
   private final PasswordEncoder passwordEncoder;
@@ -56,6 +57,7 @@ public class AuthenticationController {
   private final ITuteurRepository tuteurRepository;
   private final IEtudiantRepository etudiantRepository;
   private final IHistoriqueServiceImp historiqueServiceImp;
+  private final ISocieteRepository societeRepository;
 
 
   @PutMapping("/toogleStatus")
@@ -330,9 +332,27 @@ else {
     }
   }
 
+//  @PostMapping("/loginn")
+//  public AuthenticationResponse login(@RequestBody User user) {
+//
+//
+//      return authenticationServices.login(user.getEmail(), user.getPassword());
+//  }
   @PostMapping("/login")
-  public AuthenticationResponse login(@RequestBody User user) {
-      return authenticationServices.login(user.getEmail(), user.getPassword());
+  public ResponseEntity<?> loginn(@RequestBody User user) {
+   try{
+     Optional<User> user_=userRepository.findByEmail(user.getEmail());
+     if (user_.isPresent() && !user_.get().isActive()){
+       return new ResponseEntity<>("ACCOUNT EST NON ACTIVE",HttpStatus.OK);
+     }else {
+
+
+     AuthenticationResponse response=authenticationServices.login(user.getEmail(), user.getPassword());
+     return new ResponseEntity<>(response,HttpStatus.OK);
+     }
+   }catch (Exception exception){
+     return new ResponseEntity<>(exception.getCause().getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+   }
   }
 
   @PostMapping("/refreshToken")
@@ -547,6 +567,62 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
 
     return ResponseEntity.ok(updatedEtudiant);
   }
+
+
+
+  @PutMapping("/update/Societerofile/{id}")
+  public ResponseEntity<Societe> updateSocieterofile(@PathVariable Long id,
+                                             @RequestParam(required = false) String nom,
+                                             @RequestParam(required = false) String email,
+                                             @RequestParam(required = false) String numeroTelephone,
+                                            @RequestParam(required = false) String siteWeb,
+                                            @RequestParam(required = false) String secteurActivite,
+
+                                             @RequestParam(required = false) String pays,
+
+                                                     @RequestParam(required = false) String adresse,
+                                                     @RequestParam(required = false) String ville,
+                                                     @RequestParam(required = false) String codePostal,
+                                             @RequestParam(required = false) MultipartFile logo) {
+    Optional<Societe> optionalSociete = societeRepository.findById(id);
+
+    if (!optionalSociete.isPresent()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Societe societe = optionalSociete.get();
+
+
+    if (nom != null) societe.setNom(nom);
+    if (siteWeb != null) societe.setPrenom(siteWeb);
+    if (email != null) societe.setEmail(email);
+
+    if (numeroTelephone != null) societe.setNumeroTelephone(numeroTelephone);
+    if (secteurActivite != null) societe.setSecteurActivite(secteurActivite);
+    if (pays != null) societe.setPays(pays);
+    if (adresse != null) societe.setAdresse(adresse);
+    if (ville != null) societe.setVille(ville);
+    if (codePostal != null) societe.setCodePostal(codePostal);
+
+    // Gestion de l'image
+    if (logo != null && !logo.isEmpty()) {
+      String imageName = saveImage(logo);
+      societe.setLogo(imageName);
+    }
+
+
+    Societe updatedSociete = societeRepository.save(societe);
+    historiqueServiceImp.enregistrerAction(id, "Modification",
+            "Modification informations personnel " + id);
+    return ResponseEntity.ok(updatedSociete);
+  }
+
+
+
+
+
+
+
 
 
 }

@@ -97,6 +97,7 @@ private final IHistoriqueServiceImp historiqueServiceImp;
         if (utilisateurOptional.isPresent()) {
             User utilisateur = utilisateurOptional.get();
             utilisateur.setActive(!utilisateur.isActive());
+
             User utilisateurUpdated=  userRepository.save(utilisateur);
             historiqueServiceImp.enregistrerAction(userId, "Modification Status",
                     "modification de status  utilisateur avec ID " + utilisateurUpdated.getId());
