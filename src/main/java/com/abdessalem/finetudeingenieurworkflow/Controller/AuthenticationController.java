@@ -8,6 +8,7 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.*;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base32;
@@ -57,8 +58,8 @@ public class AuthenticationController {
   private final IHistoriqueServiceImp historiqueServiceImp;
 
 
-  @PutMapping("/toogleStatus/{id}/{userId}")
-  public ResponseEntity<?> toogleStatusUser(@PathVariable("id") Long id,@PathVariable("userId") Long userId) {
+  @PutMapping("/toogleStatus")
+  public ResponseEntity<?> toogleStatusUser(@PathParam("id") Long id, @PathParam("userId") Long userId) {
     try {
       authenticationServices.toggleUserStatus(id,userId);
 
@@ -83,7 +84,7 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
                                                  @RequestParam("identifiantEsprit") String identifiantEsprit,
                                                  @RequestParam("specialiteUp") String specialiteUp,
                                                  @RequestParam("nationality") String nationality,
-                                                 @RequestParam("is_Chef_Options") boolean is_Chef_Options,
+                                                 @RequestParam(name = "is_Chef_Options",required = false) boolean is_Chef_Options,
                                                  @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche) throws IOException {
   Tuteur tuteur = new Tuteur();
   tuteur.setNom(nom);

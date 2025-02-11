@@ -6,6 +6,8 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITuteurServices;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,5 +25,15 @@ public class TuteurServiceImp implements ITuteurServices {
     @Override
     public Tuteur getTuteurById(Long id) {
         return tuteurRepository.findById(id).orElseThrow(() -> new RessourceNotFound("Le tuteur avec l'ID " + id + " n'existe pas."));
+    }
+
+    @Override
+    public Page<Tuteur> getAllTuteurs(Pageable pageable) {
+        return tuteurRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Tuteur> searchTuteurs(String keyword, Pageable pageable) {
+        return tuteurRepository.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(keyword, keyword, pageable);
     }
 }
