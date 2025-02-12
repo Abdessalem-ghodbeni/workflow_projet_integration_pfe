@@ -622,21 +622,18 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
 
 
  @PutMapping(path = "change-password")
-  public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
-    try
-    {String response = authenticationServices.changePassword(request);
-      if(Objects.equals(response, "Utilisateur non trouvé")  || Objects.equals(response, "L'ancien mot de passe est incorrect.")){
-        return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-      }else{
-        historiqueServiceImp.enregistrerAction(request.getUserId(), "Modification",
-                "Changement du mot de passe" );
-        return new ResponseEntity<>(response,HttpStatus.CREATED);
-      }
-
-    }catch (Exception exception){
-      return new ResponseEntity<>(exception.getCause().getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+ public ResponseEntity<ApiResponse> changePassword(@RequestBody ChangePasswordRequest request) {
+   try {
+     ApiResponse response = authenticationServices.changePassword(request);
+     if (!response.isSuccess()) {
+       return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+     } else {
+       historiqueServiceImp.enregistrerAction(request.getUserId(), "Modification", "Changement du mot de passe");
+       return new ResponseEntity<>(response, HttpStatus.OK);
+     }
+   } catch (Exception exception) {
+     return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+   }
   }
 
 

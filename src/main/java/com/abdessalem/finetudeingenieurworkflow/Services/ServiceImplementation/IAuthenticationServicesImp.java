@@ -248,24 +248,23 @@ private final IHistoriqueServiceImp historiqueServiceImp;
         dto.setNationality(etudiant.getNationality());
         return dto;
     }
-    public String changePassword( ChangePasswordRequest request) {
+    public ApiResponse changePassword(ChangePasswordRequest request) {
         Optional<User> optionalUser = userRepository.findById(request.getUserId());
 
         if (optionalUser.isEmpty()) {
-            return "Utilisateur non trouvé.";
+            return new ApiResponse("Utilisateur non trouvé.", false);
         }
 
         User user = optionalUser.get();
 
-        // Vérification de l'ancien mot de passe
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            return "L'ancien mot de passe est incorrect.";
+            return new ApiResponse("L'ancien mot de passe est incorrect.", false);
         }
 
-        // Mise à jour du mot de passe
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        return "Mot de passe mis à jour avec succès.";
+        return new ApiResponse("Mot de passe mis à jour avec succès.", true);
     }
+
 }
