@@ -4,6 +4,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Societe;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ISocieteServices;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +41,12 @@ public class SocieteController {
 
     @GetMapping(path = "/{id}")
     public  ResponseEntity<?>reupererParId(@PathVariable("id") Long id){
-        Societe societe=societeServices.recupererById(id);
-        return ResponseEntity.ok(societe);
+       try{
+           Societe societe=societeServices.recupererById(id);
+           return ResponseEntity.ok(societe);
+       }catch (Exception exception){
+           return ResponseEntity.status( HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+       }
     }
 
 

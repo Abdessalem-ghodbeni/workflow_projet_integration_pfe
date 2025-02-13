@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,5 +27,11 @@ public class IHistoriqueServiceImp implements IHistoriqueService {
         historique.setAction(action);
         historique.setDescription(description);
         historiqueRepository.save(historique);
+    }
+
+    @Override
+    public List<Historique> historiqueByUser(Long id_user) {
+        userRepository.findById(id_user).orElseThrow(() -> new RessourceNotFound("Utlisateur  avec l'ID " + id_user + " n'existe pas."));
+        return historiqueRepository.findByUser_IdOrderByDateActionDesc(id_user);
     }
 }
