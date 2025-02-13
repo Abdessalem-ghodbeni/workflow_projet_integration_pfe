@@ -564,6 +564,8 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
 
     // Sauvegarder les modifications
     Etudiant updatedEtudiant = etudiantRepository.save(etudiant);
+    historiqueServiceImp.enregistrerAction(id, "Modification",
+            "Modification informations personnel " + id);
 
     return ResponseEntity.ok(updatedEtudiant);
   }

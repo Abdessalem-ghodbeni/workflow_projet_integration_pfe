@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Historique;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Societe;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ISocieteServices;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IHistoriqueServiceImp;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,9 @@ public class HistoriqueController {
         }
     }
 
-
+    @GetMapping(path = "totale/liste")
+    public ResponseEntity<?>recupererFluxHistorique(){
+        List<Historique> historiqueList= historiqueService.GetAllHistoriqueList();
+        return ResponseEntity.ok(historiqueList);
+    }
 }

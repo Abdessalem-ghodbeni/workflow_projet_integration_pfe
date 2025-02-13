@@ -34,4 +34,9 @@ public class IHistoriqueServiceImp implements IHistoriqueService {
         userRepository.findById(id_user).orElseThrow(() -> new RessourceNotFound("Utlisateur  avec l'ID " + id_user + " n'existe pas."));
         return historiqueRepository.findByUser_IdOrderByDateActionDesc(id_user);
     }
+
+    @Override
+    public List<Historique> GetAllHistoriqueList() {
+        return historiqueRepository.findAll();
+    }
 }
