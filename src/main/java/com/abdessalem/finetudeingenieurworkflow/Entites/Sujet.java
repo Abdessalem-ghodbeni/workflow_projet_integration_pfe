@@ -47,6 +47,17 @@ public class Sujet implements Serializable {
     private List<Projet> projets;
 //, nullable = false
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Tuteur utilisateur;
+    @JoinColumn(name = "tuteur_id")
+    private Tuteur tuteur;
+
+
+
+
+    // Nouvelle relation : une société peut proposer plusieurs sujets
+    @ManyToOne
+    @JoinColumn(name = "societe_id")
+    private Societe societe;
+
+
+
 }

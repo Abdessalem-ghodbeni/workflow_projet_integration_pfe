@@ -2,21 +2,20 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IHistoriqueServiceImp;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.ISujetServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
-import java.util.UUID;
+
+import org.springframework.data.domain.PageRequest;
+
 
 @RestController
 @CrossOrigin("*")
@@ -24,9 +23,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SujetController {
     private final ISujetServiceImp sujetServiceImp;
+    private final IHistoriqueServiceImp historiqueServiceImp;
 
 
-//    @PostMapping("ajouter/{utilisateurId}")
 @PutMapping("/update")
 public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
     try {
@@ -81,6 +80,7 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
     @PostMapping("ajouter")
     public ResponseEntity<Sujet> ajouterSujet(
             @RequestParam("titre") String titre,
+            @RequestParam("userId") Long userId,
             @RequestParam("description") String description,
             @RequestParam("thematique") String thematique,
             @RequestParam("specialite") String specialite,
@@ -89,14 +89,12 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
             @RequestParam(value = "images", required = false) List<MultipartFile> images
     ) {
         try {
-            // Créer un nouvel objet Sujet
             Sujet sujet = new Sujet();
             sujet.setTitre(titre);
             sujet.setDescription(description);
             sujet.setThematique(thematique);
             sujet.setSpecialite(specialite);
 
-            // Ajouter les exigences et technologies si elles existent
             if (exigences != null) {
                 sujet.setExigences(exigences);
             }
@@ -104,11 +102,10 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
                 sujet.setTechnologies(technologies);
             }
 
+            Sujet savedSujet = sujetServiceImp.createSujet(sujet,userId);
 
-
-
-            // Enregistrer le sujet dans la base de données
-            Sujet savedSujet = sujetServiceImp.createSujet(sujet);
+            historiqueServiceImp.enregistrerAction(userId, "CREATION",
+                    "a ajouté  un sujet dont leur numéro est  " + savedSujet.getId());
             return ResponseEntity.ok(savedSujet);
 
         } catch (Exception e) {
@@ -120,7 +117,7 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
     @PutMapping("modifier-sujet/{id}")
     public ResponseEntity<Sujet> modifierSujet(
-            @PathVariable("id") Long id,  // L'ID du sujet à modifier
+            @PathVariable("id") Long id,
             @RequestParam(value = "titre",required = false) String titre,
             @RequestParam(value ="description",required = false) String description,
             @RequestParam(value ="thematique",required = false) String thematique,
@@ -130,39 +127,53 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
     ) {
         try {
-            // Rechercher le sujet existant par ID
+
             Sujet sujetExist = sujetServiceImp.getSujetById(id);
             if (sujetExist == null) {
-                return ResponseEntity.notFound().build();  // Sujet non trouvé
+                return ResponseEntity.notFound().build();
             }
 
-            // Mettre à jour les propriétés du sujet
             sujetExist.setTitre(titre);
             sujetExist.setDescription(description);
             sujetExist.setThematique(thematique);
             sujetExist.setSpecialite(specialite);
 
-            // Mettre à jour les exigences et technologies si elles existent
             if (exigences != null) {
                 sujetExist.setExigences(exigences);
             }
             if (technologies != null) {
                 sujetExist.setTechnologies(technologies);
             }
-
-
-            Sujet updatedSujet = sujetServiceImp.updateSujet(sujetExist);
+             Sujet updatedSujet = sujetServiceImp.updateSujet(sujetExist);
+//            historiqueServiceImp.enregistrerAction(userId, "CREATION",
+//                    "a ajouté  un sujet dont leur numéro est  " + savedSujet.getId());
             return ResponseEntity.ok(updatedSujet);
 
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();  // En cas d'erreur
+            return ResponseEntity.internalServerError().build();
         }
     }
 
 
 
 
+    @GetMapping("/list/{tuteurId}")
+    public ResponseEntity<Page<Sujet>> getSujetsByTuteurId(
+            @PathVariable("tuteurId") Long tuteurId,
+            @RequestParam(defaultValue = "0") int page) {
+        Page<Sujet> sujets = sujetServiceImp.getSujetsByTuteurId(tuteurId, page);
+        return ResponseEntity.ok(sujets);
+    }
 
+    @GetMapping("/search")
+    public Page<Sujet> rechercherSujetParTitre(
+            @RequestParam String titre,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
+        Pageable pageable = PageRequest.of(page, size);
+
+        return sujetServiceImp.rechercherSujetParTitre(titre, pageable);
+    }
 
 }

@@ -1,12 +1,22 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.Societe;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
+import com.abdessalem.finetudeingenieurworkflow.Entites.User;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISujetRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ISujetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,14 +25,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ISujetServiceImp implements ISujetService {
 private final ISujetRepository sujetRepository;
+private final IUserRepository userRepository;
+private final ITuteurRepository tuteurRepository;
+private final ISocieteRepository societeRepository;
 
     @Override
-//    public Sujet createSujet(Long utilisateurId, Sujet sujet) {
-    public Sujet createSujet( Sujet sujet) {
-//        Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
-//                .orElseThrow(() -> new RessourceNotFound("Utilisateur avec l'ID " + utilisateurId + " non trouvé."));
-//
-//        sujet.setUtilisateur(utilisateur);
+ @Transactional
+    public Sujet createSujet( Sujet sujet,Long userId) {
+
+        User utilisateur = userRepository.findById(userId).orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
+
+        if (utilisateur instanceof Tuteur) {
+
+            Tuteur tuteur = (Tuteur) utilisateur;
+            sujet.setTuteur(tuteur);
+            tuteur.getSujets().add(sujet);
+            tuteurRepository.save(tuteur);
+        } else if (utilisateur instanceof Societe) {
+
+            Societe societe = (Societe) utilisateur;
+            sujet.setSociete(societe);
+
+
+            societe.getSujets().add(sujet);
+
+
+            societeRepository.save(societe);
+        } else {
+            throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
+        }
+
+        // Sauvegarder le sujet
         return sujetRepository.save(sujet);
     }
 
@@ -76,4 +109,20 @@ private final ISujetRepository sujetRepository;
 
         return sujetRepository.save(existingSujet);
     }
+
+    @Override
+    public Page<Sujet> getSujetsByTuteurId(Long tuteurId, int page) {
+          tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new RessourceNotFound("tuteur avec l'ID " +tuteurId + " non trouvé."));
+        int pageSize = 6;
+        PageRequest pageRequest = PageRequest.of(page, pageSize);
+        return sujetRepository.findByTuteurId(tuteurId, pageRequest);
+    }
+
+    @Override
+    public Page<Sujet> rechercherSujetParTitre(String titre, Pageable pageable) {
+        return sujetRepository.findByTitreContainingIgnoreCase(titre, pageable);
+    }
+
+
 }

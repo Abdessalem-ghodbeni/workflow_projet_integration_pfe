@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,11 +27,10 @@ public class Tuteur extends User implements Serializable{
 
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
-//    @Column(name = "is_active")
-//    private boolean isActive = true;
 
 
-@OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+@OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
 private List<Sujet> sujets;
 
 }

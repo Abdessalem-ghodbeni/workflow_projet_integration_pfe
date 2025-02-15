@@ -1,14 +1,14 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -37,6 +37,8 @@ public class Societe extends User implements Serializable {
 
     @Column(name = "logo")
     private String logo;
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "societe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Sujet> sujets;
 
 }
