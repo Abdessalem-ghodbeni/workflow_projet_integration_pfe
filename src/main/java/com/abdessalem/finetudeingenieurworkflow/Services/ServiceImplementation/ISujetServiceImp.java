@@ -29,35 +29,52 @@ private final IUserRepository userRepository;
 private final ITuteurRepository tuteurRepository;
 private final ISocieteRepository societeRepository;
 
-    @Override
- @Transactional
-    public Sujet createSujet( Sujet sujet,Long userId) {
+//    @Override
+// @Transactional
+//    public Sujet createSujet( Sujet sujet,Long userId) {
+//
+//        User utilisateur = userRepository.findById(userId).orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
+//
+//        if (utilisateur instanceof Tuteur) {
+//
+//            Tuteur tuteur = (Tuteur) utilisateur;
+//            sujet.setTuteur(tuteur);
+//            tuteur.getSujets().add(sujet);
+//            tuteurRepository.save(tuteur);
+//        } else if (utilisateur instanceof Societe) {
+//
+//            Societe societe = (Societe) utilisateur;
+//            sujet.setSociete(societe);
+//            societe.getSujets().add(sujet);
+//            societeRepository.save(societe);
+//        } else {
+//            throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
+//        }
+//
+//        // Sauvegarder le sujet
+//        return sujetRepository.save(sujet);
+//    }
+@Override
+@Transactional
+public Sujet createSujet(Sujet sujet, Long userId) {
+    User utilisateur = userRepository.findById(userId)
+            .orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
 
-        User utilisateur = userRepository.findById(userId).orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
-
-        if (utilisateur instanceof Tuteur) {
-
-            Tuteur tuteur = (Tuteur) utilisateur;
-            sujet.setTuteur(tuteur);
-            tuteur.getSujets().add(sujet);
-            tuteurRepository.save(tuteur);
-        } else if (utilisateur instanceof Societe) {
-
-            Societe societe = (Societe) utilisateur;
-            sujet.setSociete(societe);
-
-
-            societe.getSujets().add(sujet);
-
-
-            societeRepository.save(societe);
-        } else {
-            throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
-        }
-
-        // Sauvegarder le sujet
-        return sujetRepository.save(sujet);
+    if (utilisateur instanceof Tuteur) {
+        Tuteur tuteur = (Tuteur) utilisateur;
+        sujet.setTuteur(tuteur);
+        tuteur.getSujets().add(sujet);
+    } else if (utilisateur instanceof Societe) {
+        Societe societe = (Societe) utilisateur;
+        sujet.setSociete(societe);
+        societe.getSujets().add(sujet);
+    } else {
+        throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
     }
+
+    // ✅ Sauvegarde le sujet une seule fois
+    return sujetRepository.save(sujet);
+}
 
     @Override
     public Sujet getSujetById(Long id) {
@@ -117,6 +134,15 @@ private final ISocieteRepository societeRepository;
         int pageSize = 6;
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         return sujetRepository.findByTuteurId(tuteurId, pageRequest);
+    }
+
+    @Override
+    public Page<Sujet> getSujetsBySocietId(Long societeId, int page) {
+        societeRepository.findById(societeId)
+                .orElseThrow(() -> new RessourceNotFound("Societe avec l'ID " +societeId + " non trouvé."));
+        int pageSize = 6;
+        PageRequest pageRequest = PageRequest.of(page, pageSize);
+        return sujetRepository.findBySocieteId(societeId, pageRequest);
     }
 
     @Override

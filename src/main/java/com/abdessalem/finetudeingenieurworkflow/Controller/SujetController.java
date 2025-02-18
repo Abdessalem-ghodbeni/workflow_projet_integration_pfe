@@ -165,6 +165,15 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         return ResponseEntity.ok(sujets);
     }
 
+    @GetMapping("/listSujet/{societeId}")
+    public ResponseEntity<Page<Sujet>> getSujetsBySocieteId(
+            @PathVariable("societeId") Long societeId,
+            @RequestParam(defaultValue = "0") int page) {
+        Page<Sujet> sujets = sujetServiceImp.getSujetsBySocietId(societeId, page);
+        return ResponseEntity.ok(sujets);
+    }
+
+
     @GetMapping("/search")
     public Page<Sujet> rechercherSujetParTitre(
             @RequestParam String titre,

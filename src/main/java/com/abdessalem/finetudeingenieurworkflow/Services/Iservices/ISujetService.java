@@ -13,5 +13,6 @@ Sujet createSujet( Sujet sujet,Long userId);
     List<Sujet> getAllSujets();
     Sujet updateSujet(Sujet sujet);
     Page<Sujet> getSujetsByTuteurId(Long tuteurId, int page);
+    Page<Sujet> getSujetsBySocietId(Long societeId, int page);
     Page<Sujet> rechercherSujetParTitre(String titre, Pageable pageable);
 }
