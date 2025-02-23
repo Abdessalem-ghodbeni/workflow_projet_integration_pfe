@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.ChangePasswordRequest;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IHistoriqueServiceImp;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.ISujetServiceImp;
@@ -16,6 +13,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 
@@ -196,7 +194,17 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         return sujetServiceImp.getSujetsCreatedBySociete(PageRequest.of(page, size));
     }
 
+    @GetMapping(path = "/liste/filter")
+    public ResponseEntity<?> getFilters() {
+        try{
+            FilterDTO filterDTO= sujetServiceImp.getFilters();
+            return ResponseEntity.ok(filterDTO);
+        }
+        catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
 
+        }
+    }
 
 
     @PutMapping(path = "/change/etat")
@@ -221,9 +229,37 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
 
 
+    @GetMapping("/filtered/by/criteres")
+    public Page<Sujet> getFilteredSujets(
+            @RequestParam(required = false) List<String> thematiques,
+            @RequestParam(required = false) List<Integer> annees,
+            @RequestParam(required = false) List<String> societes,
+            @RequestParam(required = false) List<String> specialites,
+            @RequestParam(required = false) List<Etat> etats,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        System.out.println("Thematiques: " + thematiques);
+        System.out.println("Annees: " + annees);
+        System.out.println("Societes: " + societes);
+        System.out.println("Specialites: " + specialites);
+        System.out.println("Etats: " + etats);
+        System.out.println("Page: " + page + ", Size: " + size);
+        List<String> normalizedSpecialites = specialites != null
+                ? specialites.stream().map(String::toLowerCase).collect(Collectors.toList())
+                : null;
+        return sujetServiceImp.getSujetsByFilters(thematiques, annees, societes, normalizedSpecialites, etats, PageRequest.of(page, size));
+    }
 
 
 
+    @GetMapping(path = "/initialiser/by/tuteur")
+    public ResponseEntity<Page<Sujet>> getAllSujets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Sujet> sujets = sujetServiceImp.listSujetsCreatedByTureurs(pageable);
+        return ResponseEntity.ok(sujets);
+    }
 
 
 }

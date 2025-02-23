@@ -1,10 +1,12 @@
 package com.abdessalem.finetudeingenieurworkflow.Repository;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -15,4 +17,36 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
     Page<Sujet> findByTitreContainingIgnoreCase(String titre, Pageable pageable);
     Page<Sujet> findBySocieteIsNotNull(Pageable pageable);
+    Page<Sujet> findByTuteurIsNotNull(Pageable pageable);
+    @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.societe IS NOT NULL")
+    List<String> findDistinctThematiques();
+
+    @Query("SELECT DISTINCT YEAR(s.dateModification) FROM Sujet s WHERE s.societe IS NOT NULL")
+    List<Integer> findDistinctAnnees();
+
+    @Query("SELECT DISTINCT s.societe.nom FROM Sujet s WHERE s.societe IS NOT NULL")
+    List<String> findDistinctSocietes();
+
+    @Query("SELECT DISTINCT s.specialite FROM Sujet s WHERE s.societe IS NOT NULL")
+    List<String> findDistinctSpecialites();
+
+    @Query("SELECT DISTINCT s.etat FROM Sujet s WHERE s.societe IS NOT NULL")
+    List<Etat> findDistinctEtats();
+
+    @Query("SELECT s FROM Sujet s WHERE s.societe IS NOT NULL " +
+            "AND (:thematiques IS NULL OR s.thematique IN :thematiques) " +
+            "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
+
+            "AND (:societes IS NULL OR s.societe.nom IN :societes) " +
+            "AND (:specialites IS NULL OR LOWER(s.specialite) IN :specialites)"+
+            "AND (:etats IS NULL OR s.etat IN :etats)")
+    Page<Sujet> findByFilters(
+            @Param("thematiques") List<String> thematiques,
+            @Param("annees") List<Integer> annees,
+            @Param("societes") List<String> societes,
+            @Param("specialites") List<String> specialites,
+            @Param("etats") List<Etat> etats,
+            Pageable pageable
+    );
+
 }

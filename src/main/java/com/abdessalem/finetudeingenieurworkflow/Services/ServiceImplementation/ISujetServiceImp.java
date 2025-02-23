@@ -141,5 +141,34 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         }
     }
 
+    @Override
+    public FilterDTO getFilters() {
+        List<String> thematiques = sujetRepository.findDistinctThematiques();
+        List<Integer> annees = sujetRepository.findDistinctAnnees();
+        List<String> societes = sujetRepository.findDistinctSocietes();
+        List<String> specialites = sujetRepository.findDistinctSpecialites();
+        List<Etat> etats = sujetRepository.findDistinctEtats();
+
+        return new FilterDTO(thematiques, annees, societes, specialites, etats);
+    }
+
+    @Override
+    public Page<Sujet> listSujetsCreatedByTureurs(Pageable pageable) {
+        return sujetRepository.findByTuteurIsNotNull(pageable);
+    }
+
+    public Page<Sujet> getSujetsByFilters(
+            List<String> thematiques,
+            List<Integer> annees,
+            List<String> societes,
+            List<String> specialites,
+            List<Etat> etats,
+            Pageable pageable) {
+
+        return sujetRepository.findByFilters(thematiques, annees, societes, specialites, etats, pageable);
+    }
+
+
+
 
 }
