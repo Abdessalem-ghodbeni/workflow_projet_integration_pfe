@@ -1,5 +1,8 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.ChangePasswordRequest;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IHistoriqueServiceImp;
@@ -94,6 +97,7 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
             sujet.setDescription(description);
             sujet.setThematique(thematique);
             sujet.setSpecialite(specialite);
+            sujet.setEtat(Etat.ENCOURS);
 
             if (exigences != null) {
                 sujet.setExigences(exigences);
@@ -184,5 +188,42 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
         return sujetServiceImp.rechercherSujetParTitre(titre, pageable);
     }
+
+    @GetMapping("/created-by-societe")
+    public Page<Sujet> getSujetsCreatedBySociete(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return sujetServiceImp.getSujetsCreatedBySociete(PageRequest.of(page, size));
+    }
+
+
+
+
+    @PutMapping(path = "/change/etat")
+    public ResponseEntity<ApiResponse> changerEtatSujet(
+            @RequestParam(value = "idUser") Long idUser,
+            @RequestParam(value = "idSujet") Long idSujet,
+            @RequestParam(value = "nouvelEtat") Etat nouvelEtat
+           ) {
+        try {
+            ApiResponse response = sujetServiceImp.changerEtatSujet(idSujet,nouvelEtat);
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                historiqueServiceImp.enregistrerAction(idUser, "Modification", "Changement du d'etat sujet en "+nouvelEtat);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
+
+
+
+
 
 }

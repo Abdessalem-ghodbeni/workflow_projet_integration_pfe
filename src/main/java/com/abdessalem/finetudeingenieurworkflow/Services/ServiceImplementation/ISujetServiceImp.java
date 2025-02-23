@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.Societe;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
-import com.abdessalem.finetudeingenieurworkflow.Entites.User;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISujetRepository;
@@ -29,31 +26,7 @@ private final IUserRepository userRepository;
 private final ITuteurRepository tuteurRepository;
 private final ISocieteRepository societeRepository;
 
-//    @Override
-// @Transactional
-//    public Sujet createSujet( Sujet sujet,Long userId) {
-//
-//        User utilisateur = userRepository.findById(userId).orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
-//
-//        if (utilisateur instanceof Tuteur) {
-//
-//            Tuteur tuteur = (Tuteur) utilisateur;
-//            sujet.setTuteur(tuteur);
-//            tuteur.getSujets().add(sujet);
-//            tuteurRepository.save(tuteur);
-//        } else if (utilisateur instanceof Societe) {
-//
-//            Societe societe = (Societe) utilisateur;
-//            sujet.setSociete(societe);
-//            societe.getSujets().add(sujet);
-//            societeRepository.save(societe);
-//        } else {
-//            throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
-//        }
-//
-//        // Sauvegarder le sujet
-//        return sujetRepository.save(sujet);
-//    }
+
 @Override
 @Transactional
 public Sujet createSujet(Sujet sujet, Long userId) {
@@ -72,7 +45,7 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         throw new RessourceNotFound("L'utilisateur n'est ni un tuteur ni une société");
     }
 
-    // ✅ Sauvegarde le sujet une seule fois
+
     return sujetRepository.save(sujet);
 }
 
@@ -148,6 +121,24 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     @Override
     public Page<Sujet> rechercherSujetParTitre(String titre, Pageable pageable) {
         return sujetRepository.findByTitreContainingIgnoreCase(titre, pageable);
+    }
+
+    @Override
+    public Page<Sujet> getSujetsCreatedBySociete(Pageable pageable) {
+        return sujetRepository.findBySocieteIsNotNull(pageable);
+    }
+
+    @Override
+    public ApiResponse changerEtatSujet(Long idSujet, Etat nouvelEtat) {
+        Sujet sujet = sujetRepository.findById(idSujet)
+                .orElseThrow(() -> new RessourceNotFound("Sujet avec l'ID " + idSujet + " non trouvé."));
+        if (nouvelEtat != null) {
+            sujet.setEtat(nouvelEtat);
+            sujetRepository.save(sujet);
+            return new ApiResponse("Etat sujet mis à jour avec succès.", true);
+        } else {
+            return new ApiResponse("L'etat de sujet ne peux pas etre null ", false);
+        }
     }
 
 

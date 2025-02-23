@@ -35,6 +35,8 @@ public class Sujet implements Serializable {
     private String thematique;
 
     private String specialite;
+    @Enumerated(EnumType.STRING)
+    private Etat etat;
 
     @CreationTimestamp
     @Column(updatable = false)

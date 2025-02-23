@@ -1,5 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
 import org.springframework.data.domain.Page;
 
@@ -15,4 +17,8 @@ Sujet createSujet( Sujet sujet,Long userId);
     Page<Sujet> getSujetsByTuteurId(Long tuteurId, int page);
     Page<Sujet> getSujetsBySocietId(Long societeId, int page);
     Page<Sujet> rechercherSujetParTitre(String titre, Pageable pageable);
+    Page<Sujet> getSujetsCreatedBySociete(Pageable pageable);
+    ApiResponse changerEtatSujet(Long idSujet, Etat nouvelEtat);
+
+
 }
