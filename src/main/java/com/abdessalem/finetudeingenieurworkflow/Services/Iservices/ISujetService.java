@@ -35,4 +35,7 @@ Sujet createSujet( Sujet sujet,Long userId);
                              List<String> specialites,
                              List<Etat> etats,
                              Pageable pageable);
+
+    Page<Sujet> getSujetsAccepteed(Pageable pageable);
+    SujetAcceptedFiltersDTO getAllFiltersForAcceptedSujets();
 }

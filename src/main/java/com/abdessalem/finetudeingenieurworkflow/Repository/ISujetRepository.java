@@ -50,15 +50,15 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
     );
 
     //////tuteur
-    // Récupérer les thématiques distinctes
+    // Récupeeeeeeerer les theeematiques distinctes ah la min gali wechbik
     @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<String> findDistinctThematiquesSujetCreatedByTuteur();
 
-    // Récupérer les années distinctes (extraites de la date de modification)
+
     @Query("SELECT DISTINCT YEAR(s.dateModification) FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<Integer> findDistinctAnneesSujetCreatedByTuteur();
 
-    // Récupérer les titres distincts
+
     @Query("SELECT DISTINCT s.titre FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<String> findDistinctTitresSujetCreatedByTuteur();
 
@@ -66,15 +66,14 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
     @Query("SELECT DISTINCT s.tuteur.nom FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<String> findDistinctTuteursName();
 
-    // Récupérer les spécialités distinctes
+
     @Query("SELECT DISTINCT s.specialite FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<String> findDistinctSpecialitesSujetCreatedByTuteur();
 
-    // Récupérer les états distincts
     @Query("SELECT DISTINCT s.etat FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<Etat> findDistinctEtatsSujetCreatedByTuteur();
 
-    // Méthode de recherche avec filtres dynamiques
+
     @Query("SELECT s FROM Sujet s WHERE s.tuteur IS NOT NULL " +
             "AND (:thematiques IS NULL OR s.thematique IN :thematiques) " +
             "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
@@ -94,7 +93,18 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
 
 
+    Page<Sujet> findByEtatOrderByDateModificationDesc(Etat etat, Pageable pageable);
+
+    @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.etat = 'ACCEPTED'")
+    List<String> findDistinctThematiquesAcceptedSujets();
 
 
+    @Query("SELECT DISTINCT s.specialite FROM Sujet s WHERE s.etat = 'ACCEPTED'")
+    List<String> findDistinctSpecialitesAcceptedSujets();
 
+    @Query("SELECT DISTINCT YEAR(s.dateModification) FROM Sujet s WHERE s.etat = 'ACCEPTED'")
+    List<Integer> findDistinctAnneesAcceptedSujets();
+
+    @Query("SELECT DISTINCT s.titre FROM Sujet s WHERE s.etat = 'ACCEPTED' AND s.titre IS NOT NULL")
+    List<String> findDistinctTitresAcceptedSujets();
 }

@@ -185,5 +185,20 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         return sujetRepository.findByFiltersTuteurs(thematiques, annees, titres, tuteurs, specialites, etats, pageable);
     }
 
+    @Override
+    public Page<Sujet> getSujetsAccepteed(Pageable pageable) {
+        return sujetRepository.findByEtatOrderByDateModificationDesc(Etat.ACCEPTED, pageable);
+    }
+
+    @Override
+    public SujetAcceptedFiltersDTO getAllFiltersForAcceptedSujets() {
+        List<String> thematiques = sujetRepository.findDistinctThematiquesAcceptedSujets();
+        List<String> specialites = sujetRepository.findDistinctSpecialitesAcceptedSujets();
+        List<Integer> annees = sujetRepository.findDistinctAnneesAcceptedSujets();
+        List<String> titres = sujetRepository.findDistinctTitresAcceptedSujets();
+
+        return new SujetAcceptedFiltersDTO(thematiques, specialites, annees, titres);
+    }
+
 
 }

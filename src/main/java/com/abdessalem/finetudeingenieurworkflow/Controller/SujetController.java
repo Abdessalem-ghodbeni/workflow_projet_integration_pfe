@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
@@ -296,8 +297,27 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
     }
 
 
+    @GetMapping("/accepteed")
+    public ResponseEntity<?> getSujetsAccepteed(Pageable pageable) {
+     try{
+       return ResponseEntity.ok(sujetServiceImp.getSujetsAccepteed(pageable));
+     }catch (Exception ex){
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+     }
+    }
 
 
 
+
+    @GetMapping("/accepteed/filters")
+    public ResponseEntity<?> getAllFiltersForAcceptedSujets() {
+        try{
+            SujetAcceptedFiltersDTO filterCriteria = sujetServiceImp.getAllFiltersForAcceptedSujets();
+            return ResponseEntity.ok(filterCriteria);
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
 
 }
