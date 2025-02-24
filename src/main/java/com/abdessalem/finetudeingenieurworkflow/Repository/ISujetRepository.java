@@ -79,7 +79,7 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
             "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
             "AND (:titres IS NULL OR s.titre IN :titres) " +
             "AND (:tuteurs IS NULL OR s.tuteur.nom IN :tuteurs) " +
-            "AND (:specialites IS NULL OR LOWER(s.specialite) IN :specialites) " +
+            "AND (:specialites IS NULL OR LOWER(s.specialite) IN :specialites)"+
             "AND (:etats IS NULL OR s.etat IN :etats)")
     Page<Sujet> findByFiltersTuteurs(
             @Param("thematiques") List<String> thematiques,
@@ -111,9 +111,9 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
 
     @Query("SELECT s FROM Sujet s " +
-            "WHERE s.etat = 'ACCEPTEED' " +
+            "WHERE s.etat = 'ACCEPTED' " +
             "AND (:thematiques IS NULL OR s.thematique IN :thematiques) " +
-            "AND (:specialites IS NULL OR s.specialite IN :specialites) " +
+            "AND (:specialites IS NULL OR LOWER(s.specialite) IN :specialites)"+
             "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
             "AND (:titres IS NULL OR s.titre IN :titres)")
     Page<Sujet> findFilteredAcceptedSujets(

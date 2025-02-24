@@ -291,8 +291,11 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
                     .map(com.abdessalem.finetudeingenieurworkflow.Entites.Etat::valueOf)
                     .toList();
         }
+        List<String> normalizedSpecialites = specialites != null
+                ? specialites.stream().map(String::toLowerCase).collect(Collectors.toList())
+                : null;
 
-        Page<Sujet> sujets = sujetServiceImp.filterSujetsCreatedByAllTuteurs(thematiques, annees, titres, tuteurs, specialites, etats, pageable);
+        Page<Sujet> sujets = sujetServiceImp.filterSujetsCreatedByAllTuteurs(thematiques, annees, titres, tuteurs, normalizedSpecialites, etats, pageable);
         return ResponseEntity.ok(sujets);
     }
 
@@ -331,7 +334,11 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
             Pageable pageable
     ) {
         try{
-            return ResponseEntity.ok(sujetServiceImp.filterAcceptedSujets(thematiques, specialites, annees, titres, pageable));
+            List<String> normalizedSpecialites = specialites != null
+                    ? specialites.stream().map(String::toLowerCase).collect(Collectors.toList())
+                    : null;
+
+            return ResponseEntity.ok(sujetServiceImp.filterAcceptedSujets(thematiques, normalizedSpecialites, annees, titres, pageable));
         }catch (Exception exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
