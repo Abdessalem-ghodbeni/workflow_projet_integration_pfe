@@ -200,5 +200,15 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         return new SujetAcceptedFiltersDTO(thematiques, specialites, annees, titres);
     }
 
+    @Override
+    public Page<Sujet> filterAcceptedSujets(List<String> thematiques, List<String> specialites, List<Integer> annees, List<String> titres, Pageable pageable) {
+        thematiques = (thematiques == null || thematiques.isEmpty()) ? null : thematiques;
+        specialites = (specialites == null || specialites.isEmpty()) ? null : specialites;
+        annees = (annees == null || annees.isEmpty()) ? null : annees;
+        titres = (titres == null || titres.isEmpty()) ? null : titres;
+
+        return sujetRepository.findFilteredAcceptedSujets(thematiques, specialites, annees, titres, pageable);
+    }
+
 
 }

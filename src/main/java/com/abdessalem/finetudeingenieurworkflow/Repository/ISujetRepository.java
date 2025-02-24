@@ -107,4 +107,23 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
     @Query("SELECT DISTINCT s.titre FROM Sujet s WHERE s.etat = 'ACCEPTED' AND s.titre IS NOT NULL")
     List<String> findDistinctTitresAcceptedSujets();
+
+
+
+    @Query("SELECT s FROM Sujet s " +
+            "WHERE s.etat = 'ACCEPTEED' " +
+            "AND (:thematiques IS NULL OR s.thematique IN :thematiques) " +
+            "AND (:specialites IS NULL OR s.specialite IN :specialites) " +
+            "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
+            "AND (:titres IS NULL OR s.titre IN :titres)")
+    Page<Sujet> findFilteredAcceptedSujets(
+            @Param("thematiques") List<String> thematiques,
+            @Param("specialites") List<String> specialites,
+            @Param("annees") List<Integer> annees,
+            @Param("titres") List<String> titres,
+            Pageable pageable
+    );
+
+
+
 }

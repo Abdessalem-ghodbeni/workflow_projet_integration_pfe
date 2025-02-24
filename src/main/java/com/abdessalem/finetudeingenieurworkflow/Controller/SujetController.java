@@ -320,4 +320,23 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
     }
 
+
+
+    @GetMapping("/accepteed/and_filter")
+    public ResponseEntity<?> listeAcceptedSujetsFiltred(
+            @RequestParam(required = false) List<String> thematiques,
+            @RequestParam(required = false) List<String> specialites,
+            @RequestParam(required = false) List<Integer> annees,
+            @RequestParam(required = false) List<String> titres,
+            Pageable pageable
+    ) {
+        try{
+            return ResponseEntity.ok(sujetServiceImp.filterAcceptedSujets(thematiques, specialites, annees, titres, pageable));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
+
+
 }

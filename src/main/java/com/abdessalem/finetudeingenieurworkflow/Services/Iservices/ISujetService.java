@@ -38,4 +38,6 @@ Sujet createSujet( Sujet sujet,Long userId);
 
     Page<Sujet> getSujetsAccepteed(Pageable pageable);
     SujetAcceptedFiltersDTO getAllFiltersForAcceptedSujets();
+
+    Page<Sujet> filterAcceptedSujets(List<String> thematiques, List<String> specialites, List<Integer> annees, List<String> titres, Pageable pageable);
 }
