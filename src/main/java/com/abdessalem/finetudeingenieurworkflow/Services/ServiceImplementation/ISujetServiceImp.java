@@ -156,7 +156,7 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     public Page<Sujet> listSujetsCreatedByTureurs(Pageable pageable) {
         return sujetRepository.findByTuteurIsNotNull(pageable);
     }
-
+@Override
     public Page<Sujet> getSujetsByFilters(
             List<String> thematiques,
             List<Integer> annees,
@@ -168,7 +168,22 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         return sujetRepository.findByFilters(thematiques, annees, societes, specialites, etats, pageable);
     }
 
+    @Override
+    public FilterTutorDTO getFilterCriteria() {
+        List<String> thematiques = sujetRepository.findDistinctThematiquesSujetCreatedByTuteur();
+        List<Integer> annees = sujetRepository.findDistinctAnneesSujetCreatedByTuteur();
+        List<String> titres = sujetRepository.findDistinctTitresSujetCreatedByTuteur();
+        List<String> tuteurs = sujetRepository.findDistinctTuteursName();
+        List<String> specialites = sujetRepository.findDistinctSpecialitesSujetCreatedByTuteur();
+        List<Etat> etats = sujetRepository.findDistinctEtatsSujetCreatedByTuteur();
 
+        return new FilterTutorDTO(thematiques, annees, titres, tuteurs, specialites, etats);
+    }
+
+    @Override
+    public Page<Sujet> filterSujetsCreatedByAllTuteurs(List<String> thematiques, List<Integer> annees, List<String> titres, List<String> tuteurs, List<String> specialites, List<Etat> etats, Pageable pageable) {
+        return sujetRepository.findByFiltersTuteurs(thematiques, annees, titres, tuteurs, specialites, etats, pageable);
+    }
 
 
 }

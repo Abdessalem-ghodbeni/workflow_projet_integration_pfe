@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
-import com.abdessalem.finetudeingenieurworkflow.Entites.FilterDTO;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -22,4 +19,20 @@ Sujet createSujet( Sujet sujet,Long userId);
     ApiResponse changerEtatSujet(Long idSujet, Etat nouvelEtat);
       FilterDTO getFilters();
     Page<Sujet> listSujetsCreatedByTureurs(Pageable pageable);
+
+    Page<Sujet> getSujetsByFilters(
+            List<String> thematiques,
+            List<Integer> annees,
+            List<String> societes,
+            List<String> specialites,
+            List<Etat> etats,
+            Pageable pageable);
+    public FilterTutorDTO getFilterCriteria();
+    Page<Sujet> filterSujetsCreatedByAllTuteurs(List<String> thematiques,
+                             List<Integer> annees,
+                             List<String> titres,
+                             List<String> tuteurs,
+                             List<String> specialites,
+                             List<Etat> etats,
+                             Pageable pageable);
 }

@@ -253,13 +253,51 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
 
     @GetMapping(path = "/initialiser/by/tuteur")
-    public ResponseEntity<Page<Sujet>> getAllSujets(
+    public ResponseEntity<Page<Sujet>> getAllSujetsCreatedByTuteurs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Sujet> sujets = sujetServiceImp.listSujetsCreatedByTureurs(pageable);
         return ResponseEntity.ok(sujets);
     }
+
+    @GetMapping("/filters/suj/tuteurs")
+    public ResponseEntity<?> getFilterCriteria() {
+    try{
+        FilterTutorDTO filterCriteria = sujetServiceImp.getFilterCriteria();
+        return ResponseEntity.ok(filterCriteria);
+    }catch (Exception exception){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+    }
+
+    }
+
+
+    @GetMapping("/tuteur_subject_made/filter")
+    public ResponseEntity<Page<Sujet>> filterSujets(
+            @RequestParam(value = "thematiques", required = false) List<String> thematiques,
+            @RequestParam(value = "annees", required = false) List<Integer> annees,
+            @RequestParam(value = "titres", required = false) List<String> titres,
+            @RequestParam(value = "tuteurs", required = false) List<String> tuteurs,
+            @RequestParam(value = "specialites", required = false) List<String> specialites,
+            @RequestParam(value = "etats", required = false) List<String> etatsString,
+            Pageable pageable) {
+
+
+        List<com.abdessalem.finetudeingenieurworkflow.Entites.Etat> etats = null;
+        if (etatsString != null && !etatsString.isEmpty()) {
+            etats = etatsString.stream()
+                    .map(com.abdessalem.finetudeingenieurworkflow.Entites.Etat::valueOf)
+                    .toList();
+        }
+
+        Page<Sujet> sujets = sujetServiceImp.filterSujetsCreatedByAllTuteurs(thematiques, annees, titres, tuteurs, specialites, etats, pageable);
+        return ResponseEntity.ok(sujets);
+    }
+
+
+
+
 
 
 }
