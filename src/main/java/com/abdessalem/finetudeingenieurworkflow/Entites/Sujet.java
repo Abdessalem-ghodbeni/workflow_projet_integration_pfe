@@ -54,8 +54,9 @@ public class Sujet implements Serializable {
 
 
 
+    @Column(nullable = false)
+    private boolean visibleAuxEtudiants = false;
 
-    // Nouvelle relation : une société peut proposer plusieurs sujets
     @ManyToOne
     @JoinColumn(name = "societe_id")
     private Societe societe;

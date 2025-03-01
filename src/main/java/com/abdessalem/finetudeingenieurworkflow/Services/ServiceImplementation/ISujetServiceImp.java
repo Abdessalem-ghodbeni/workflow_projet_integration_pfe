@@ -64,9 +64,10 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     }
 
     @Override
-    public List<Sujet> getAllSujets() {
-        return sujetRepository.findAll();
+    public Page<Sujet> getAllSujets(Pageable pageable) {
+        return sujetRepository.findAll(pageable);
     }
+
 
     @Override
     public Sujet updateSujet(Sujet sujet) {
@@ -209,6 +210,35 @@ public Sujet createSujet(Sujet sujet, Long userId) {
 
         return sujetRepository.findFilteredAcceptedSujets(thematiques, specialites, annees, titres, pageable);
     }
+
+    @Override
+    public SujetVisibilityResponse rendreSujetsVisibles(Long tuteurId, List<Long> sujetIds) {
+
+        tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new RessourceNotFound("Tuteur non trouvé: " + tuteurId));
+
+        List<Sujet> sujets = sujetRepository.findAllById(sujetIds);
+
+        if (sujets.isEmpty()) {
+            throw new RessourceNotFound("Aucun sujet trouvé pour les identifiants fournis.");
+        }
+
+        boolean etatFinal = !sujets.getFirst().isVisibleAuxEtudiants();
+
+        for (Sujet sujet : sujets) {
+            if (sujet.getEtat() == Etat.ACCEPTED) {
+                sujet.setVisibleAuxEtudiants(etatFinal);
+            }
+        }
+
+        sujetRepository.saveAll(sujets);
+
+        String message = etatFinal ? "Les sujets sont maintenant visibles aux étudiants."
+                : "Les sujets sont maintenant invisibles aux étudiants.";
+
+        return new SujetVisibilityResponse(sujetIds, etatFinal, message);
+    }
+
 
 
 }

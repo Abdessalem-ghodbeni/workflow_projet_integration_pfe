@@ -5,6 +5,7 @@ import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.IHistoriqueServiceImp;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.ISujetServiceImp;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,15 +44,19 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllSujets() {
+    public ResponseEntity<?> getAllSujets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            List<Sujet> sujets = sujetServiceImp.getAllSujets();
-            return ResponseEntity.status(HttpStatus.OK).body(sujets);
+            Pageable pageable = PageRequest.of(page, size, Sort.by("dateModification").descending());
+            Page<Sujet> sujets = sujetServiceImp.getAllSujets(pageable);
+            return ResponseEntity.ok(sujets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Une erreur interne est survenue. Veuillez réessayer.");
+                    .body(e.getMessage());
         }
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSujet(@PathVariable Long id) {
@@ -344,6 +349,17 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         }
     }
 
+    @PutMapping("/{tuteurId}/sujets/visibles")
+    public ResponseEntity<?> rendreSujetsVisibles(@PathVariable Long tuteurId, @RequestBody List<Long> sujetIds) {
+        try {
+
+            historiqueServiceImp.enregistrerAction(tuteurId, "Modification",
+                    "a partagé les sujets avec les etudiants "  );
+            return ResponseEntity.ok(sujetServiceImp.rendreSujetsVisibles(tuteurId, sujetIds));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+        }
+    }
 
 
 }

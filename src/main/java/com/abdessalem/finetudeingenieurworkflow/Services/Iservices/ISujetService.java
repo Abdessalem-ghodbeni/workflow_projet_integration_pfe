@@ -10,7 +10,7 @@ public interface ISujetService {
 Sujet createSujet( Sujet sujet,Long userId);
     Sujet getSujetById(Long id);
     void deleteSujet(Long id);
-    List<Sujet> getAllSujets();
+    Page<Sujet> getAllSujets(Pageable pageable);
     Sujet updateSujet(Sujet sujet);
     Page<Sujet> getSujetsByTuteurId(Long tuteurId, int page);
     Page<Sujet> getSujetsBySocietId(Long societeId, int page);
@@ -40,4 +40,6 @@ Sujet createSujet( Sujet sujet,Long userId);
     SujetAcceptedFiltersDTO getAllFiltersForAcceptedSujets();
 
     Page<Sujet> filterAcceptedSujets(List<String> thematiques, List<String> specialites, List<Integer> annees, List<String> titres, Pageable pageable);
+
+    SujetVisibilityResponse rendreSujetsVisibles(Long tuteurId, List<Long> sujetIds);
 }
