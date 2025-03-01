@@ -406,6 +406,17 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
 
     }
 
+    @GetMapping("/visibleByTitle")
 
+    public ResponseEntity<Page<Sujet>> searchSujet(
+            @RequestParam String titre,
+            @RequestParam String specialite,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dateCreation").descending());
+        Page<Sujet> result = sujetServiceImp.searchSujetByTitreAndSpecialite(titre, specialite, pageable);
+        return ResponseEntity.ok(result);
+    }
 
 }

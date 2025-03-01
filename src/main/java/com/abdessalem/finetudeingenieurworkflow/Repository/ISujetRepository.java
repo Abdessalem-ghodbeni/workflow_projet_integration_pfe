@@ -153,6 +153,11 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
 
 
+    Page<Sujet> findByVisibleAuxEtudiantsTrueAndSpecialiteIgnoreCaseAndTitreContainingIgnoreCase(
+            String specialite,
+            String titre,
+            Pageable pageable
+    );
 
 
 

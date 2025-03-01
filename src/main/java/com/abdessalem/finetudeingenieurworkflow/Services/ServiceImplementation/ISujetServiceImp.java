@@ -267,13 +267,18 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     }
 
     @Override
+    public Page<Sujet> searchSujetByTitreAndSpecialite(String titre, String specialite, Pageable pageable) {
+        return sujetRepository.findByVisibleAuxEtudiantsTrueAndSpecialiteIgnoreCaseAndTitreContainingIgnoreCase(
+                specialite, titre, pageable
+        );
+    }
+
+
+    @Override
     public Page<Sujet> getFilteredVisibleSujets(String specialite, List<String> titres, List<String> thematiques, Pageable pageable) {
         thematiques = (thematiques == null || thematiques.isEmpty()) ? null : thematiques;
         specialite = (specialite == null || specialite.isEmpty()) ? null : specialite;
-
         titres = (titres == null || titres.isEmpty()) ? null : titres;
-
-
         return sujetRepository.findFilteredVisibleSujets(specialite, titres, thematiques, pageable);
     }
 
