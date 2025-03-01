@@ -360,6 +360,52 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
         }
     }
+    @GetMapping("/visibles/etudiant")
+    public ResponseEntity<?> getVisibleSujetsBySpecialite(
+            @RequestParam String specialite ,@RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "6") int size
+    ) {
+        try{
+            Pageable pageable = PageRequest.of(page, size, Sort.by("dateCreation").descending());
+            return ResponseEntity.ok(sujetServiceImp.getVisibleSujetsBySpecialitePaginated(specialite,pageable));
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    @GetMapping("/visible/suject/filtrage/liste")
+    public ResponseEntity<?> getFiltrage(
+            @RequestParam String specialite
+    ) {
+        try {
+            FiltrageVisibleSubjectDTO dto = sujetServiceImp.getTitresAndThematiques(specialite);
+            return ResponseEntity.ok(dto);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+
+
+    @GetMapping("/filtrage/for/visible/subject/to/etudiant")
+    public ResponseEntity<?> getFilteredVisibleSujets(
+            @RequestParam String specialite,
+            @RequestParam(required = false) List<String> titres,
+            @RequestParam(required = false) List<String> thematiques,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+    try{
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(sujetServiceImp.getFilteredVisibleSujets(specialite, titres, thematiques, pageable));
+
+    }catch (Exception e){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+
+    }
+
 
 
 }

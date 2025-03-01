@@ -15,6 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 @Service
@@ -239,6 +243,39 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         return new SujetVisibilityResponse(sujetIds, etatFinal, message);
     }
 
+    @Override
+    public Page<Sujet> getVisibleSujetsBySpecialitePaginated(String specialite, Pageable pageable) {
+
+        LocalDateTime startOfYear = LocalDate.now()
+                .with(TemporalAdjusters.firstDayOfYear())
+                .atStartOfDay();
+
+        LocalDateTime endOfYear = LocalDate.now()
+                .with(TemporalAdjusters.lastDayOfYear())
+                .atTime(LocalTime.MAX);
+
+        return sujetRepository.findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
+                specialite, startOfYear, endOfYear, pageable
+        );
+    }
+
+    @Override
+    public FiltrageVisibleSubjectDTO getTitresAndThematiques(String specialite) {
+        List<String> titres = sujetRepository.findDistinctTitresBySpecialite(specialite);
+        List<String> thematiques = sujetRepository.findDistinctThematiquesBySpecialite(specialite);
+        return new FiltrageVisibleSubjectDTO(titres, thematiques);
+    }
+
+    @Override
+    public Page<Sujet> getFilteredVisibleSujets(String specialite, List<String> titres, List<String> thematiques, Pageable pageable) {
+        thematiques = (thematiques == null || thematiques.isEmpty()) ? null : thematiques;
+        specialite = (specialite == null || specialite.isEmpty()) ? null : specialite;
+
+        titres = (titres == null || titres.isEmpty()) ? null : titres;
+
+
+        return sujetRepository.findFilteredVisibleSujets(specialite, titres, thematiques, pageable);
+    }
 
 
 }

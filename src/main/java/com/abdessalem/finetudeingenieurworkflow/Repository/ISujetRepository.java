@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ISujetRepository extends JpaRepository<Sujet,Long> {
@@ -123,6 +124,35 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
             @Param("titres") List<String> titres,
             Pageable pageable
     );
+    Page<Sujet> findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
+            String specialite,
+            LocalDateTime startOfYear,
+            LocalDateTime endOfYear,
+            Pageable pageable
+    );
+
+    @Query("SELECT DISTINCT s.titre FROM Sujet s WHERE s.visibleAuxEtudiants = true AND s.specialite = :specialite")
+    List<String> findDistinctTitresBySpecialite(@Param("specialite") String specialite);
+
+    @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.visibleAuxEtudiants = true AND s.specialite = :specialite")
+    List<String> findDistinctThematiquesBySpecialite(@Param("specialite") String specialite);
+
+
+
+    @Query("SELECT s FROM Sujet s " +
+            "WHERE s.visibleAuxEtudiants = true " +
+            "AND LOWER(s.specialite) = LOWER(:specialite) " +
+            "AND (:titres IS NULL OR s.titre IN :titres) " +
+            "AND (:thematiques IS NULL OR s.thematique IN :thematiques)")
+    Page<Sujet> findFilteredVisibleSujets(
+            @Param("specialite") String specialite,
+            @Param("titres") List<String> titres,
+            @Param("thematiques") List<String> thematiques,
+            Pageable pageable
+    );
+
+
+
 
 
 

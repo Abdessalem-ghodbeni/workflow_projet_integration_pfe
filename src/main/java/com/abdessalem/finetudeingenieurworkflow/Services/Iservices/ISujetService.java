@@ -42,4 +42,7 @@ Sujet createSujet( Sujet sujet,Long userId);
     Page<Sujet> filterAcceptedSujets(List<String> thematiques, List<String> specialites, List<Integer> annees, List<String> titres, Pageable pageable);
 
     SujetVisibilityResponse rendreSujetsVisibles(Long tuteurId, List<Long> sujetIds);
+    Page<Sujet> getVisibleSujetsBySpecialitePaginated(String specialite, Pageable pageable);
+    FiltrageVisibleSubjectDTO getTitresAndThematiques(String specialite);
+    Page<Sujet> getFilteredVisibleSujets(String specialite, List<String> titres, List<String> thematiques, Pageable pageable);
 }

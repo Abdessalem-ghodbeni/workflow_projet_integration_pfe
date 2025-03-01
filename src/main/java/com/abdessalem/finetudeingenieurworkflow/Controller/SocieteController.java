@@ -78,4 +78,7 @@ public class SocieteController {
             Pageable pageable) {
         return societeServices.getFilteredSocietes(secteurs, villes, active, pageable);
     }
+
+
+
 }
