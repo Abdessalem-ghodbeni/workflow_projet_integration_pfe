@@ -260,6 +260,21 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     }
 
     @Override
+    public List<Sujet> getVisibleSujetsBySpecialite(String specialite) {
+        LocalDateTime startOfYear = LocalDate.now()
+                .with(TemporalAdjusters.firstDayOfYear())
+                .atStartOfDay();
+
+        LocalDateTime endOfYear = LocalDate.now()
+                .with(TemporalAdjusters.lastDayOfYear())
+                .atTime(LocalTime.MAX);
+
+        return sujetRepository.findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
+                specialite, startOfYear, endOfYear
+        );
+    }
+
+    @Override
     public FiltrageVisibleSubjectDTO getTitresAndThematiques(String specialite) {
         List<String> titres = sujetRepository.findDistinctTitresBySpecialite(specialite);
         List<String> thematiques = sujetRepository.findDistinctThematiquesBySpecialite(specialite);

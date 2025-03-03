@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponseDTO;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.FormResponseService;
@@ -17,11 +18,23 @@ import java.util.List;
 public class FormResponseController {
         private final FormResponseService formResponseService;
 
-    @PostMapping("/{formId}") public ResponseEntity<?> addFormResponse(@PathVariable Long formId,
+    @PostMapping("/repondre/{formId}") public ResponseEntity<?> addFormResponse(@PathVariable Long formId,
                                                                           @RequestBody List<FormFieldResponse> responses)
     {
-        formResponseService.addFormResponse(formId, responses);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+//        formResponseService.addFormResponse(formId, responses);
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        try {
+            ApiResponse response = formResponseService.addFormResponse(formId, responses);
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+//                historiqueServiceImp.enregistrerAction(idUser, "Modification", "Changement du d'etat sujet en "+nouvelEtat);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("all/response/{formId}")

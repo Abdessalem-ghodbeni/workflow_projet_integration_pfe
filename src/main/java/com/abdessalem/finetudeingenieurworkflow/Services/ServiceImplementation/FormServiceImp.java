@@ -2,12 +2,17 @@ package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Form;
 import com.abdessalem.finetudeingenieurworkflow.Entites.FormField;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
+import com.abdessalem.finetudeingenieurworkflow.Entites.User;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormField;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IFormService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +25,27 @@ import java.util.Optional;
 public class FormServiceImp implements IFormService {
     private final IFormRepository formRepository;
     private final IFormField formFieldRepository;
+    private final ITuteurRepository tuteurRepository;
+    private final IHistoriqueServiceImp historiqueServiceImp;
     @Override
-    public Form ajouterForm(Form formulaire) {
+    @Transactional
+    public Form ajouterForm(Form formulaire,Long idTuteur) {
+        Tuteur tuteur = tuteurRepository.findById(idTuteur)
+                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
         for (FormField formField : formulaire.getFormFields()) {
-            formField.setForm(formulaire); // Lier le FormField au Form
+            formField.setForm(formulaire);
         }
-
-        // Sauvegarder le formulaire (les FormField sont sauvegardés grâce à CascadeType.ALL)
+        formulaire.setTuteur(tuteur);
+        tuteur.getForms().add(formulaire);
         Form savedForm = formRepository.save(formulaire);
-
-        log.info("Form and associated FormFields saved successfully: {}", savedForm);
+        historiqueServiceImp.enregistrerAction(idTuteur, "CREATION",
+                "a ajouté  un sujet dont leur numéro est  " + savedForm.getId());
         return savedForm;
+    }
+
+    @Override
+    public Page<Form> getFormsByTuteur(Long tuteurId, Pageable pageable) {
+        return formRepository.findByTuteurId(tuteurId, pageable);
     }
 
     @Override
@@ -39,9 +54,14 @@ public class FormServiceImp implements IFormService {
     }
 
     @Override
-    public void deleteFormById(Long id) {
+    public void deleteFormById(Long id,Long idTuteur) {
+        Tuteur tuteur = tuteurRepository.findById(idTuteur)
+                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
+
         if (formRepository.existsById(id)) {
             formRepository.deleteById(id);
+            historiqueServiceImp.enregistrerAction(idTuteur,"Suppresion",
+                    tuteur.getNom()+"a Supprimé  un formulaire dont leur numéro est  " + id);
         } else {
             throw new IllegalArgumentException("Form with ID " + id + " does not exist.");
         }
@@ -55,11 +75,12 @@ public class FormServiceImp implements IFormService {
 
     @Override
     @Transactional
-    public Form updateForm(Form updatedForm) {
+    public Form updateForm(Form updatedForm,Long idTuteur) {
 
         Form existingForm = formRepository.findById(updatedForm.getId())
                 .orElseThrow(() -> new RessourceNotFound("Formulaire avec l'ID " + updatedForm.getId() + " non trouvé"));
-
+        Tuteur tuteur = tuteurRepository.findById(idTuteur)
+                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
 
         existingForm.setTitre(updatedForm.getTitre());
         existingForm.setDescription(updatedForm.getDescription());
@@ -97,8 +118,10 @@ public class FormServiceImp implements IFormService {
             }
         }
 
-
+        historiqueServiceImp.enregistrerAction(idTuteur,"Modification",
+                tuteur.getNom()+"a modifié  un formulaire dont leur numéro est  " + existingForm.getId());
         return formRepository.save(existingForm);
+
     }
 
 }

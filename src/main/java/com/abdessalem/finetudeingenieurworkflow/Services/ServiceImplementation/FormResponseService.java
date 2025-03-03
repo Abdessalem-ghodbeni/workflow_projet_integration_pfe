@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.Form;
-import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.FormFieldResponseDTO;
-import com.abdessalem.finetudeingenieurworkflow.Entites.FormResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormResponseRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,7 @@ import java.util.stream.Collectors;
 public class FormResponseService {
      private final IFormRepository formRepository;
    private final IFormResponseRepository formResponseRepository;
-    public void addFormResponse(Long formId, List<FormFieldResponse> responses) {
+    public ApiResponse addFormResponse(Long formId, List<FormFieldResponse> responses) {
         Form form = formRepository.findById(formId).orElseThrow(() -> new RuntimeException("Form not found"));
         FormResponse formResponse = new FormResponse();
         formResponse.setForm(form);
@@ -27,7 +24,14 @@ public class FormResponseService {
             response.setFormResponse(formResponse);
         }
         formResponse.setResponses(responses);
-        formResponseRepository.save(formResponse); }
+       FormResponse formResponseInstance= formResponseRepository.save(formResponse);
+    if(formResponseInstance!=null){
+        return new ApiResponse("Reponse formulaire est ajouté  avec succès.", true);
+    }else {
+        return new ApiResponse("La reponse de formulaire n'est pas enregistré ", false);
+    }
+
+    }
     public List<FormFieldResponseDTO>  getFormResponses(Long formId) {
         List<FormResponse> formResponses = formResponseRepository.findByFormId(formId);
         return formResponses.stream().flatMap(formResponse -> formResponse.getResponses().stream())

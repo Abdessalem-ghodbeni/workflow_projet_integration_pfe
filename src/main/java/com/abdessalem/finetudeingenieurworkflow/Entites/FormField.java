@@ -36,7 +36,7 @@ public class FormField implements Serializable {
     @ManyToOne
     @JoinColumn(name = "form_id")
     @JsonIgnore
-//    @JsonBackReference
+
     private Form form;
 
 }

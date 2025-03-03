@@ -159,6 +159,9 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
             Pageable pageable
     );
 
-
+List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
+        String specialite,
+        LocalDateTime startOfYear,
+        LocalDateTime endOfYear);
 
 }

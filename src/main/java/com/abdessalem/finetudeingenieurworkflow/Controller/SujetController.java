@@ -14,7 +14,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
@@ -63,6 +63,7 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         try {
             sujetServiceImp.deleteSujet(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Sujet supprimé avec succès.");
+
         } catch (RessourceNotFound e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
@@ -373,6 +374,22 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+    @GetMapping("/visibless/etudiant")
+    public ResponseEntity<?> getVisibleSujetsBySpecialitee(
+            @RequestParam String specialite
+    ) {
+        try{
+
+            return ResponseEntity.ok(sujetServiceImp.getVisibleSujetsBySpecialite(specialite));
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
     @GetMapping("/visible/suject/filtrage/liste")
     public ResponseEntity<?> getFiltrage(
             @RequestParam String specialite

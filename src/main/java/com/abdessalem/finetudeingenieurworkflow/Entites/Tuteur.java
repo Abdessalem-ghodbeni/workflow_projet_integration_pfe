@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,7 +31,10 @@ public class Tuteur extends User implements Serializable{
 
 
     @JsonIgnore
-@OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
-private List<Sujet> sujets;
+    @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Sujet> sujets;
+    @JsonIgnore
+    @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Form> forms;
 
 }
