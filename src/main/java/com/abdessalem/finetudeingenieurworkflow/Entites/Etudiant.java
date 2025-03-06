@@ -37,6 +37,8 @@ public class Etudiant extends User implements Serializable {
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FormResponse> formResponses = new ArrayList<>();
 
-
+    @ManyToOne
+    @JoinColumn(name = "equipe_id")
+    private Equipe equipe;
 
 }

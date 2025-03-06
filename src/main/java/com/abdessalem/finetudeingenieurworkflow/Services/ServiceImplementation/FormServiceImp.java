@@ -144,6 +144,12 @@ public class FormServiceImp implements IFormService {
         return new ApiResponse("Période d'accessibilité définie avec succès !", true);
     }
 
+    @Override
+    public List<Form> getVisibleFormsForStudents(String specialite) {
+        int anneeCourante = Year.now().getValue();
+        return formRepository.findVisibleFormsForStudents(anneeCourante, specialite);
+    }
+
 
     @Scheduled(fixedRate = 50000)
     public void updateFormAccessibility() {

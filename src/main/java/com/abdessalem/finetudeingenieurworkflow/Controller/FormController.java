@@ -117,7 +117,14 @@ public class FormController {
     }
 
 
-
+    @GetMapping("/visible")
+    public ResponseEntity<?> getVisibleForms(@RequestParam String specialiteUp) {
+       try{
+           return ResponseEntity.ok(formService.getVisibleFormsForStudents(specialiteUp));
+       }catch (Exception exception){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+       }
+    }
 
 
 }

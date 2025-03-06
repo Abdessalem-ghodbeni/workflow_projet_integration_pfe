@@ -19,5 +19,5 @@ public interface IFormService {
     Form updateForm(Form updatedForm,Long idTuteur);
     ApiResponse setFormAccessibility(Long formId,Long idTuteur, FormAccessibilityRequest request);
 
-
+    List<Form> getVisibleFormsForStudents(String specialite);
 }

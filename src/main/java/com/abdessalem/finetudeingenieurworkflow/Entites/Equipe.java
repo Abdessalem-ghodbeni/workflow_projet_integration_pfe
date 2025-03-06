@@ -18,8 +18,10 @@ public class Equipe implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nom;
+    private String image;
+    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Etudiant> etudiants;
 
     @OneToMany(mappedBy = "equipe")
     private List<Projet> projets;

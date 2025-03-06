@@ -17,6 +17,10 @@ public interface IFormRepository extends JpaRepository<Form,Long> {
     @Query("SELECT f FROM Form f WHERE f.isAccessible = true AND f.dateFinAccess <= :now AND EXTRACT(YEAR FROM f.dateCreation) = :anneeCourante")
     List<Form> findFormsToDeactivate(@Param("now") LocalDateTime now, @Param("anneeCourante") int anneeCourante);
 
+    @Query("SELECT f FROM Form f WHERE f.isAccessible = true " +
+            "AND EXTRACT(YEAR FROM f.dateCreation) = :annee " +
+            "AND f.tuteur.specialiteUp = :specialiteUp")
+    List<Form> findVisibleFormsForStudents(@Param("annee") int annee, @Param("specialiteUp") String specialiteUp);
 
 
 }
