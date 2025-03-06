@@ -129,8 +129,12 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
     Graphics2D graphics = image.createGraphics();
 
     // Générer une couleur de fond aléatoire
-    Color backgroundColor = new Color((int) (Math.random() * 0x1000000));
-    graphics.setColor(backgroundColor);
+//    Color backgroundColor = new Color((int) (Math.random() * 0x1000000));
+//    graphics.setColor(backgroundColor);
+    Color color1 = Color.RED; // Couleur rouge
+    Color color2 = Color.BLACK; // Couleur noire
+    GradientPaint gradient = new GradientPaint(0, 0, color1, width, height, color2, true);
+    graphics.setPaint(gradient);
     graphics.fillRect(0, 0, width, height);
 
     // Ajouter les initiales

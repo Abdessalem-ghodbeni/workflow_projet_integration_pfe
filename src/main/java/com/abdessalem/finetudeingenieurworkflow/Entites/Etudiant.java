@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -31,8 +33,9 @@ public class Etudiant extends User implements Serializable {
 
     @Temporal(TemporalType.DATE)
     private Date dateNaissance;
-//    @Column(name = "is_active")
-//    private boolean isActive = true;
+
+    @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FormResponse> formResponses = new ArrayList<>();
 
 
 

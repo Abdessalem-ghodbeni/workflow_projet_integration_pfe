@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"etudiant_id", "form_id"}))
 public class FormResponse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +24,8 @@ public class FormResponse implements Serializable {
     private Form form;
     @OneToMany(mappedBy = "formResponse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FormFieldResponse> responses = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "etudiant_id", nullable = false)
+    private Etudiant etudiant;
 }

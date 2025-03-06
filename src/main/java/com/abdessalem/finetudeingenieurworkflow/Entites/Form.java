@@ -28,10 +28,12 @@ public class Form implements Serializable {
     @Column(length = 512)
     private String description;
     private String color;
+    private LocalDateTime dateDebutAccess;
+    private LocalDateTime dateFinAccess;
+private boolean isAccessible=false;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;
-
     @UpdateTimestamp
     private LocalDateTime dateModification;
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)

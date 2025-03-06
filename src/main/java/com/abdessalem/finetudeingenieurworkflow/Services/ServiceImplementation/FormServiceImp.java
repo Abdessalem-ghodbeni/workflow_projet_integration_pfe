@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.Form;
-import com.abdessalem.finetudeingenieurworkflow.Entites.FormField;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
-import com.abdessalem.finetudeingenieurworkflow.Entites.User;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormField;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IFormRepository;
@@ -13,11 +10,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -121,6 +122,47 @@ public class FormServiceImp implements IFormService {
         historiqueServiceImp.enregistrerAction(idTuteur,"Modification",
                 tuteur.getNom()+"a modifié  un formulaire dont leur numéro est  " + existingForm.getId());
         return formRepository.save(existingForm);
+
+    }
+
+    @Override
+    public ApiResponse setFormAccessibility(Long formId, Long idTuteur, FormAccessibilityRequest request) {
+        Tuteur tuteur = tuteurRepository.findById(idTuteur)
+                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
+        Optional<Form> formOptional = formRepository.findById(formId);
+        if (formOptional.isEmpty()) {
+            return new ApiResponse("Formulaire introuvable !", false);
+        }
+
+        Form form = formOptional.get();
+        form.setDateDebutAccess(request.getDateDebutAccess());
+        form.setDateFinAccess(request.getDateFinAccess());
+
+        formRepository.save(form);
+        historiqueServiceImp.enregistrerAction(idTuteur,"Modification",
+                tuteur.getNom()+"a définit durée d'accessibilité de formulaire de collecte données dont leur numéro est  " + formId);
+        return new ApiResponse("Période d'accessibilité définie avec succès !", true);
+    }
+
+
+    @Scheduled(fixedRate = 50000)
+    public void updateFormAccessibility() {
+        LocalDateTime now = LocalDateTime.now();
+        int anneeCourante = Year.now().getValue();
+
+
+        List<Form> formsToActivate = formRepository.findFormsToActivate(now, anneeCourante);
+        for (Form form : formsToActivate) {
+            form.setAccessible(true);
+        }
+
+
+        List<Form> formsToDeactivate = formRepository.findFormsToDeactivate(now, anneeCourante);
+        for (Form form : formsToDeactivate) {
+            form.setAccessible(false);
+        }
+        formRepository.saveAll(formsToActivate);
+        formRepository.saveAll(formsToDeactivate);
 
     }
 

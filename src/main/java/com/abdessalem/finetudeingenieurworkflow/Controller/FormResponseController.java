@@ -18,18 +18,15 @@ import java.util.List;
 public class FormResponseController {
         private final FormResponseService formResponseService;
 
-    @PostMapping("/repondre/{formId}") public ResponseEntity<?> addFormResponse(@PathVariable Long formId,
+    @PostMapping("/repondre/{formId}/{idUser}") public ResponseEntity<?> addFormResponse(@PathVariable("formId") Long formId,@PathVariable("idUser") Long idUser,
                                                                           @RequestBody List<FormFieldResponse> responses)
     {
-//        formResponseService.addFormResponse(formId, responses);
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-
         try {
-            ApiResponse response = formResponseService.addFormResponse(formId, responses);
+            ApiResponse response = formResponseService.addFormResponse(formId,idUser, responses);
             if (!response.isSuccess()) {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
-//                historiqueServiceImp.enregistrerAction(idUser, "Modification", "Changement du d'etat sujet en "+nouvelEtat);
+
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception exception) {

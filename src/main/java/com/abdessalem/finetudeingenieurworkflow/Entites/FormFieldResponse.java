@@ -13,7 +13,10 @@ import java.io.Serializable;
 public class FormFieldResponse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; private String value;
+    private Long id;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String value;
     @ManyToOne
     @JoinColumn(name = "form_field_id")
     private FormField formField;
