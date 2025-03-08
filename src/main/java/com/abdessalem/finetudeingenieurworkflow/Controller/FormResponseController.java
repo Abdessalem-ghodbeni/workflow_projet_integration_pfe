@@ -35,9 +35,13 @@ public class FormResponseController {
     }
 
     @GetMapping("all/response/{formId}")
-    public ResponseEntity<List<FormFieldResponseDTO>> getFormResponses(@PathVariable Long formId)
+    public ResponseEntity<?> getFormResponses(@PathVariable Long formId)
     {
-        List<FormFieldResponseDTO> responses = formResponseService.getFormResponses(formId);
-        return ResponseEntity.ok(responses);
+     try{
+         return ResponseEntity.ok(formResponseService.getFormResponses(formId));
+
+     }catch (Exception exception){
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+     }
     }
 }

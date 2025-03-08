@@ -8,6 +8,7 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +21,8 @@ public class FormResponseService {
    private final IFormResponseRepository formResponseRepository;
    private  final IUserRepository userRepository;
    private final IHistoriqueServiceImp historiqueServiceImp;
-    public ApiResponse addFormResponse(Long formId, Long idUser, List<FormFieldResponse> responses) {
+   @Transactional
+   public ApiResponse addFormResponse(Long formId, Long idUser, List<FormFieldResponse> responses) {
         Form form = formRepository.findById(formId)
                 .orElseThrow(() -> new RuntimeException("Form not found"));
 
@@ -29,6 +31,7 @@ public class FormResponseService {
 
         FormResponse formResponse = new FormResponse();
         formResponse.setForm(form);
+//        form.getResponses().add(formResponse);
 
 //        if (utilisateur instanceof Tuteur) {
 //            Tuteur tuteur = (Tuteur) utilisateur;
@@ -62,15 +65,26 @@ public class FormResponseService {
             return new ApiResponse("Échec de l'enregistrement de la réponse.", false);
         }
     }
-
-    public List<FormFieldResponseDTO>  getFormResponses(Long formId) {
+    @Transactional
+    public List<FormResponseDTO> getFormResponses(Long formId) {
         List<FormResponse> formResponses = formResponseRepository.findByFormId(formId);
-        return formResponses.stream().flatMap(formResponse -> formResponse.getResponses().stream())
-                .map(this::convertToDTO).collect(Collectors.toList());
+        return formResponses.stream().map(formResponse -> {
+            List<FormFieldResponseDTO> responsesDTO = formResponse.getResponses().stream()
+                    .map(this::convertToDTO)  // méthode pour convertir une FormFieldResponse en FormFieldResponseDTO
+                    .collect(Collectors.toList());
+            return FormResponseDTO.builder()
+                    .id(formResponse.getId())
+                    .responses(responsesDTO)
+                    .build();
+        }).collect(Collectors.toList());
     }
     private FormFieldResponseDTO convertToDTO(FormFieldResponse response) {
-        return FormFieldResponseDTO.builder() .id(response.getFormField().getId())
-                .label(response.getFormField().getLabel()) .value(response.getValue()) .build();
+        return FormFieldResponseDTO.builder()
+                .id(response.getId())
+                .label(response.getFormField().getLabel())
+                .value(response.getValue())
+                .build();
     }
+
 
 }

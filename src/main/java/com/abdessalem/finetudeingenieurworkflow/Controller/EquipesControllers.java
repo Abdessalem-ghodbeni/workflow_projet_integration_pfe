@@ -16,10 +16,10 @@ public class EquipesControllers {
 
 private final IEquipeService equipeService;
 
-    @PostMapping("/construire/{formResponseId}")
-    public ResponseEntity<?> construireEquipes(@PathVariable("formResponseId") Long formResponseId) {
+    @PostMapping("/construire/{formId}")
+    public ResponseEntity<?> construireEquipes(@PathVariable("formId") Long formId) {
        try {
-            ApiResponse response = equipeService.construireEquipes(formResponseId);
+            ApiResponse response = equipeService.construireEquipes(formId);
             if (!response.isSuccess()) {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
@@ -27,8 +27,10 @@ private final IEquipeService equipeService;
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+           String errorMessage = (exception.getCause() != null) ? exception.getCause().getMessage() : exception.getMessage();
+           return new ResponseEntity<>(new ApiResponse(errorMessage, false), HttpStatus.INTERNAL_SERVER_ERROR);
+       }
+
     }
 
 

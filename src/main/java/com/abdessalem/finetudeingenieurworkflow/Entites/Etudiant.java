@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,10 +34,10 @@ public class Etudiant extends User implements Serializable {
 
     @Temporal(TemporalType.DATE)
     private Date dateNaissance;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FormResponse> formResponses = new ArrayList<>();
-
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "equipe_id")
     private Equipe equipe;

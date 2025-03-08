@@ -13,9 +13,10 @@ import java.util.List;
 
 public interface ISujetRepository extends JpaRepository<Sujet,Long> {
     Page<Sujet> findByTuteurId(Long tuteurId, Pageable pageable);
+    Sujet findByTitre(String titre);
     Page<Sujet> findBySocieteId(Long SocieteId, Pageable pageable);
-    List<Sujet> findByTitreContainingIgnoreCase(String titre);
-
+//    List<Sujet> findByTitreContainingIgnoreCase(String titre);
+  Sujet findByTitreContainingIgnoreCase(String titre);
     Page<Sujet> findByTitreContainingIgnoreCase(String titre, Pageable pageable);
     Page<Sujet> findBySocieteIsNotNull(Pageable pageable);
     Page<Sujet> findByTuteurIsNotNull(Pageable pageable);
