@@ -22,7 +22,8 @@ public class Equipe implements Serializable {
     private String image;
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Etudiant> etudiants;
-
+    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Candidature> candidatures;
     @OneToMany(mappedBy = "equipe")
     private List<Projet> projets;
 }
