@@ -10,10 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ISujetRepository extends JpaRepository<Sujet,Long> {
     Page<Sujet> findByTuteurId(Long tuteurId, Pageable pageable);
-    Sujet findByTitre(String titre);
+//    Sujet findByTitre(String titre);
     Page<Sujet> findBySocieteId(Long SocieteId, Pageable pageable);
 //    List<Sujet> findByTitreContainingIgnoreCase(String titre);
   Sujet findByTitreContainingIgnoreCase(String titre);
@@ -164,5 +165,5 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
         String specialite,
         LocalDateTime startOfYear,
         LocalDateTime endOfYear);
-
+  Optional<Sujet> findByTitre(String title);
 }

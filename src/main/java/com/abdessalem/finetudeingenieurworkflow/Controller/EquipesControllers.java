@@ -3,7 +3,9 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
+import com.abdessalem.finetudeingenieurworkflow.Entites.SubjectCandidatureDTO;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IEquipeService;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CandidatureService;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.EquipeServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
@@ -43,8 +46,14 @@ private final EquipeServiceImp equipeService;
         return ResponseEntity.ok(listeEtudiants);
     }
 
+    private final CandidatureService candidatureService;
+    @GetMapping("/grouped")
+    public List<SubjectCandidatureDTO> getCandidaturesGrouped() {
+        return candidatureService.getCandidaturesGroupedBySubject();
+    }
 
-
-
-
+    @GetMapping("/grouped-with-scores")
+    public Map<String, Object> getCandidaturesWithScores() {
+        return candidatureService.getCandidaturesWithScores();
+    }
 }
