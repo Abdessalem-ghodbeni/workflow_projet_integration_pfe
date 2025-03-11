@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Repository;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,5 +22,10 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
             "WHERE et.specialite = :specialite AND YEAR(e.dateCreation) = YEAR(CURRENT_DATE)")
     List<Equipe> findEquipesBySpecialiteAndCurrentYear(String specialite);
 
+
+    @Query("SELECT e FROM Etudiant e " +
+            "WHERE e.specialite = :specialite " +
+            "AND EXTRACT(YEAR FROM e.dateModification) = EXTRACT(YEAR FROM CURRENT_DATE)")
+    List<Etudiant> findBySpecialiteAndCurrentYear(@Param("specialite") String specialite);
 
 }

@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 @Service
 @Slf4j
@@ -147,11 +147,6 @@ public class EquipeServiceImp implements IEquipeService {
         int height = 200;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
-
-//        Color color1 = new Color((int) (Math.random() * 0x1000000));
-//        Color color2 = Color.BLACK;
-//        GradientPaint gradient = new GradientPaint(0, 0, color1, width, height, color2, true);
-//        graphics.setPaint(gradient);
         Color color1 = Color.RED;
         Color color2 = Color.BLACK;
         GradientPaint gradient = new GradientPaint(0, 0, color1, width, height, color2, true);
@@ -284,8 +279,8 @@ public class EquipeServiceImp implements IEquipeService {
     }
 
     @Override
-    public List<Equipe> getEquipesBySpecialiteAndCurrentYear(String specialite) {
-        return equipeRepository.findEquipesBySpecialiteAndCurrentYear(specialite);
+    public List<Etudiant> getEquipesBySpecialiteAndCurrentYear(String specialite) {
+        return equipeRepository.findBySpecialiteAndCurrentYear(specialite);
     }
 
     @Override
