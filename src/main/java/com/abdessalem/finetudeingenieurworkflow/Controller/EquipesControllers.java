@@ -112,6 +112,14 @@ private final EquipeServiceImp equipeService;
     }
 
 
+    @GetMapping("/par-specialite-annee")
+    public ResponseEntity<?> getEquipesBySpecialiteAndCurrentYear(@RequestParam String specialite) {
+       try{
+           return ResponseEntity.ok(equipeService.getEquipesBySpecialiteAndCurrentYear(specialite));
+       }catch (Exception e){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+       }
+    }
 
 
 

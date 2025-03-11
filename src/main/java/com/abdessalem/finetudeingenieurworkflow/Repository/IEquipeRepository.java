@@ -17,4 +17,9 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
             "where fr.form.id = :formId")
     List<Equipe> findEquipesByFormId(@Param("formId") Long formId);
 
+    @Query("SELECT DISTINCT e FROM Equipe e JOIN e.etudiants et " +
+            "WHERE et.specialite = :specialite AND YEAR(e.dateCreation) = YEAR(CURRENT_DATE)")
+    List<Equipe> findEquipesBySpecialiteAndCurrentYear(String specialite);
+
+
 }

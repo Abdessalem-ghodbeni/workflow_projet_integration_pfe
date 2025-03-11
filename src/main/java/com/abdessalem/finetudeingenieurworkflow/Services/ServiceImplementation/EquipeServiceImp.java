@@ -233,6 +233,11 @@ public class EquipeServiceImp implements IEquipeService {
         );
     }
 
+    @Override
+    public List<Equipe> getEquipesBySpecialiteAndCurrentYear(String specialite) {
+        return equipeRepository.findEquipesBySpecialiteAndCurrentYear(specialite);
+    }
+
 
     private int extraireNumeroChoix(String label) {
         String number = label.replaceAll("\\D+", "");
