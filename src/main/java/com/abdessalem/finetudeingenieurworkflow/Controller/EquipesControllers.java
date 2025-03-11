@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
-import com.abdessalem.finetudeingenieurworkflow.Entites.SubjectCandidatureDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IEquipeService;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CandidatureService;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.EquipeServiceImp;
@@ -111,7 +108,22 @@ private final EquipeServiceImp equipeService;
         }
     }
 
+    @PutMapping("/{equipeId}/statut")
+    public ResponseEntity<ApiResponse> changerStatutEquipe(
+            @PathVariable Long equipeId,
+            @RequestParam EtatEquipe nouveauStatut) {
 
+        try {
+            ApiResponse response = equipeService.changerStatutEquipe(equipeId, nouveauStatut);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(exception.getMessage(), false));
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse("Erreur interne du serveur.", false));
+        }
+    }
     @GetMapping("/par-specialite-annee")
     public ResponseEntity<?> getEquipesBySpecialiteAndCurrentYear(@RequestParam String specialite) {
        try{
@@ -120,7 +132,5 @@ private final EquipeServiceImp equipeService;
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
        }
     }
-
-
 
 }

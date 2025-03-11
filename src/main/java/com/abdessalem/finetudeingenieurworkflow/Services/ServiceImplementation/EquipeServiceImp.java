@@ -238,6 +238,20 @@ public class EquipeServiceImp implements IEquipeService {
         return equipeRepository.findEquipesBySpecialiteAndCurrentYear(specialite);
     }
 
+    @Override
+    public ApiResponse changerStatutEquipe(Long equipeId, EtatEquipe nouveauStatut) {
+        Equipe equipe = equipeRepository.findById(equipeId)
+                .orElseThrow(() -> new RuntimeException("Équipe non trouvée"));
+
+        equipe.setEtat(nouveauStatut);
+        equipeRepository.save(equipe);
+
+        return new ApiResponse(
+                String.format("Le statut de l'équipe '%s' a été changé à '%s'.", equipe.getNom(), nouveauStatut),
+                true
+        );
+    }
+
 
     private int extraireNumeroChoix(String label) {
         String number = label.replaceAll("\\D+", "");
