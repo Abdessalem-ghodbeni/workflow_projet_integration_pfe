@@ -8,4 +8,5 @@ import lombok.Data;
 public class TeamMotivationDTO {
     private Long teamId;
     private String motivation;
+    private double score;
 }

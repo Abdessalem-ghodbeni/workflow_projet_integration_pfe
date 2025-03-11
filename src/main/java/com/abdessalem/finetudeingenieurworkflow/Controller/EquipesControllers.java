@@ -53,7 +53,39 @@ private final EquipeServiceImp equipeService;
     }
 
     @GetMapping("/grouped-with-scores")
-    public Map<String, Object> getCandidaturesWithScores() {
+    public List<SubjectCandidatureDTO> getCandidaturesWithScores() {
         return candidatureService.getCandidaturesWithScores();
     }
+
+
+    @GetMapping("/construire_by_form/{formId}")
+    public ResponseEntity<List<Equipe>> getEquipesByFormId(@PathVariable Long formId) {
+        List<Equipe> equipes = equipeService.recupererListeEquipeByIdFormulaire(formId);
+        if (equipes.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Si aucune équipe n'est trouvée
+        }
+        return ResponseEntity.ok(equipes); // Si des équipes sont trouvées
+    }
+
+
+
+@PutMapping(path = "affecter/etudiant/{etudiantId}/{equipeId}/{idTuteur}")
+    public ResponseEntity<ApiResponse> affcterEtudiantTOEquipe(@PathVariable("etudiantId")Long etudiantId,
+                                                               @PathVariable ("equipeId")Long equipeId,
+                                                               @PathVariable("idTuteur")Long idTuteur)
+{
+    try {
+        ApiResponse response = equipeService.ajouterEtudiantAEquipe(etudiantId,equipeId, idTuteur);
+        if (!response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+    } catch (Exception exception) {
+        return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
 }

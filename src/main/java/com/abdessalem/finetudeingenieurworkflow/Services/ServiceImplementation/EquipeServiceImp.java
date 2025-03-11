@@ -1,10 +1,8 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
-import com.abdessalem.finetudeingenieurworkflow.Repository.ICandidatureRepository;
-import com.abdessalem.finetudeingenieurworkflow.Repository.IEquipeRepository;
-import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
-import com.abdessalem.finetudeingenieurworkflow.Repository.IFormResponseRepository;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Repository.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IEquipeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +21,9 @@ public class EquipeServiceImp implements IEquipeService {
     private final IEtudiantRepository etudiantRepository;
     private final FormResponseService formResponseService;
     private final ICandidatureRepository candidatureRepository;
+    private final IHistoriqueServiceImp historiqueServiceImp;
+    private final ITuteurRepository tuteurRepository;
+
 
     @Override
     @Transactional
@@ -125,10 +126,48 @@ public class EquipeServiceImp implements IEquipeService {
         );
     }
 
-    /**
-     * Extrait le numéro du choix à partir du label.
-     * Par exemple, "Choisir 1er sujet" ou "Motivation 2ème choix" renverra 1 et 2 respectivement.
-     */
+    @Override
+    @Transactional
+    public ApiResponse ajouterEtudiantAEquipe(Long etudiantId, Long equipeId, Long idTuteur) {
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(etudiantId);
+        Optional<Equipe> equipeOpt = equipeRepository.findById(equipeId);
+        Tuteur tuteur = tuteurRepository.findById(idTuteur)
+                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
+        if (etudiantOpt.isPresent() && equipeOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            Equipe equipe = equipeOpt.get();
+
+            // Vérifier si l'étudiant est déjà dans une équipe
+            if (etudiant.getEquipe() != null) {
+                return new ApiResponse(
+                        String.format("L'étudiant est déjà assigné à une équipe."),
+                        false
+                );
+            }
+
+            etudiant.setEquipe(equipe);
+            equipe.getEtudiants().add(etudiant);
+
+            etudiantRepository.save(etudiant);
+            equipeRepository.save(equipe);
+            historiqueServiceImp.enregistrerAction(idTuteur, "Modification",
+                  tuteur.getNom()+  "a ajouté  un etudiant à l'equipe  " +equipe.getNom() );
+            return new ApiResponse(
+                    String.format("L'étudiant a été ajouté à l'équipe avec succès ."),
+                    true
+            );
+
+        } else {
+            return new ApiResponse(
+                    String.format("Étudiant ou équipe introuvable."),
+                    false
+            );
+
+        }
+
+    }
+
+
     private int extraireNumeroChoix(String label) {
         String number = label.replaceAll("\\D+", "");
         return number.isEmpty() ? 0 : Integer.parseInt(number);
@@ -139,6 +178,11 @@ public class EquipeServiceImp implements IEquipeService {
 @Transactional
     public List<Equipe> getAllEquipe(){
         return equipeRepository.findAll();
+}
+
+@Transactional
+    public List<Equipe> recupererListeEquipeByIdFormulaire(Long formId){
+        return equipeRepository.findEquipesByFormId(formId);
 }
 
 }

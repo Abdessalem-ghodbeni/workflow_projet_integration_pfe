@@ -39,22 +39,54 @@ public class CandidatureService {
                             .filter(candidature -> seenTeams.add(candidature.getEquipe().getId())) // Ajoute l'équipe si elle n'est pas encore présente
                             .map(candidature -> new TeamMotivationDTO(
                                     candidature.getEquipe().getId(),
-                                    candidature.getMotivation()
+                                    candidature.getMotivation(), 0.0
+
                             ))
                             .collect(Collectors.toList());
-                    return new SubjectCandidatureDTO(cleanedDescription, uniqueTeams);
+                    return new SubjectCandidatureDTO(subjectTitle,cleanedDescription, uniqueTeams);
                 })
                 .collect(Collectors.toList());
 
     }
 
 
-    public Map<String, Object> getCandidaturesWithScores() {
-        // Étape 1 : Récupérer les candidatures groupées
+    public List<SubjectCandidatureDTO> getCandidaturesWithScores() {
         List<SubjectCandidatureDTO> candidaturesGrouped = getCandidaturesGroupedBySubject();
 
-        // Étape 2 : Envoyer ces candidatures à l’API Flask et récupérer les résultats
-        return flaskIAService.sendDataToFlask(candidaturesGrouped);
+        // Appel à l'API Flask pour obtenir les scores
+        Map<String, Object> response = flaskIAService.sendDataToFlask(candidaturesGrouped);
+        List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
+
+        if (results == null) return candidaturesGrouped; // Si Flask ne répond pas, on retourne les données sans score
+
+        // Associer les scores en gardant `subjectTitle`
+        return candidaturesGrouped.stream()
+                .map(subject -> {
+                    // Trouver le résultat correspondant venant de Flask (par la description)
+                    Map<String, Object> flaskResult = results.stream()
+                            .filter(res -> res.get("subjectDescription").toString().equals(subject.getSubjectDescription()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (flaskResult == null) return subject; // Si pas de correspondance, on garde les données brutes
+
+                    // Récupération des équipes avec les scores
+                    List<Map<String, Object>> teams = (List<Map<String, Object>>) flaskResult.get("teams");
+
+                    List<TeamMotivationDTO> sortedTeams = teams.stream()
+                            .map(team -> new TeamMotivationDTO(
+                                    Long.valueOf(team.get("teamId").toString()),
+                                    team.get("motivation").toString(),
+                                    Double.valueOf(team.get("score").toString())  // Ajout du score
+                            ))
+                            .sorted(Comparator.comparingDouble(TeamMotivationDTO::getScore).reversed()) // Tri décroissant
+                            .collect(Collectors.toList());
+
+                    // Retourne le sujet avec son titre, sa description et les équipes triées
+                    return new SubjectCandidatureDTO(subject.getSubjectTitle(), subject.getSubjectDescription(), sortedTeams);
+                })
+                .collect(Collectors.toList());
     }
+
 
 }

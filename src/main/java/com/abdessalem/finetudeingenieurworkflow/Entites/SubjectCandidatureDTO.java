@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SubjectCandidatureDTO {
 
-
+    private String subjectTitle;
     private String subjectDescription;
     private List<TeamMotivationDTO> teams;
 }
