@@ -69,13 +69,13 @@ private final EquipeServiceImp equipeService;
 
 
 
-@PutMapping(path = "affecter/etudiant/{etudiantId}/{equipeId}/{idTuteur}")
+@PutMapping(path = "affecter/etudiant/{etudiantId}/{equipeId}/{idUser}")
     public ResponseEntity<ApiResponse> affcterEtudiantTOEquipe(@PathVariable("etudiantId")Long etudiantId,
                                                                @PathVariable ("equipeId")Long equipeId,
-                                                               @PathVariable("idTuteur")Long idTuteur)
+                                                               @PathVariable("idUser")Long idUser)
 {
     try {
-        ApiResponse response = equipeService.ajouterEtudiantAEquipe(etudiantId,equipeId, idTuteur);
+        ApiResponse response = equipeService.ajouterEtudiantAEquipe(etudiantId,equipeId, idUser);
         if (!response.isSuccess()) {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
@@ -86,6 +86,33 @@ private final EquipeServiceImp equipeService;
         return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
+
+
+
+
+
+
+    @PutMapping(path = "retirer/etudiant/{idUser}/{etudiantId}")
+    public ResponseEntity<ApiResponse> DesaffcterEtudiantTOEquipe( @PathVariable ("idUser")Long idUser,
+    @PathVariable("etudiantId")Long etudiantId)
+
+
+    {
+        try {
+            ApiResponse response = equipeService.retirerEtudiantDeEquipe(idUser,etudiantId);
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
 
 
 }

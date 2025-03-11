@@ -23,6 +23,7 @@ public class EquipeServiceImp implements IEquipeService {
     private final ICandidatureRepository candidatureRepository;
     private final IHistoriqueServiceImp historiqueServiceImp;
     private final ITuteurRepository tuteurRepository;
+    private final IUserRepository userRepository;
 
 
     @Override
@@ -128,43 +129,108 @@ public class EquipeServiceImp implements IEquipeService {
 
     @Override
     @Transactional
-    public ApiResponse ajouterEtudiantAEquipe(Long etudiantId, Long equipeId, Long idTuteur) {
+    public ApiResponse ajouterEtudiantAEquipe(Long etudiantId, Long equipeId, Long userId) {
         Optional<Etudiant> etudiantOpt = etudiantRepository.findById(etudiantId);
         Optional<Equipe> equipeOpt = equipeRepository.findById(equipeId);
-        Tuteur tuteur = tuteurRepository.findById(idTuteur)
-                .orElseThrow(() -> new RessourceNotFound("tuteur non trouvé"));
+
+
+        User utilisateur = userRepository.findById(userId)
+                .orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
+
         if (etudiantOpt.isPresent() && equipeOpt.isPresent()) {
             Etudiant etudiant = etudiantOpt.get();
             Equipe equipe = equipeOpt.get();
 
-            // Vérifier si l'étudiant est déjà dans une équipe
+
             if (etudiant.getEquipe() != null) {
                 return new ApiResponse(
-                        String.format("L'étudiant est déjà assigné à une équipe."),
+                        "L'étudiant est déjà assigné à une équipe.",
                         false
                 );
             }
 
+
             etudiant.setEquipe(equipe);
             equipe.getEtudiants().add(etudiant);
 
+            // Sauvegarder les modifications
             etudiantRepository.save(etudiant);
             equipeRepository.save(equipe);
-            historiqueServiceImp.enregistrerAction(idTuteur, "Modification",
-                  tuteur.getNom()+  "a ajouté  un etudiant à l'equipe  " +equipe.getNom() );
+
+
+            if (utilisateur instanceof Tuteur) {
+                historiqueServiceImp.enregistrerAction(userId, "MODIFICATION",
+                        utilisateur.getNom() + " a ajouté un étudiant à l'équipe " + equipe.getNom());
+            } else {
+                historiqueServiceImp.enregistrerAction(etudiantId, "MODIFICATION",
+                        utilisateur.getNom() + " a rejoint l'équipe " + equipe.getNom());
+            }
+
             return new ApiResponse(
-                    String.format("L'étudiant a été ajouté à l'équipe avec succès ."),
+                    "L'étudiant a été ajouté à l'équipe avec succès.",
                     true
             );
 
         } else {
             return new ApiResponse(
-                    String.format("Étudiant ou équipe introuvable."),
+                    "Étudiant ou équipe introuvable.",
+                    false
+            );
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public ApiResponse retirerEtudiantDeEquipe(Long userId, Long etudiantId) {
+
+        User utilisateur = userRepository.findById(userId)
+                .orElseThrow(() -> new RessourceNotFound("Utilisateur non trouvé"));
+
+        // Vérification de l'existence de l'étudiant
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(etudiantId);
+        if (etudiantOpt.isEmpty()) {
+
+            return new ApiResponse(
+                    String.format("Étudiant introuvable."),
+                    false
+            );
+        }
+
+        Etudiant etudiant = etudiantOpt.get();
+
+        // Vérifier si l'étudiant est assigné à une équipe
+        if (etudiant.getEquipe() == null) {
+
+            return new ApiResponse(
+                    String.format("L'étudiant n'est pas assigné à une équipe."),
                     false
             );
 
         }
 
+        Equipe equipe = etudiant.getEquipe();
+        equipe.getEtudiants().remove(etudiant);
+        etudiant.setEquipe(null);
+
+        etudiantRepository.save(etudiant);
+        equipeRepository.save(equipe);
+
+
+        if (utilisateur instanceof Tuteur) {
+            historiqueServiceImp.enregistrerAction(userId, "Modification",
+                  utilisateur.getNom()+  "a retiré l'étudiant"+ etudiant.getNom()+ " de l'équipe " + equipe.getNom());
+        } else {
+            historiqueServiceImp.enregistrerAction(etudiantId, "Modification",
+
+            utilisateur.getNom()+  "a quitté l'équipe " + equipe.getNom());
+        }
+
+
+        return new ApiResponse(
+                String.format("L'étudiant a été retiré de l'équipe avec succès."),
+                true
+        );
     }
 
 
