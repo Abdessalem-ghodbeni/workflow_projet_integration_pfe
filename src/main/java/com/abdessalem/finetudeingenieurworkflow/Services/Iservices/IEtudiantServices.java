@@ -9,6 +9,7 @@ public interface IEtudiantServices {
 
     List<Etudiant> recuperListeEtudiant();
     Etudiant getEtudiantById(Long id);
+    List<Etudiant> getEtudiantsBySpecialite(String specialite);
 
 
 }
