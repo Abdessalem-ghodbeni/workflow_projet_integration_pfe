@@ -9,7 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -24,7 +32,7 @@ public class EquipeServiceImp implements IEquipeService {
     private final IHistoriqueServiceImp historiqueServiceImp;
     private final ITuteurRepository tuteurRepository;
     private final IUserRepository userRepository;
-
+    public static String uploadDirectory = System.getProperty("user.dir") + "/uploadUser";
 
     @Override
     @Transactional
@@ -77,14 +85,22 @@ public class EquipeServiceImp implements IEquipeService {
             // Création ou récupération de l'équipe
             String finalNomEquipe = nomEquipe;
             Equipe equipe = equipeRepository.findByNom(nomEquipe)
-                    .orElseGet(() -> equipeRepository.save(Equipe.builder().nom(finalNomEquipe).build()));
+                    .orElseGet(() -> {
+                        try {
+                            String imageFilename = generateInitialsAvatar(finalNomEquipe);
+                            return equipeRepository.save(Equipe.builder()
+                                    .nom(finalNomEquipe)
+                                    .image(imageFilename)
+                                    .build());
+                        } catch (IOException e) {
+                            throw new RuntimeException("Erreur lors de la génération de l'image", e);
+                        }
+                    });
 
-            // Initialiser la liste des candidatures si nécessaire
             if (equipe.getCandidatures() == null) {
                 equipe.setCandidatures(new ArrayList<>());
             }
 
-            // Créer les candidatures en associant chaque sujet à sa motivation
             for (Map.Entry<Integer, String> entry : subjectChoices.entrySet()) {
                 int choixNumero = entry.getKey();
                 String subject = entry.getValue();
@@ -101,7 +117,6 @@ public class EquipeServiceImp implements IEquipeService {
 
             equipeRepository.save(equipe);
 
-            // Affecter les étudiants à l'équipe
             int affectes = 0, ignores = 0;
             for (String email : emailsEtudiants) {
                 Optional<Etudiant> etudiantOpt = etudiantRepository.findByEmail(email);
@@ -125,6 +140,41 @@ public class EquipeServiceImp implements IEquipeService {
                 String.format("Équipes créées avec succès. %d étudiants affectés, %d ignorés (déjà dans une équipe).", totalAffectes, totalIgnores),
                 true
         );
+    }
+
+    private String generateInitialsAvatar(String nomEquipe) throws IOException {
+        int width = 200;
+        int height = 200;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+
+//        Color color1 = new Color((int) (Math.random() * 0x1000000));
+//        Color color2 = Color.BLACK;
+//        GradientPaint gradient = new GradientPaint(0, 0, color1, width, height, color2, true);
+//        graphics.setPaint(gradient);
+        Color color1 = Color.RED;
+        Color color2 = Color.BLACK;
+        GradientPaint gradient = new GradientPaint(0, 0, color1, width, height, color2, true);
+        graphics.setPaint(gradient);
+        graphics.fillRect(0, 0, width, height);
+
+        String initials = nomEquipe.length() >= 2 ? nomEquipe.substring(0, 2).toUpperCase() : nomEquipe.toUpperCase();
+        graphics.setColor(Color.WHITE);
+        graphics.setFont(new Font("Arial", Font.BOLD, 100));
+        FontMetrics fontMetrics = graphics.getFontMetrics();
+        int x = (width - fontMetrics.stringWidth(initials)) / 2;
+        int y = ((height - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+        graphics.drawString(initials, x, y);
+
+        graphics.dispose();
+
+        String filename = UUID.randomUUID().toString() + "_avatar.png";
+        Path filePath = Paths.get(uploadDirectory, filename);
+        if (!Files.exists(filePath.getParent())) {
+            Files.createDirectories(filePath.getParent());
+        }
+        ImageIO.write(image, "png", filePath.toFile());
+        return filename;
     }
 
     @Override
