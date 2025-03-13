@@ -14,4 +14,6 @@ public interface IEquipeService {
     ApiResponse retirerEtudiantDeEquipe(Long userId, Long etudiantId);
     List<Etudiant> getEquipesBySpecialiteAndCurrentYear(String specialite);
     ApiResponse changerStatutEquipe(Long equipeId,Long tuteurId, EtatEquipe nouveauStatut);
+    List<Equipe> getEquipesByYearAndSpecialite(String specialite);
+    Equipe getEquipeByEtudiantId(Long etudiantId);
 }

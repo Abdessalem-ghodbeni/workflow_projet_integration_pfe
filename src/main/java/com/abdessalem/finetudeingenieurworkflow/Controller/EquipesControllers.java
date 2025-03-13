@@ -127,10 +127,32 @@ private final EquipeServiceImp equipeService;
     @GetMapping("/par-specialite-annee")
     public ResponseEntity<?> getEquipesBySpecialiteAndCurrentYear(@RequestParam String specialite) {
        try{
-           return ResponseEntity.ok(equipeService.getEquipesBySpecialiteAndCurrentYear(specialite));
+           return ResponseEntity.ok(equipeService.getEquipesByYearAndSpecialite(specialite));
        }catch (Exception e){
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
        }
     }
+
+
+    @GetMapping("/par-etudiant/{etudiantId}")
+    public ResponseEntity<?> getEquipeByEtudiantId(@PathVariable Long etudiantId) {
+        try{
+
+
+        Equipe equipe = equipeService.getEquipeByEtudiantId(etudiantId);
+
+        if (equipe != null) {
+            return ResponseEntity.ok(equipe);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Aucune équipe trouvée pour l'étudiant avec l'ID : " + etudiantId);
+        }
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
+
+
 
 }

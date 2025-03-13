@@ -318,5 +318,20 @@ public class EquipeServiceImp implements IEquipeService {
     public List<Equipe> recupererListeEquipeByIdFormulaire(Long formId){
         return equipeRepository.findEquipesByFormId(formId);
 }
+    @Override
+    @Transactional
+    public List<Equipe> getEquipesByYearAndSpecialite(String specialite) {
+        return equipeRepository.findEquipesByYearAndSpecialite(specialite);
+    }
 
+    @Override
+    public Equipe getEquipeByEtudiantId(Long etudiantId) {
+        Optional<Etudiant> etudiantOptional = etudiantRepository.findById(etudiantId);
+
+        if (etudiantOptional.isPresent()) {
+            Etudiant etudiant = etudiantOptional.get();
+            return etudiant.getEquipe();
+        }
+        return null;
+    }
 }

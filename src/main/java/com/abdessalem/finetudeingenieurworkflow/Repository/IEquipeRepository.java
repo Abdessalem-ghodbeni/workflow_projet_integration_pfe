@@ -22,6 +22,13 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
             "WHERE et.specialite = :specialite AND YEAR(e.dateCreation) = YEAR(CURRENT_DATE)")
     List<Equipe> findEquipesBySpecialiteAndCurrentYear(String specialite);
 
+    @Query("SELECT DISTINCT e FROM Equipe e " +
+            "JOIN e.etudiants et " +
+            "WHERE (YEAR(e.dateCreation) = YEAR(CURRENT_DATE) " +
+            "   OR YEAR(e.dateModification) = YEAR(CURRENT_DATE)) " +
+            "AND et.specialite = :specialite")
+    List<Equipe> findEquipesByYearAndSpecialite(String specialite);
+
 
     @Query("SELECT e FROM Etudiant e " +
             "WHERE e.specialite = :specialite " +
