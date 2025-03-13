@@ -108,13 +108,13 @@ private final EquipeServiceImp equipeService;
         }
     }
 
-    @PutMapping("/{equipeId}/statut")
+    @PutMapping("/{equipeId}/{tuteurId}/statut")
     public ResponseEntity<ApiResponse> changerStatutEquipe(
-            @PathVariable Long equipeId,
+            @PathVariable Long equipeId, @PathVariable Long tuteurId,
             @RequestParam EtatEquipe nouveauStatut) {
 
         try {
-            ApiResponse response = equipeService.changerStatutEquipe(equipeId, nouveauStatut);
+            ApiResponse response = equipeService.changerStatutEquipe(equipeId, tuteurId,nouveauStatut);
             return ResponseEntity.ok(response);
         } catch (RuntimeException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

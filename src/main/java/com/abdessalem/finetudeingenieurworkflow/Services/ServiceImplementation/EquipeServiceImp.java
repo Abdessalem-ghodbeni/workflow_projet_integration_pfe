@@ -91,6 +91,7 @@ public class EquipeServiceImp implements IEquipeService {
                             return equipeRepository.save(Equipe.builder()
                                     .nom(finalNomEquipe)
                                     .image(imageFilename)
+                                    .etat(EtatEquipe.PENDING)
                                     .build());
                         } catch (IOException e) {
                             throw new RuntimeException("Erreur lors de la génération de l'image", e);
@@ -284,13 +285,16 @@ public class EquipeServiceImp implements IEquipeService {
     }
 
     @Override
-    public ApiResponse changerStatutEquipe(Long equipeId, EtatEquipe nouveauStatut) {
+    public ApiResponse changerStatutEquipe(Long equipeId,Long tuteurId, EtatEquipe nouveauStatut) {
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new RuntimeException("Équipe non trouvée"));
-
+        Tuteur tuteur = tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new RuntimeException("tuteur non trouvé"));
         equipe.setEtat(nouveauStatut);
         equipeRepository.save(equipe);
+        historiqueServiceImp.enregistrerAction(tuteurId, "Modification",
 
+                tuteur.getNom()+  "a modifier le status  l'équipe " + equipe.getNom());
         return new ApiResponse(
                 String.format("Le statut de l'équipe '%s' a été changé à '%s'.", equipe.getNom(), nouveauStatut),
                 true

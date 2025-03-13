@@ -33,7 +33,7 @@ public class Equipe implements Serializable {
     private LocalDateTime dateModification;
 
 
-    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL)
     private List<Etudiant> etudiants;
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Candidature> candidatures;

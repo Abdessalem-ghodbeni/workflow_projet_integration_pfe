@@ -150,7 +150,7 @@ public class FormServiceImp implements IFormService {
         return formRepository.findVisibleFormsForStudents(anneeCourante, specialite);
     }
 
-@Transactional
+    @Transactional
     @Scheduled(fixedRate = 50000)
     public void updateFormAccessibility() {
         LocalDateTime now = LocalDateTime.now();
