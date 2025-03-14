@@ -334,4 +334,9 @@ public class EquipeServiceImp implements IEquipeService {
         }
         return null;
     }
+
+    @Override
+    public List<Equipe> getEquipesByIds(List<Long> ids) {
+        return equipeRepository.findAllById(ids);
+    }
 }

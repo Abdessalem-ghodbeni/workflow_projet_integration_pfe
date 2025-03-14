@@ -16,4 +16,5 @@ public interface IEquipeService {
     ApiResponse changerStatutEquipe(Long equipeId,Long tuteurId, EtatEquipe nouveauStatut);
     List<Equipe> getEquipesByYearAndSpecialite(String specialite);
     Equipe getEquipeByEtudiantId(Long etudiantId);
+    List<Equipe> getEquipesByIds(List<Long> ids);
 }

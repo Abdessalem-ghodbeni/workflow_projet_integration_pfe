@@ -152,7 +152,15 @@ private final EquipeServiceImp equipeService;
         }
     }
 
+    @PostMapping("/by-ids")
+    public ResponseEntity<?> getEquipesByIds(@RequestBody List<Long> ids) {
+       try{
+           return new ResponseEntity<>(equipeService.getEquipesByIds(ids),HttpStatus.OK);
 
+       }catch (Exception exception){
+           return new ResponseEntity<>(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+       }
+    }
 
 
 }
