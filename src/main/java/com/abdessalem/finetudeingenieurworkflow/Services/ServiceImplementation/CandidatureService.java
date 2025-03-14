@@ -27,11 +27,11 @@ public class CandidatureService {
                 .map(entry -> {
                     String subjectTitle = entry.getKey();
 
-                    // Récupérer la description associée au sujet
+                    // raja3li  description associé  li sujet
                     Optional<Sujet> sujet = sujetRepository.findByTitre(subjectTitle);
                     String rawDescription = sujet.map(Sujet::getDescription).orElse("Description indisponible");
 
-                    // Nettoyer la description HTML
+                    // na4fu code html 5ater fih des imagesbase 64 w des lien ... HTML ya3ni 5aterni bch nitraba nbatel w n3oud n5dem simple
                     String cleanedDescription = HtmlCleanerUtil.cleanHtml(rawDescription);
                     Set<Long> seenTeams = new HashSet<>(); // Set pour éviter les doublons
 
@@ -53,24 +53,24 @@ public class CandidatureService {
     public List<SubjectCandidatureDTO> getCandidaturesWithScores() {
         List<SubjectCandidatureDTO> candidaturesGrouped = getCandidaturesGroupedBySubject();
 
-        // Appel à l'API Flask pour obtenir les scores
+        //   Flask bech raja3  les scores
         Map<String, Object> response = flaskIAService.sendDataToFlask(candidaturesGrouped);
         List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
 
-        if (results == null) return candidaturesGrouped; // Si Flask ne répond pas, on retourne les données sans score
+        if (results == null) return candidaturesGrouped;
 
-        // Associer les scores en gardant `subjectTitle`
+
         return candidaturesGrouped.stream()
                 .map(subject -> {
-                    // Trouver le résultat correspondant venant de Flask (par la description)
+
                     Map<String, Object> flaskResult = results.stream()
                             .filter(res -> res.get("subjectDescription").toString().equals(subject.getSubjectDescription()))
                             .findFirst()
                             .orElse(null);
 
-                    if (flaskResult == null) return subject; // Si pas de correspondance, on garde les données brutes
+                    if (flaskResult == null) return subject; // ken famech  correspondance n5aliw donnée brutes
 
-                    // Récupération des équipes avec les scores
+
                     List<Map<String, Object>> teams = (List<Map<String, Object>>) flaskResult.get("teams");
 
                     List<TeamMotivationDTO> sortedTeams = teams.stream()
@@ -79,10 +79,10 @@ public class CandidatureService {
                                     team.get("motivation").toString(),
                                     Double.valueOf(team.get("score").toString())  // Ajout du score
                             ))
-                            .sorted(Comparator.comparingDouble(TeamMotivationDTO::getScore).reversed()) // Tri décroissant
+                            .sorted(Comparator.comparingDouble(TeamMotivationDTO::getScore).reversed()) //ratebhom fi ordre decroissant he4i lezmni nbadelha bfacon o5ra 5ater bch ta3mili mochkla ba3ed
                             .collect(Collectors.toList());
 
-                    // Retourne le sujet avec son titre, sa description et les équipes triées
+                    // custimi type de retour te3 api lil frontend
                     return new SubjectCandidatureDTO(subject.getSubjectTitle(), subject.getSubjectDescription(), sortedTeams);
                 })
                 .collect(Collectors.toList());
