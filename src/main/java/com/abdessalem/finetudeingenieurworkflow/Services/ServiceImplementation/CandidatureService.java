@@ -27,7 +27,7 @@ public class CandidatureService {
                 .map(entry -> {
                     String subjectTitle = entry.getKey();
 
-                    // raja3li  description associé  li sujet
+                    // raja3li la description associée au sujet
                     Optional<Sujet> sujet = sujetRepository.findByTitre(subjectTitle);
                     String rawDescription = sujet.map(Sujet::getDescription).orElse("Description indisponible");
 
@@ -38,7 +38,8 @@ public class CandidatureService {
                     List<TeamMotivationDTO> uniqueTeams = entry.getValue().stream()
                             .filter(candidature -> seenTeams.add(candidature.getEquipe().getId())) // Ajoute l'équipe si elle n'est pas encore présente
                             .map(candidature -> new TeamMotivationDTO(
-                                    candidature.getEquipe().getId(),
+                                    candidature.getEquipe().getId(), candidature.getEquipe().getNom(), // Nom de l'équipe
+                                    candidature.getEquipe().getImage(),
                                     candidature.getMotivation(), 0.0
 
                             ))
@@ -74,12 +75,30 @@ public class CandidatureService {
                     List<Map<String, Object>> teams = (List<Map<String, Object>>) flaskResult.get("teams");
 
                     List<TeamMotivationDTO> sortedTeams = teams.stream()
-                            .map(team -> new TeamMotivationDTO(
-                                    Long.valueOf(team.get("teamId").toString()),
-                                    team.get("motivation").toString(),
-                                    Double.valueOf(team.get("score").toString())  // Ajout du score
-                            ))
-                            .sorted(Comparator.comparingDouble(TeamMotivationDTO::getScore).reversed()) //ratebhom fi ordre decroissant he4i lezmni nbadelha bfacon o5ra 5ater bch ta3mili mochkla ba3ed
+                            .map(team -> {
+                                Long teamId = Long.valueOf(team.get("teamId").toString());
+                                String motivation = team.get("motivation").toString();
+                                double score = Double.valueOf(team.get("score").toString());
+
+                                // Rechercher l'équipe correspondante pour récupérer le nom et l'image
+                                TeamMotivationDTO originalTeam = subject.getTeams().stream()
+                                        .filter(t -> t.getTeamId().equals(teamId))
+                                        .findFirst()
+                                        .orElse(null);
+
+                                if (originalTeam == null) {
+                                    return new TeamMotivationDTO(teamId, "Nom inconnu", "Image inconnue", motivation, score);
+                                }
+
+                                return new TeamMotivationDTO(
+                                        teamId,
+                                        originalTeam.getTeamName(),
+                                        originalTeam.getTeamImage(),
+                                        motivation,
+                                        score
+                                );
+                            })
+                            .sorted(Comparator.comparingDouble(TeamMotivationDTO::getScore).reversed()) // Trier par score décroissant
                             .collect(Collectors.toList());
 
                     // custimi type de retour te3 api lil frontend

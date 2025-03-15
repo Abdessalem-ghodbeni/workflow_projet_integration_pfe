@@ -32,7 +32,6 @@ public class Equipe implements Serializable {
     @UpdateTimestamp
     private LocalDateTime dateModification;
 
-
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL)
     private List<Etudiant> etudiants;
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)

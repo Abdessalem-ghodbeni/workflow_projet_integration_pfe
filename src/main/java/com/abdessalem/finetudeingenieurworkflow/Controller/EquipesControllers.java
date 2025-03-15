@@ -83,18 +83,9 @@ private final EquipeServiceImp equipeService;
         return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-
-
-
-
-
-
     @PutMapping(path = "retirer/etudiant/{idUser}/{etudiantId}")
     public ResponseEntity<ApiResponse> DesaffcterEtudiantTOEquipe( @PathVariable ("idUser")Long idUser,
-    @PathVariable("etudiantId")Long etudiantId)
-
-
-    {
+    @PathVariable("etudiantId")Long etudiantId) {
         try {
             ApiResponse response = equipeService.retirerEtudiantDeEquipe(idUser,etudiantId);
             if (!response.isSuccess()) {

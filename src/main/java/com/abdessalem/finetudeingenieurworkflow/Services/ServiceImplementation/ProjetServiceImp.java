@@ -1,11 +1,10 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Projet;
-import com.abdessalem.finetudeingenieurworkflow.Entites.ProjetRequest;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEquipeRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IProjetRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISujetRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IProjet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,8 @@ import java.util.List;
 public class ProjetServiceImp implements IProjet {
            private final IEquipeRepository equipeRepository;
            private final IProjetRepository projetRepository;
-    //ajouter projet et effectation de l'equipe
+           private final ISujetRepository sujetRepository;
+
     @Override
     public Projet ajouterProjet(ProjetRequest projetRequest) {
         Equipe equipe = equipeRepository.findById(projetRequest.getEquipeId())
@@ -50,5 +50,40 @@ public class ProjetServiceImp implements IProjet {
     @Override
     public Projet recupererUnProjet(Long id) {
         return null;
+    }
+
+    @Override
+    public ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId) {
+        Sujet sujet = sujetRepository.findByTitre(titreSujet)
+                .orElseThrow(() -> new RuntimeException("Sujet non trouvé avec le titre: " + titreSujet));
+
+
+        Equipe equipe = equipeRepository.findById(equipeId)
+                .orElseThrow(() -> new RuntimeException("Équipe non trouvée"));
+
+
+        boolean projetExiste = projetRepository.existsByEquipeAndSujet(equipe, sujet);
+        if (projetExiste) {
+            return new ApiResponse(
+                    String.format("Cette équipe travaille déjà sur ce sujet !"),
+                    false
+            );
+        }
+
+
+        String nomProjet = sujet.getTitre();
+
+
+        Projet projet = Projet.builder()
+                .nom(nomProjet)
+                .equipe(equipe)
+                .sujet(sujet)
+                .build();
+
+        projetRepository.save(projet);
+        return new ApiResponse(
+                String.format("Affectation effectué avec succes a l'equipe "+equipe.getNom()),
+                true
+        );
     }
 }
