@@ -14,6 +14,6 @@ public interface IProjet {
     Projet recupererUnProjet(Long id);
 
     //nouvelle version
-    ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId);
-
+    ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
+    ApiResponse desaffecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
 }
