@@ -9,8 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")
@@ -152,13 +154,22 @@ private final EquipeServiceImp equipeService;
            return new ResponseEntity<>(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
        }
     }
+
     @GetMapping("/isEquipeAssignedToSujet/{equipeId}")
-    public ResponseEntity<?> isEquipeAssignedToSujet(@PathVariable Long equipeId) {
-        try{
-            return ResponseEntity.ok(equipeService.isEquipeAssignedToSujet(equipeId));
-        }catch (Exception exception){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+    public ResponseEntity<Map<String, Object>> isEquipeeAssignedToSujet(@PathVariable Long equipeId) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Projet> projet = equipeService.getProjetByEquipeId(equipeId);
+
+        if (projet.isPresent()) {
+            response.put("assigned", true);
+            response.put("subjectTitle", projet.get().getSujet().getTitre());
+        } else {
+            response.put("assigned", false);
         }
+
+        return ResponseEntity.ok(response);
     }
+
+
 
 }

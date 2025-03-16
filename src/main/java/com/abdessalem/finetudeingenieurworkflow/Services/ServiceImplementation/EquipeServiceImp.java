@@ -341,7 +341,8 @@ public class EquipeServiceImp implements IEquipeService {
     }
 
     @Override
-    public boolean isEquipeAssignedToSujet(Long equipeId) {
-        return projetRepository.existsByEquipeId(equipeId);
+    public Optional<Projet> getProjetByEquipeId(Long equipeId) {
+        return projetRepository.findByEquipeId(equipeId);
     }
+
 }

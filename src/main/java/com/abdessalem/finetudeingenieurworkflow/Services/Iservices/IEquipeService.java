@@ -1,11 +1,9 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
-import com.abdessalem.finetudeingenieurworkflow.Entites.EtatEquipe;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IEquipeService {
 
@@ -17,5 +15,5 @@ public interface IEquipeService {
     List<Equipe> getEquipesByYearAndSpecialite(String specialite);
     Equipe getEquipeByEtudiantId(Long etudiantId);
     List<Equipe> getEquipesByIds(List<Long> ids);
-    boolean isEquipeAssignedToSujet(Long equipeId);
+    Optional<Projet> getProjetByEquipeId(Long equipeId);
 }
