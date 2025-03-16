@@ -35,4 +35,7 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
             "AND EXTRACT(YEAR FROM e.dateModification) = EXTRACT(YEAR FROM CURRENT_DATE)")
     List<Etudiant> findBySpecialiteAndCurrentYear(@Param("specialite") String specialite);
 
+
+
+
 }

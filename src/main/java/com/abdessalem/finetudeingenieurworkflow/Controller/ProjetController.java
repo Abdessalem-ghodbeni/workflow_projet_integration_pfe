@@ -51,7 +51,7 @@ public class ProjetController {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
 
-                return new ResponseEntity<>(response, HttpStatus.CREATED);
+                return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception exception) {
             return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface IProjetRepository extends JpaRepository<Projet,Long> {
     boolean existsByEquipeAndSujet(Equipe equipe, Sujet sujet);
     Optional<Projet> findByEquipeAndSujet(Equipe equipe, Sujet sujet);
+    boolean existsByEquipeId(Long equipeId);
 }

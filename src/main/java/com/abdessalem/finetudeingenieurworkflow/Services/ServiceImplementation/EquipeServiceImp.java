@@ -28,7 +28,7 @@ public class EquipeServiceImp implements IEquipeService {
     private final IEquipeRepository equipeRepository;
     private final IEtudiantRepository etudiantRepository;
     private final FormResponseService formResponseService;
-    private final ICandidatureRepository candidatureRepository;
+    private final IProjetRepository projetRepository;
     private final IHistoriqueServiceImp historiqueServiceImp;
     private final ITuteurRepository tuteurRepository;
     private final IUserRepository userRepository;
@@ -338,5 +338,10 @@ public class EquipeServiceImp implements IEquipeService {
     @Override
     public List<Equipe> getEquipesByIds(List<Long> ids) {
         return equipeRepository.findAllById(ids);
+    }
+
+    @Override
+    public boolean isEquipeAssignedToSujet(Long equipeId) {
+        return projetRepository.existsByEquipeId(equipeId);
     }
 }

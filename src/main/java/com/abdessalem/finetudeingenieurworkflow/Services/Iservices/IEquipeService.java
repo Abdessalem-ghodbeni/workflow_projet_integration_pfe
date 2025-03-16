@@ -17,4 +17,5 @@ public interface IEquipeService {
     List<Equipe> getEquipesByYearAndSpecialite(String specialite);
     Equipe getEquipeByEtudiantId(Long etudiantId);
     List<Equipe> getEquipesByIds(List<Long> ids);
+    boolean isEquipeAssignedToSujet(Long equipeId);
 }

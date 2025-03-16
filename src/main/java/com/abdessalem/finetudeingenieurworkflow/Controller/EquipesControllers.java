@@ -152,6 +152,13 @@ private final EquipeServiceImp equipeService;
            return new ResponseEntity<>(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
        }
     }
-
+    @GetMapping("/isEquipeAssignedToSujet/{equipeId}")
+    public ResponseEntity<?> isEquipeAssignedToSujet(@PathVariable Long equipeId) {
+        try{
+            return ResponseEntity.ok(equipeService.isEquipeAssignedToSujet(equipeId));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 
 }
