@@ -1,12 +1,16 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -19,7 +23,12 @@ public class Projet implements Serializable {
     private Long id;
 
     private String nom;
-
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime dateCreation;
+    @UpdateTimestamp
+    private LocalDateTime dateModification;
+    @JsonIgnore
     @ManyToOne
     private Sujet sujet;
 

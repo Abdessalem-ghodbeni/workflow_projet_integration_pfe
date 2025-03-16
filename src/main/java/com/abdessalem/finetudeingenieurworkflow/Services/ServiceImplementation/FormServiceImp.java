@@ -150,7 +150,7 @@ public class FormServiceImp implements IFormService {
         return formRepository.findVisibleFormsForStudents(anneeCourante, specialite);
     }
 
-
+    @Transactional
     @Scheduled(fixedRate = 50000)
     public void updateFormAccessibility() {
         LocalDateTime now = LocalDateTime.now();
@@ -160,12 +160,14 @@ public class FormServiceImp implements IFormService {
         List<Form> formsToActivate = formRepository.findFormsToActivate(now, anneeCourante);
         for (Form form : formsToActivate) {
             form.setAccessible(true);
+            log.info("Activation du formulaire: {}", form.getId());
         }
 
 
         List<Form> formsToDeactivate = formRepository.findFormsToDeactivate(now, anneeCourante);
         for (Form form : formsToDeactivate) {
             form.setAccessible(false);
+            log.info("Désactivation du formulaire: {}", form.getId());
         }
         formRepository.saveAll(formsToActivate);
         formRepository.saveAll(formsToDeactivate);

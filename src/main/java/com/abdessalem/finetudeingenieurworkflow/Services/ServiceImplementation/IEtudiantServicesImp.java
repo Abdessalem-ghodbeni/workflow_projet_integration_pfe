@@ -25,4 +25,9 @@ public class IEtudiantServicesImp implements IEtudiantServices {
     public Etudiant getEtudiantById(Long id) {
         return etudiantRepository.findById(id).orElseThrow(() -> new RessourceNotFound("L etudiant avec l'ID " + id + " n'existe pas."));
     }
+
+    @Override
+    public List<Etudiant> getEtudiantsBySpecialite(String specialite) {
+       return etudiantRepository.findBySpecialite(specialite);
+    }
 }

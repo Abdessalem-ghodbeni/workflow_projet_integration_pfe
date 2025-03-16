@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Projet;
 import com.abdessalem.finetudeingenieurworkflow.Entites.ProjetRequest;
 
@@ -12,4 +13,7 @@ public interface IProjet {
     List<Projet> recupererProjet();
     Projet recupererUnProjet(Long id);
 
+    //nouvelle version
+    ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
+    ApiResponse desaffecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
 }
