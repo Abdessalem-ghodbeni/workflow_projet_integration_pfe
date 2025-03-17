@@ -134,12 +134,9 @@ private final EquipeServiceImp equipeService;
 
         Equipe equipe = equipeService.getEquipeByEtudiantId(etudiantId);
 
-        if (equipe != null) {
+
             return ResponseEntity.ok(equipe);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Aucune équipe trouvée pour l'étudiant avec l'ID : " + etudiantId);
-        }
+
         }catch (Exception exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }

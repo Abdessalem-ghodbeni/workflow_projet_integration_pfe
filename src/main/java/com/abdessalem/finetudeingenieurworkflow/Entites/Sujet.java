@@ -45,7 +45,8 @@ public class Sujet implements Serializable {
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
-
+@JsonIgnore
+// he4i zetha ala 5ter fazt json lezmni ntestyy kn cv n5aleha si no lezm naheha
     @OneToMany(mappedBy = "sujet")
     private List<Projet> projets;
 //, nullable = false
