@@ -61,9 +61,9 @@ private final EquipeServiceImp equipeService;
     public ResponseEntity<List<Equipe>> getEquipesByFormId(@PathVariable Long formId) {
         List<Equipe> equipes = equipeService.recupererListeEquipeByIdFormulaire(formId);
         if (equipes.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Si aucune équipe n'est trouvée
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(equipes); // Si des équipes sont trouvées
+        return ResponseEntity.ok(equipes);  
     }
 
 
@@ -133,9 +133,7 @@ private final EquipeServiceImp equipeService;
 
 
         Equipe equipe = equipeService.getEquipeByEtudiantId(etudiantId);
-
-
-            return ResponseEntity.ok(equipe);
+         return ResponseEntity.ok(equipe);
 
         }catch (Exception exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());

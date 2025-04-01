@@ -38,7 +38,7 @@ public class CandidatureService {
                     List<TeamMotivationDTO> uniqueTeams = entry.getValue().stream()
                             .filter(candidature -> seenTeams.add(candidature.getEquipe().getId())) // Ajoute l'équipe si elle n'est pas encore présente
                             .map(candidature -> new TeamMotivationDTO(
-                                    candidature.getEquipe().getId(), candidature.getEquipe().getNom(), // Nom de l'équipe
+                                    candidature.getEquipe().getId(), candidature.getEquipe().getNom(),
                                     candidature.getEquipe().getImage(),
                                     candidature.getMotivation(), 0.0
 

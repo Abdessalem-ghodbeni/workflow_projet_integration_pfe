@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,6 +35,7 @@ public class Equipe implements Serializable {
 
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL)
     private List<Etudiant> etudiants;
+
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Candidature> candidatures;
     @OneToMany(mappedBy = "equipe")

@@ -15,5 +15,6 @@ public class TeamMotivationDTO {
     private String teamImage;
     private String motivation;
     private double score;
+  
 }
 

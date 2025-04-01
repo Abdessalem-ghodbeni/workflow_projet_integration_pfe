@@ -9,6 +9,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -16,21 +17,37 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class IJWTServicesImp implements IJWTServices {
 
-    public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-                .signWith(getSiginKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+//    public String generateToken(UserDetails userDetails) {
+//        return Jwts.builder()
+//                .setSubject(userDetails.getUsername())
+//                .claim("role", userDetails.getAuthorities())
+//                .setIssuedAt(new Date(System.currentTimeMillis()))
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+//                .signWith(getSiginKey(), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+// Dans IJWTServicesImp.java
+public String generateToken(UserDetails userDetails) {
 
+
+    return Jwts.builder()
+            .setSubject(userDetails.getUsername())
+            .claim("roles", userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList()))
+
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 172800000)) // 2 jours
+            .signWith(getSiginKey(), SignatureAlgorithm.HS256)
+            .compact();
+}
     public String generateRefreshToken(Map<String,Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .setClaims(extraClaims)

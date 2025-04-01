@@ -31,7 +31,7 @@ public class Projet implements Serializable {
     @JsonIgnore
     @ManyToOne
     private Sujet sujet;
-
+    @JsonIgnore
     @ManyToOne
     private Equipe equipe;
 
