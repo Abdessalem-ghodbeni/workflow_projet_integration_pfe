@@ -19,6 +19,7 @@ Sujet createSujet( Sujet sujet,Long userId);
     ApiResponse changerEtatSujet(Long idSujet, Etat nouvelEtat);
       FilterDTO getFilters();
     Page<Sujet> listSujetsCreatedByTureurs(Pageable pageable);
+    Page<Sujet> listSujetsByTuteurAndSpecialite(String specialite, Pageable pageable);
 
     Page<Sujet> getSujetsByFilters(
             List<String> thematiques,

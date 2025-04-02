@@ -26,6 +26,7 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
 
     @Query("SELECT DISTINCT YEAR(s.dateModification) FROM Sujet s WHERE s.societe IS NOT NULL")
     List<Integer> findDistinctAnnees();
+  Page<Sujet> findByTuteurIsNotNullAndSpecialite(String specialite, Pageable pageable);
 
     @Query("SELECT DISTINCT s.societe.nom FROM Sujet s WHERE s.societe IS NOT NULL")
     List<String> findDistinctSocietes();

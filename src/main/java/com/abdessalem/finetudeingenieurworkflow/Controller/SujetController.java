@@ -267,6 +267,15 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         Page<Sujet> sujets = sujetServiceImp.listSujetsCreatedByTureurs(pageable);
         return ResponseEntity.ok(sujets);
     }
+    @GetMapping(path = "/initialiser/by/tuteur/specialite")
+    public ResponseEntity<Page<Sujet>> getSujetsByTuteurAndSpecialite(
+            @RequestParam String specialite,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Sujet> sujets = sujetServiceImp.listSujetsByTuteurAndSpecialite(specialite, pageable);
+        return ResponseEntity.ok(sujets);
+    }
 
     @GetMapping("/filters/suj/tuteurs")
     public ResponseEntity<?> getFilterCriteria() {

@@ -87,6 +87,8 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
                                                  @RequestParam("specialiteUp") String specialiteUp,
                                                  @RequestParam("nationality") String nationality,
                                                  @RequestParam(name = "is_Chef_Options",required = false) boolean is_Chef_Options,
+                                                 @RequestParam(name = "is_Chef_departement",required = false) boolean is_Chef_departement,
+                                                 @RequestParam("departementName") String departementName,
                                                  @RequestParam("dateEmbauche") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche) throws IOException {
   Tuteur tuteur = new Tuteur();
   tuteur.setNom(nom);
@@ -100,6 +102,8 @@ public ResponseEntity<Tuteur> registerInstructor(@RequestParam("nom") String nom
   tuteur.setSpecialiteUp(specialiteUp);
   tuteur.setNationality(nationality);
   tuteur.set_Chef_Options(is_Chef_Options);
+  tuteur.set_Chef_departement((is_Chef_departement));
+  tuteur.setDepartementName(departementName);
 
   // Génération de l'image des initiales
   String avatarFilename = generateInitialsAvatar(nom, prenom);

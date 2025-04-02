@@ -20,12 +20,14 @@ public class Tuteur extends User implements Serializable{
 
     @Column(name = "is_Chef_Options")
     private boolean is_Chef_Options;
+    @Column(name = "is_Chef_departement")
+    private boolean is_Chef_departement;
     @Column(name="specialite_up")
     private String specialiteUp;
     @Column(name="nationality")
     private String nationality;
     private String image;
-
+    private String departementName;
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
 

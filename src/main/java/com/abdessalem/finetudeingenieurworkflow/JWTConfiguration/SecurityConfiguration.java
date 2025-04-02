@@ -67,8 +67,48 @@ public class SecurityConfiguration {
                                         "/v3/api-docs/**","/auth/{filename}"
                                 ).permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Autoriser OPTIONS
+                                .requestMatchers(
+                                        "/sujet/**",
+                                        "/etudiant/**",
+                                        "/sujet/**",
+                                        "/historique/**",
+                                        "/tuteur/{id}","/tuteur/**"
+                                ).hasAnyAuthority("TUTEUR", "ADMIN")
                                 .requestMatchers("/sujet/all", "/auth",
-                                        "/historique/{id_user}","/auth/updateTuteur", "/tuteur/{id}","/tuteur/list/{tuteurId}").hasAuthority("TUTEUR")
+                                        "/historique/{id_user}","/auth/updateTuteur", "/tuteur/{id}","/tuteur/list/{tuteurId}",
+                                        "/sujet/**",
+                                        "/form/**",
+                                        "/equipe/**",
+                                        "/historique/**",
+
+                                        "/equipe/construire/**",
+                                        "/equipe/all",
+                                        "/equipe/grouped/**",
+                                        "/equipe/affecter/**",
+                                        "/equipe/retirer/**",
+                                        "/equipe/par-specialite-annee",
+                                        "/equipe/par-etudiant/**",
+                                        "/form/ajouter-formulaire",
+                                        "/form/tous/**",
+                                        "/form/update/**",
+                                        "/form/delete/**",
+                                        "/form/accessibility/**",
+                                        "/sujet/ajouter",
+                                        "/sujet/update/**",
+                                        "/sujet/delete/**",
+                                        "/sujet/change/etat",
+                                        "/sujet/rendreSujetsVisibles",
+                                        "/historique/{id_user}",
+                                        "/historique/totale/liste").hasAuthority("TUTEUR")
+                                .requestMatchers(
+                                        "/auth/registerInstructor",
+                                        "/auth/registerSociete",
+                                        "/auth/registerEtudiant",
+                                        "/tuteur/**",
+                                        "/societe/**","tuteur/totale/liste"
+
+                                ).hasAuthority("ADMIN")
+
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))

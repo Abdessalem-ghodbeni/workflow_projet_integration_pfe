@@ -161,7 +161,13 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     public Page<Sujet> listSujetsCreatedByTureurs(Pageable pageable) {
         return sujetRepository.findByTuteurIsNotNull(pageable);
     }
-@Override
+
+    @Override
+    public Page<Sujet> listSujetsByTuteurAndSpecialite(String specialite, Pageable pageable) {
+        return sujetRepository.findByTuteurIsNotNullAndSpecialite(specialite, pageable);
+    }
+
+    @Override
     public Page<Sujet> getSujetsByFilters(
             List<String> thematiques,
             List<Integer> annees,
