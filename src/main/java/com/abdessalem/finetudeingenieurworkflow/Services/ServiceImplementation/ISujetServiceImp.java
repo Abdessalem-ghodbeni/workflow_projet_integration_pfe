@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -191,6 +192,15 @@ public Sujet createSujet(Sujet sujet, Long userId) {
         return new FilterTutorDTO(thematiques, annees, titres, tuteurs, specialites, etats);
     }
 
+    public FilterTutorDTO getFilterCriteriaBySpecialite(String specialite) {
+        List<String> thematiques = sujetRepository.findDistinctThematiquesSujetCreatedByTuteurBySpecialite(specialite);
+        List<Integer> annees = sujetRepository.findDistinctAnneesSujetCreatedByTuteurBySpecialite(specialite);
+        List<String> titres = sujetRepository.findDistinctTitresSujetCreatedByTuteurBySpecialite(specialite);
+        List<String> tuteurs = sujetRepository.findDistinctTuteursNameBySpecialite(specialite);
+        List<Etat> etats = sujetRepository.findDistinctEtatsSujetCreatedByTuteurBySpecialite(specialite);
+
+        return new FilterTutorDTO(thematiques, annees, titres, tuteurs, Collections.singletonList(specialite), etats);
+    }
     @Override
     public Page<Sujet> filterSujetsCreatedByAllTuteurs(List<String> thematiques, List<Integer> annees, List<String> titres, List<String> tuteurs, List<String> specialites, List<Etat> etats, Pageable pageable) {
         return sujetRepository.findByFiltersTuteurs(thematiques, annees, titres, tuteurs, specialites, etats, pageable);
@@ -304,4 +314,17 @@ public Sujet createSujet(Sujet sujet, Long userId) {
     }
 
 
+    public Page<Sujet> filterSujetsCreatedByTuteurForSpecialite(
+            String specialite,
+            List<String> thematiques,
+            List<Integer> annees,
+            List<String> titres,
+            List<String> tuteurs,
+            List<Etat> etats,
+            Pageable pageable) {
+
+        // Appeler le repository avec la spécialité fixe
+        return sujetRepository.findByFiltersTuteursForSpecialite(
+                specialite, thematiques, annees, titres, tuteurs, etats, pageable);
+    }
 }

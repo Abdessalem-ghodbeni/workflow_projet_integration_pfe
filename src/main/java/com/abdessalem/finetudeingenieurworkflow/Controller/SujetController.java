@@ -257,6 +257,15 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         return sujetServiceImp.getSujetsByFilters(thematiques, annees, societes, normalizedSpecialites, etats, PageRequest.of(page, size));
     }
 
+    @GetMapping(path = "/initialiser/by/tuteur/specialite")
+    public ResponseEntity<Page<Sujet>> getSujetsByTuteurAndSpecialite(
+            @RequestParam String specialite,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Sujet> sujets = sujetServiceImp.listSujetsByTuteurAndSpecialite(specialite, pageable);
+        return ResponseEntity.ok(sujets);
+    }
 
 
     @GetMapping(path = "/initialiser/by/tuteur")
@@ -267,15 +276,8 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         Page<Sujet> sujets = sujetServiceImp.listSujetsCreatedByTureurs(pageable);
         return ResponseEntity.ok(sujets);
     }
-    @GetMapping(path = "/initialiser/by/tuteur/specialite")
-    public ResponseEntity<Page<Sujet>> getSujetsByTuteurAndSpecialite(
-            @RequestParam String specialite,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Sujet> sujets = sujetServiceImp.listSujetsByTuteurAndSpecialite(specialite, pageable);
-        return ResponseEntity.ok(sujets);
-    }
+
+
 
     @GetMapping("/filters/suj/tuteurs")
     public ResponseEntity<?> getFilterCriteria() {
@@ -287,7 +289,15 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
     }
 
     }
-
+    @GetMapping("/filters/suj/tuteurss/{specialite}")
+    public ResponseEntity<?> getFilterCriteriaBySpecialite(@PathVariable String specialite) {
+        try {
+            FilterTutorDTO filterCriteria = sujetServiceImp.getFilterCriteriaBySpecialite(specialite);
+            return ResponseEntity.ok(filterCriteria);
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 
     @GetMapping("/tuteur_subject_made/filter")
     public ResponseEntity<Page<Sujet>> filterSujets(
@@ -314,7 +324,33 @@ public ResponseEntity<?> updateSujet( @RequestBody Sujet sujet) {
         return ResponseEntity.ok(sujets);
     }
 
+    @GetMapping("/tuteur_subject_made/filter/{specialite}")
+    public ResponseEntity<Page<Sujet>> filterSujetsBySpecialite(
+            @PathVariable String specialite,
+            @RequestParam(value = "thematiques", required = false) List<String> thematiques,
+            @RequestParam(value = "annees", required = false) List<Integer> annees,
+            @RequestParam(value = "titres", required = false) List<String> titres,
+            @RequestParam(value = "tuteurs", required = false) List<String> tuteurs,
+            @RequestParam(value = "etats", required = false) List<String> etatsString,
+            Pageable pageable) {
 
+        // Convertir les états en Enum si nécessaire
+        List<com.abdessalem.finetudeingenieurworkflow.Entites.Etat> etats = null;
+        if (etatsString != null && !etatsString.isEmpty()) {
+            etats = etatsString.stream()
+                    .map(com.abdessalem.finetudeingenieurworkflow.Entites.Etat::valueOf)
+                    .toList();
+        }
+
+        // Normaliser la spécialité (en minuscules pour éviter les problèmes de casse)
+        String normalizedSpecialite = specialite.toLowerCase();
+
+        // Appeler le service avec la spécialité fixe
+        Page<Sujet> sujets = sujetServiceImp.filterSujetsCreatedByTuteurForSpecialite(
+                normalizedSpecialite, thematiques, annees, titres, tuteurs, etats, pageable);
+
+        return ResponseEntity.ok(sujets);
+    }
     @GetMapping("/accepteed")
     public ResponseEntity<?> getSujetsAccepteed(Pageable pageable) {
      try{

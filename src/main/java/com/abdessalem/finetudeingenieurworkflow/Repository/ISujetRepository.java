@@ -54,6 +54,20 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
     );
 
     //////tuteur
+    @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.tuteur IS NOT NULL AND s.specialite = :specialite")
+    List<String> findDistinctThematiquesSujetCreatedByTuteurBySpecialite(@Param("specialite") String specialite);
+
+  @Query("SELECT DISTINCT YEAR(s.dateModification) FROM Sujet s WHERE s.tuteur IS NOT NULL AND s.specialite = :specialite")
+  List<Integer> findDistinctAnneesSujetCreatedByTuteurBySpecialite(@Param("specialite") String specialite);
+
+  @Query("SELECT DISTINCT s.titre FROM Sujet s WHERE s.tuteur IS NOT NULL AND s.specialite = :specialite")
+  List<String> findDistinctTitresSujetCreatedByTuteurBySpecialite(@Param("specialite") String specialite);
+
+  @Query("SELECT DISTINCT s.tuteur.nom FROM Sujet s WHERE s.tuteur IS NOT NULL AND s.specialite = :specialite")
+  List<String> findDistinctTuteursNameBySpecialite(@Param("specialite") String specialite);
+
+  @Query("SELECT DISTINCT s.etat FROM Sujet s WHERE s.tuteur IS NOT NULL AND s.specialite = :specialite")
+  List<Etat> findDistinctEtatsSujetCreatedByTuteurBySpecialite(@Param("specialite") String specialite);
     // Récupeeeeeeerer les theeematiques distinctes ah la min gali wechbik
     @Query("SELECT DISTINCT s.thematique FROM Sujet s WHERE s.tuteur IS NOT NULL")
     List<String> findDistinctThematiquesSujetCreatedByTuteur();
@@ -95,7 +109,22 @@ public interface ISujetRepository extends JpaRepository<Sujet,Long> {
             Pageable pageable
     );
 
-
+  @Query("SELECT s FROM Sujet s WHERE s.tuteur IS NOT NULL " +
+          "AND LOWER(s.specialite) = :specialite " +  // Spécialité donnée
+          "AND (:thematiques IS NULL OR s.thematique IN :thematiques) " +
+          "AND (:annees IS NULL OR YEAR(s.dateModification) IN :annees) " +
+          "AND (:titres IS NULL OR s.titre IN :titres) " +
+          "AND (:tuteurs IS NULL OR s.tuteur.nom IN :tuteurs) " +
+          "AND (:etats IS NULL OR s.etat IN :etats)")
+  Page<Sujet> findByFiltersTuteursForSpecialite(
+          @Param("specialite") String specialite,
+          @Param("thematiques") List<String> thematiques,
+          @Param("annees") List<Integer> annees,
+          @Param("titres") List<String> titres,
+          @Param("tuteurs") List<String> tuteurs,
+          @Param("etats") List<Etat> etats,
+          Pageable pageable
+  );
 
     Page<Sujet> findByEtatOrderByDateModificationDesc(Etat etat, Pageable pageable);
 

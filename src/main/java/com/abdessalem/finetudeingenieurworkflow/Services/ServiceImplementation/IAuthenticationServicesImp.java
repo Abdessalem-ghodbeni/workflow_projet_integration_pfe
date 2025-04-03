@@ -209,6 +209,10 @@ private final IHistoriqueServiceImp historiqueServiceImp;
         dto.setDateEmbauche(tuteur.getDateEmbauche());
         dto.setImage(tuteur.getImage());
         dto.setNationality(tuteur.getNationality());
+        dto.setDepartementName(tuteur.getDepartementName());
+        dto.set_Chef_departement(tuteur.is_Chef_departement());
+        dto.set_Chef_Options(tuteur.is_Chef_Options());
+        dto.setIdentifiantEsprit(tuteur.getIdentifiantEsprit());
         return dto;
     }
 
