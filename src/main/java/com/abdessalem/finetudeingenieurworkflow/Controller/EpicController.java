@@ -42,4 +42,30 @@ public class EpicController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PutMapping("/{epicId}/{etudiantId}")
+    public ResponseEntity<ApiResponse> updateEpic(@PathVariable Long epicId,
+                                                  @PathVariable Long etudiantId,
+                                                  @RequestBody Epic epic) {
+
+        try {
+            ApiResponse response = epicServices.updateEpic(epicId, etudiantId, epic);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+
+
+
+    }
+
+
 }

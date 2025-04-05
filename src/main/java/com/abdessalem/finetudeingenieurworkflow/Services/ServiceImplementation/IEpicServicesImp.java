@@ -45,4 +45,33 @@ public class IEpicServicesImp implements IEpicServices {
         return new ApiResponse("Epic ajouté avec succès", true);
 
     }
+
+    @Override
+    public ApiResponse updateEpic(Long epicId, Long etudiantId, Epic epic) {
+
+        Optional<Epic> epicOpt = epicRepository.findById(epicId);
+        if (!epicOpt.isPresent()) {
+            return new ApiResponse("Epic non trouvé", false);
+        }
+        Epic existingEpic = epicOpt.get();
+
+        existingEpic.setNom(epic.getNom());
+        existingEpic.setDateEstimation(epic.getDateEstimation());
+        existingEpic.setComplexite(epic.getComplexite());
+        // Si besoin, on peut décider de mettre à jour la couleur ou la laisser inchangée
+        if (epic.getCouleur() != null && !epic.getCouleur().isEmpty()) {
+            existingEpic.setCouleur(epic.getCouleur());
+        }
+
+        epicRepository.save(existingEpic);
+
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(etudiantId);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            historiqueServiceImp.enregistrerAction(etudiantId, "MODIFICATION",
+                    etudiant.getNom() + " a modifié l'épic '" + existingEpic.getNom() + "'");
+        }
+
+        return new ApiResponse("Epic modifié avec succès", true);
+    }
 }
