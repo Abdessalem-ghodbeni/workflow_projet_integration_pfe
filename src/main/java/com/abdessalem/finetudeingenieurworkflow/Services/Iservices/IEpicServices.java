@@ -6,4 +6,6 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
 public interface IEpicServices {
     ApiResponse addEpicToProject(Long projetId, Long etudiantId, Epic epic);
     ApiResponse updateEpic(Long epicId, Long etudiantId, Epic epic);
+    Epic getEpicById(Long epicId);
+    ApiResponse deleteEpic(Long epicId, Long etudiantId);
 }

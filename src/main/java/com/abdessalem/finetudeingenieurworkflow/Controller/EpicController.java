@@ -60,12 +60,40 @@ public class EpicController {
         } catch (Exception exception) {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
-
-
-
     }
 
 
+    @GetMapping("/{epicId}")
+    public ResponseEntity<?> getEpicById(@PathVariable Long epicId) {
+        try{
+            return ResponseEntity.ok(epicServices.getEpicById(epicId));
+
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
+
+    @DeleteMapping("/{epicId}/{etudiantId}")
+    public ResponseEntity<ApiResponse> deleteEpic(@PathVariable Long epicId,
+                                                  @PathVariable Long etudiantId) {
+
+
+
+
+        try {
+            ApiResponse response = epicServices.deleteEpic(epicId, etudiantId);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+    }
 }

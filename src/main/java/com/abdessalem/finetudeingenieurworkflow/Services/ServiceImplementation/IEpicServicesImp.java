@@ -4,6 +4,7 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Projet;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEpicRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IProjetRepository;
@@ -73,5 +74,34 @@ public class IEpicServicesImp implements IEpicServices {
         }
 
         return new ApiResponse("Epic modifié avec succès", true);
+    }
+
+    @Override
+    public Epic getEpicById(Long epicId) {
+        return epicRepository.findById(epicId).orElseThrow(() -> new RessourceNotFound("epic non trouvé"));
+    }
+
+    @Override
+    public ApiResponse deleteEpic(Long epicId, Long etudiantId) {
+
+        Optional<Epic> epicOpt = epicRepository.findById(epicId);
+        if (!epicOpt.isPresent()) {
+            return new ApiResponse("Epic non trouvé", false);
+        }
+        Epic epic = epicOpt.get();
+
+        epicRepository.delete(epic);
+
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(etudiantId);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            historiqueServiceImp.enregistrerAction(
+                    etudiantId,
+                    "SUPPRESSION",
+                    etudiant.getNom() + " a supprimé l'épic '" + epic.getNom() + "'"
+            );
+        }
+
+        return new ApiResponse("Epic supprimé avec succès", true);
     }
 }
