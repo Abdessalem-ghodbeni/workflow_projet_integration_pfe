@@ -16,4 +16,6 @@ public interface IProjet {
     //nouvelle version
     ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
     ApiResponse desaffecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId);
+    ApiResponse updateLienGitHub(Long projetId, Long etudiantid,String nouveauLienGitHub);
+    Projet getProjetByEtudiantId(Long etudiantId);
 }
