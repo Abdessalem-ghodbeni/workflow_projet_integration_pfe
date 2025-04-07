@@ -1,0 +1,12 @@
+package com.abdessalem.finetudeingenieurworkflow.Entites;
+
+import lombok.Data;
+
+@Data
+public class TacheRequest {
+    private String titre;
+    private String description;
+    private Complexity complexite;
+    private Long epicId;
+    private Long backlogId;
+}
