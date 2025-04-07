@@ -62,4 +62,42 @@ public class ITacheServiceImp implements ITacheServices {
 
         return new ApiResponse("Tâche ajoutée avec succès", true);
     }
+
+    @Override
+    public ApiResponse modifierTache(Long tacheId, TacheRequest request, Long idEtudiant) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(tacheId);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+        Optional<Epic> epicOpt = epicRepository.findById(request.getEpicId());
+        if (epicOpt.isEmpty()) {
+            return new ApiResponse("Épic non trouvé", false);
+        }
+
+        Optional<Backlog> backlogOpt = backlogRepository.findById(request.getBacklogId());
+        if (backlogOpt.isEmpty()) {
+            return new ApiResponse("Backlog non trouvé", false);
+        }
+
+        Tache tache = tacheOpt.get();
+        tache.setTitre(request.getTitre());
+        tache.setDescription(request.getDescription());
+        tache.setComplexite(request.getComplexite());
+        tache.setEpic(epicOpt.get());
+        tache.setBacklog(backlogOpt.get());
+
+        tacheRepository.save(tache);
+
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            historiqueServiceImp.enregistrerAction(
+                    idEtudiant,
+                    "MODIFICATION",
+                    etudiant.getNom() + " a modifié la tâche '" + tache.getTitre() + "' (ID : " + tache.getId() + ")"
+            );
+        }
+
+        return new ApiResponse("Tâche modifiée avec succès", true);
+    }
 }

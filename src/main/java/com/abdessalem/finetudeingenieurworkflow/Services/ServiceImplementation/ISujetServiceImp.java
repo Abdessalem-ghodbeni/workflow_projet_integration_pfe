@@ -323,7 +323,6 @@ public Sujet createSujet(Sujet sujet, Long userId) {
             List<Etat> etats,
             Pageable pageable) {
 
-        // Appeler le repository avec la spécialité fixe
         return sujetRepository.findByFiltersTuteursForSpecialite(
                 specialite, thematiques, annees, titres, tuteurs, etats, pageable);
     }
