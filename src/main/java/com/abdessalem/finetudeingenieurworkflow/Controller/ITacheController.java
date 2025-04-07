@@ -56,6 +56,40 @@ public class ITacheController {
         }
     }
 
+    @GetMapping("/{tacheId}")
+    public ResponseEntity<?> getTacheById(@PathVariable Long tacheId) {
+        try{
+            return ResponseEntity.ok(tacheServices.getTacheById(tacheId));
+
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
+
+
+    @DeleteMapping("supprimer/{tacheId}/{etudiantId}")
+    public ResponseEntity<ApiResponse> deleteEpic(@PathVariable Long tacheId,
+                                                  @PathVariable Long etudiantId) {
+
+
+
+
+        try {
+            ApiResponse response = tacheServices.supprimerTache(tacheId, etudiantId);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+    }
 
 
 }

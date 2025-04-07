@@ -14,14 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class EpicController {
     private final IEpicServices epicServices;
-//    @PostMapping("/{projetId}/{etudiantId}")
-//    public ResponseEntity<ApiResponse> addEpic(@PathVariable Long projetId,
-//                                               @PathVariable Long etudiantId,
-//                                               @RequestBody Epic epic) {
-//        ApiResponse response = epicService.addEpicToProject(projetId, etudiantId, epic);
-//        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-//        return new ResponseEntity<>(response, status);
-//    }
+
 
 
     @PostMapping("/{projetId}/{etudiantId}")

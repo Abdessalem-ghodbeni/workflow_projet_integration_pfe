@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IBacklogRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEpicRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
@@ -99,5 +100,34 @@ public class ITacheServiceImp implements ITacheServices {
         }
 
         return new ApiResponse("Tâche modifiée avec succès", true);
+    }
+
+    @Override
+    public ApiResponse supprimerTache(Long tacheId, Long etudiantId) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(tacheId);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+
+        Tache tache = tacheOpt.get();
+        String titreTache = tache.getTitre();
+
+        tacheRepository.delete(tache);
+
+        etudiantRepository.findById(etudiantId).ifPresent(etudiant -> {
+            historiqueServiceImp.enregistrerAction(
+                    etudiantId,
+                    "SUPPRESSION",
+                    etudiant.getNom() + " a supprimé la tâche '" + titreTache + "' (ID : " + tacheId + ")"
+            );
+        });
+
+        return new ApiResponse("Tâche supprimée avec succès", true);
+    }
+
+    @Override
+    public Tache getTacheById(Long tacheId) {
+        return tacheRepository.findById(tacheId)
+                .orElseThrow(() -> new RessourceNotFound("Tâche non trouvée avec l'id : " + tacheId));
     }
 }
