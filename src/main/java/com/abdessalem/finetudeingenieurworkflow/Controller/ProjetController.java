@@ -31,7 +31,7 @@ public class ProjetController {
                                                                @RequestBody String titreSujet)
     {
         try {
-            log.info("salme,"+equipeId);
+
 
             ApiResponse response = projetServiceImp.affecterSujetAEquipe(titreSujet,equipeId, tuteurId);
             if (!response.isSuccess()) {
@@ -58,7 +58,7 @@ public class ProjetController {
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

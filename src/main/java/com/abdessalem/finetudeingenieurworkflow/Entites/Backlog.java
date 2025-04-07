@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,7 @@ public class Backlog {
 
     @OneToMany(mappedBy = "backlog", cascade = CascadeType.ALL)
     private List<Tache> taches;
-
+@JsonIgnore
     @OneToOne(mappedBy = "backlog")
     private Projet projet;
 }

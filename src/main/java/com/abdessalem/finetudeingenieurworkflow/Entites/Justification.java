@@ -10,21 +10,23 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Tache implements Serializable {
+public class Justification implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String titre;
-    private String description;
-    @Enumerated(EnumType.STRING)
-    private Complexity complexite;
+    @Column(name = "Objet")
+    private String object;
+    @Column( columnDefinition = "TEXT")
+    private String contenuTexte;
+
+    private String image;
+
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -33,18 +35,8 @@ public class Tache implements Serializable {
     @UpdateTimestamp
     private LocalDateTime dateModification;
     @ManyToOne
-    private Backlog backlog;
-    @ManyToOne
-    private Epic epic;
-    @ManyToOne
-    private Sprint sprint;
+    private Tache tache;
+
     @ManyToOne
     private Etudiant etudiant;
-
-    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Justification> justifications;
-
-    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Suggestion> suggestions;
-
 }

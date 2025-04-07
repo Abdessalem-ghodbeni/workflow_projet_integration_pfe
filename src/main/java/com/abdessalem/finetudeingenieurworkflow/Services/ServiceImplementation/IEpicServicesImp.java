@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -103,5 +104,10 @@ public class IEpicServicesImp implements IEpicServices {
         }
 
         return new ApiResponse("Epic supprimé avec succès", true);
+    }
+
+    @Override
+    public List<Epic> getEpicsByProjetId(Long projetId) {
+        return epicRepository.findByProjetId(projetId);
     }
 }

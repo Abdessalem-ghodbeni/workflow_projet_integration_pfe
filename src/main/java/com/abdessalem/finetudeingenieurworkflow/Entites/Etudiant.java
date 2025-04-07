@@ -41,5 +41,8 @@ public class Etudiant extends User implements Serializable {
     @ManyToOne
     @JoinColumn(name = "equipe_id")
     private Equipe equipe;
+    @JsonIgnore
+    @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Justification> justifications = new ArrayList<>();
 
 }

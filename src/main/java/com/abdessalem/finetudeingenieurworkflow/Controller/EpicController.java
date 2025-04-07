@@ -96,4 +96,15 @@ public class EpicController {
 
 
     }
+
+
+    @GetMapping("/by/projetId/{projetId}")
+    public ResponseEntity<?> getEpicsByProjet(@PathVariable Long projetId) {
+      try{
+            return ResponseEntity.ok(epicServices.getEpicsByProjetId(projetId));
+
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 }

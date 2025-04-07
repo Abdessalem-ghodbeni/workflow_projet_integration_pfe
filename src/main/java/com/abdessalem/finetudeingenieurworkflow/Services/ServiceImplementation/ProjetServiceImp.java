@@ -56,52 +56,55 @@ public class ProjetServiceImp implements IProjet {
     }
 
     @Override
-    public ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId) {
+    public ApiResponse affecterSujetAEquipe(String titreSujet, Long equipeId, Long tuteurId) {
         Sujet sujet = sujetRepository.findByTitre(titreSujet)
                 .orElseThrow(() -> new RuntimeException("Sujet non trouvé avec le titre: " + titreSujet));
-
 
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new RuntimeException("Équipe non trouvée"));
 
         Tuteur tuteur = tuteurRepository.findById(tuteurId)
-                .orElseThrow(() -> new RuntimeException("tuteur non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Tuteur non trouvé"));
+
         boolean projetExiste = projetRepository.existsByEquipeAndSujet(equipe, sujet);
         if (projetExiste) {
             return new ApiResponse(
-                    String.format("Cette équipe travaille déjà sur ce sujet !"),
+                    "Cette équipe travaille déjà sur ce sujet !",
                     false
             );
         }
 
-
         String nomProjet = sujet.getTitre();
 
-
+        // On crée d'abord un projet SANS backlog
         Projet projet = Projet.builder()
                 .nom(nomProjet)
                 .equipe(equipe)
                 .sujet(sujet)
                 .build();
+
+        // Ensuite, on crée le backlog
         Backlog backlog = Backlog.builder()
-                .projet(projet)  // Associer le backlog au projet
                 .build();
 
-        // Sauvegarder le backlog
-        backlogRepository.save(backlog);
-
-        // Associer le backlog au projet après sa création
+        // On associe le backlog au projet, et le projet au backlog
         projet.setBacklog(backlog);
+        backlog.setProjet(projet); // facultatif vu que mappedBy, mais propre
+
+        // On sauvegarde le projet qui va cascade sur backlog
         projetRepository.save(projet);
+
         historiqueServiceImp.enregistrerAction(tuteurId, "MODIFICATION",
                 tuteur.getNom() + " a affecté un sujet à l'équipe " + equipe.getNom());
+
         return new ApiResponse(
-                String.format("Affectation effectué avec succes a l'equipe "+equipe.getNom()),
+                "Affectation effectuée avec succès à l'équipe " + equipe.getNom(),
                 true
         );
     }
 
-//    @Override
+
+    //    @Override
 //    public ApiResponse desaffecterSujetAEquipe(String titreSujet, Long equipeId,Long tuteurId) {
 //        Tuteur tuteur = tuteurRepository.findById(tuteurId)
 //                .orElseThrow(() -> new RuntimeException("tuteur non trouvé"));
