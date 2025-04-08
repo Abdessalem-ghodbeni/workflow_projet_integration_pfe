@@ -90,6 +90,16 @@ public class ITacheController {
 
 
     }
+    @GetMapping("/backlog/{projectId}")
+//    n3adi fi id project bec hn'accedi bih lil backlog associé lih '
+    public ResponseEntity<?> getTacheByIdBacklog(@PathVariable Long projectId) {
+        try{
+            return ResponseEntity.ok(tacheServices.getTachesByProjetId(projectId));
 
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
 
 }

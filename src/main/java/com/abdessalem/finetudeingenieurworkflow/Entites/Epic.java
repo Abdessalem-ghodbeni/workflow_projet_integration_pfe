@@ -28,6 +28,7 @@ public class Epic implements Serializable {
     private Integer complexite;
 
     private String couleur;
+    @JsonIgnore
     @OneToMany(mappedBy = "epic")
     private List<Tache> taches;
 

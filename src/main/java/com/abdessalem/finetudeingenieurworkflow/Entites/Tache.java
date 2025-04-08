@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,13 +26,15 @@ public class Tache implements Serializable {
     private String description;
     @Enumerated(EnumType.STRING)
     private Complexity complexite;
-
+    @Enumerated(EnumType.STRING)
+    private Priorite priorite;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
+    @JsonIgnore
     @ManyToOne
     private Backlog backlog;
     @ManyToOne
