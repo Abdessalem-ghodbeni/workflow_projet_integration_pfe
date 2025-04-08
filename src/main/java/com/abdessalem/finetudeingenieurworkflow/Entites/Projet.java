@@ -40,4 +40,6 @@ public class Projet implements Serializable {
     private Backlog backlog;
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Epic> epics;
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Sprint> sprints;
 }

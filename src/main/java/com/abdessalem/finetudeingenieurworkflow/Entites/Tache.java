@@ -39,6 +39,7 @@ public class Tache implements Serializable {
     private Backlog backlog;
     @ManyToOne
     private Epic epic;
+    @JsonIgnore
     @ManyToOne
     private Sprint sprint;
     @ManyToOne
