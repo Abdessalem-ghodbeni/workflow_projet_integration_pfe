@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -21,8 +22,8 @@ public class Projet implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nom;
+    private String lienGitHub;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;
@@ -37,4 +38,8 @@ public class Projet implements Serializable {
 
     @OneToOne(cascade = CascadeType.ALL)
     private Backlog backlog;
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Epic> epics;
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Sprint> sprints;
 }
