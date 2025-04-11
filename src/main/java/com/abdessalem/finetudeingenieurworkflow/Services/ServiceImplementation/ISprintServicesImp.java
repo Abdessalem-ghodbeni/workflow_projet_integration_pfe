@@ -147,4 +147,46 @@ public class ISprintServicesImp implements ISprintServices {
         return new ApiResponse("Tâche affectée au sprint avec succès", true);
     }
 
+
+    @Override
+    public ApiResponse deplacerTacheVersSprint(Long idTache, Long idSprint, Long idEtudiant) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+
+        Optional<Sprint> sprintOpt = sprintRepository.findById(idSprint);
+        if (sprintOpt.isEmpty()) {
+            return new ApiResponse("Sprint cible non trouvé", false);
+        }
+
+        Tache tache = tacheOpt.get();
+        Sprint sprintCible = sprintOpt.get();
+        Sprint sprintInitial = tache.getSprint();
+
+        tache.setSprint(sprintCible);
+        tacheRepository.save(tache);
+
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            String message;
+
+            if (sprintInitial == null) {
+                message = etudiant.getNom() + " a affecté la tâche '" + tache.getTitre() + "' (ID : " + tache.getId() + ") au sprint '" + sprintCible.getNom() + "' (ID : " + sprintCible.getId() + ")";
+            } else {
+                message = etudiant.getNom() + " a déplacé la tâche '" + tache.getTitre() + "' (ID : " + tache.getId() + ") du sprint '" + sprintInitial.getNom() + "' (ID : " + sprintInitial.getId() + ") vers le sprint '" + sprintCible.getNom() + "' (ID : " + sprintCible.getId() + ")";
+            }
+
+            historiqueServiceImp.enregistrerAction(
+                    idEtudiant,
+                    "DÉPLACEMENT_TACHE",
+                    message
+            );
+        }
+
+        return new ApiResponse("Tâche déplacée vers le sprint avec succès", true);
+    }
+
+
 }

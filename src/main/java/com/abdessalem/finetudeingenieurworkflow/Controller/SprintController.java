@@ -102,6 +102,24 @@ public class SprintController {
     }
 
 
+    @PutMapping(path = "/deplacer/tache/to/sprint")
+    public ResponseEntity<ApiResponse> deplacerTacheVersSprint(
+            @PathVariable("idTache") Long idTache,
+            @PathVariable("idSprint") Long idSprint,
+            @PathVariable("idEtudiant") Long idEtudiant
+    ) {
+        try {
+            ApiResponse response = sprintServices.deplacerTacheVersSprint(idTache,idSprint,idEtudiant);
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
 }
