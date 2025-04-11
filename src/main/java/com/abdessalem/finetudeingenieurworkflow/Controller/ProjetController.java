@@ -70,6 +70,13 @@ public class ProjetController {
             return ResponseEntity.ok(projet);
 
     }
+    @GetMapping("/pr/{id}")
+    public ResponseEntity<Projet> get(@PathVariable Long id) {
+        Projet projet = projetServiceImp.getProjetById(id);
+
+        return ResponseEntity.ok(projet);
+
+    }
     @PutMapping("/{id}/{etudiantid}/lien-github")
     public ResponseEntity<ApiResponse> updateLienGitHub(@PathVariable("id") Long id,@PathVariable("etudiantid") Long etudiantid, @RequestParam String lienGitHub) {
        try {

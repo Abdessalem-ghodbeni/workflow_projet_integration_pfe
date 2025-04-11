@@ -28,6 +28,8 @@ public class Tache implements Serializable {
     private Complexity complexite;
     @Enumerated(EnumType.STRING)
     private Priorite priorite;
+    @Column(nullable = false)
+    private boolean estAffecteeAuSprint=false;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;

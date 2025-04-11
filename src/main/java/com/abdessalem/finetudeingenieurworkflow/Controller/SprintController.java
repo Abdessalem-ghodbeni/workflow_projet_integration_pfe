@@ -83,7 +83,7 @@ public class SprintController {
 
 
 
-    @PutMapping(path = "/affecter/tache/to/sprint")
+    @PutMapping(path = "/affecter/tache/to/sprint/{idTache}/{idSprint}/{idEtudiant}")
     public ResponseEntity<ApiResponse> AffecterTacheASprint(
             @PathVariable("idTache") Long idTache,
             @PathVariable("idSprint") Long idSprint,
@@ -102,7 +102,7 @@ public class SprintController {
     }
 
 
-    @PutMapping(path = "/deplacer/tache/to/sprint")
+    @PutMapping(path = "/deplacer/tache/to/sprint/{idTache}/{idSprint}/{idEtudiant}")
     public ResponseEntity<ApiResponse> deplacerTacheVersSprint(
             @PathVariable("idTache") Long idTache,
             @PathVariable("idSprint") Long idSprint,
@@ -110,6 +110,25 @@ public class SprintController {
     ) {
         try {
             ApiResponse response = sprintServices.deplacerTacheVersSprint(idTache,idSprint,idEtudiant);
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PutMapping(path = "/desafecter/tache/from/sprint/{idTache}/{idEtudiant}")
+    public ResponseEntity<ApiResponse> desaffecterTacheDuSprint(
+            @PathVariable("idTache") Long idTache,
+
+            @PathVariable("idEtudiant") Long idEtudiant
+    ) {
+        try {
+            ApiResponse response = sprintServices.desaffecterTacheDuSprint(idTache,idEtudiant);
             if (!response.isSuccess()) {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             } else {

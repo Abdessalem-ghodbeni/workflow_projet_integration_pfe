@@ -13,4 +13,5 @@ public interface ISprintServices {
 
     ApiResponse affecterTacheAuSprint(Long idTache, Long idSprint, Long idEtudiant);
     ApiResponse deplacerTacheVersSprint(Long idTache, Long idSprint, Long idEtudiant);
+    ApiResponse desaffecterTacheDuSprint(Long idTache, Long idEtudiant);
 }

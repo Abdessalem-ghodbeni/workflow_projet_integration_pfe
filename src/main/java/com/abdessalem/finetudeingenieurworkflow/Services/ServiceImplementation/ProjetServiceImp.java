@@ -202,6 +202,8 @@ public ApiResponse desaffecterSujetAEquipe(String titreSujet, Long equipeId, Lon
         return null;
     }
 
-
+public Projet getProjetById(Long id){
+        return projetRepository.findById(id).orElseThrow(() -> new RuntimeException("projet non trouvé"));
+}
 
 }

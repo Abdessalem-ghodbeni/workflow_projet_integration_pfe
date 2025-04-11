@@ -132,6 +132,7 @@ public class ISprintServicesImp implements ISprintServices {
         Sprint sprint = sprintOpt.get();
 
         tache.setSprint(sprint);
+        tache.setEstAffecteeAuSprint(true);
         tacheRepository.save(tache);
 
         Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
@@ -165,6 +166,7 @@ public class ISprintServicesImp implements ISprintServices {
         Sprint sprintInitial = tache.getSprint();
 
         tache.setSprint(sprintCible);
+        tache.setEstAffecteeAuSprint(true);
         tacheRepository.save(tache);
 
         Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
@@ -186,6 +188,38 @@ public class ISprintServicesImp implements ISprintServices {
         }
 
         return new ApiResponse("Tâche déplacée vers le sprint avec succès", true);
+    }
+    @Override
+    @Transactional
+    public ApiResponse desaffecterTacheDuSprint(Long idTache, Long idEtudiant) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+
+        Tache tache = tacheOpt.get();
+
+        Sprint sprintInitial = tache.getSprint();
+        if (sprintInitial == null) {
+            return new ApiResponse("La tâche n'est actuellement affectée à aucun sprint", false);
+        }
+
+        tache.setSprint(null); // On retire la tâche du sprint
+        tache.setEstAffecteeAuSprint(false); // Indique que la tâche n’est plus affectée
+        tacheRepository.save(tache);
+
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+
+            historiqueServiceImp.enregistrerAction(
+                    idEtudiant,
+                    "DÉSAFFECTATION_TACHE",
+                    etudiant.getNom() + " a désaffecté la tâche '" + tache.getTitre() + "' (ID : " + tache.getId() + ") du sprint '" + sprintInitial.getNom() + "' (ID : " + sprintInitial.getId() + ")"
+            );
+        }
+
+        return new ApiResponse("Tâche désaffectée du sprint avec succès", true);
     }
 
 
