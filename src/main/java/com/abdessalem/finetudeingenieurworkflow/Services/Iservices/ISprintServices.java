@@ -12,6 +12,7 @@ public interface ISprintServices {
     ApiResponse supprimerSprint(Long sprintId, Long idEtudiant);
 
     ApiResponse affecterTacheAuSprint(Long idTache, Long idSprint, Long idEtudiant);
-    ApiResponse deplacerTacheVersSprint(Long idTache, Long idSprint, Long idEtudiant);
+//    ApiResponse deplacerTacheVersSprint(Long idTache, Long idSprint, Long idEtudiant);
     ApiResponse desaffecterTacheDuSprint(Long idTache, Long idEtudiant);
+    Sprint GetSprintById(Long idSprint);
 }

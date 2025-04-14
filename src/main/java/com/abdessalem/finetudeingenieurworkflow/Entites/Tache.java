@@ -30,6 +30,9 @@ public class Tache implements Serializable {
     private Priorite priorite;
     @Column(nullable = false)
     private boolean estAffecteeAuSprint=false;
+    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false)
+    private EtatTache etat = EtatTache.TO_DO;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;

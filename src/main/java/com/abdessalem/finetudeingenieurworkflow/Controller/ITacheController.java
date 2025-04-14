@@ -1,8 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
-import com.abdessalem.finetudeingenieurworkflow.Entites.TacheRequest;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITacheServices;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -100,6 +98,49 @@ public class ITacheController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
 
+    }
+
+    @PutMapping("/affecter/{tacheId}/{idEtudiantCible}/{idUserQuiAffecte}")
+    public ResponseEntity<ApiResponse> affecterTacheAEtudiant(
+            @PathVariable("tacheId") Long tacheId,
+            @PathVariable("idEtudiantCible") Long idEtudiantCible,
+            @PathVariable("idUserQuiAffecte") Long idUserQuiAffecte) {
+
+        try {
+            ApiResponse response = tacheServices.affecterTacheAEtudiant(tacheId,idEtudiantCible,idUserQuiAffecte);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PutMapping("/kanban/etat")
+    public ResponseEntity<ApiResponse> ChangeEtatTache(
+
+            @RequestParam("tacheId") Long tacheId,
+            @RequestParam("idEtudiant") Long idEtudiant,
+            @RequestParam EtatTache etatTache
+    ) {
+
+        try {
+            ApiResponse response = tacheServices.changerEtatTache(tacheId,etatTache,idEtudiant);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

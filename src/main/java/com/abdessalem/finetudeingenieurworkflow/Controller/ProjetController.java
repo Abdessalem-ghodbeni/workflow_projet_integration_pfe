@@ -70,11 +70,14 @@ public class ProjetController {
             return ResponseEntity.ok(projet);
 
     }
-    @GetMapping("/pr/{id}")
-    public ResponseEntity<Projet> get(@PathVariable Long id) {
-        Projet projet = projetServiceImp.getProjetById(id);
-
-        return ResponseEntity.ok(projet);
+    @GetMapping("/by/{id}")
+    public ResponseEntity<?> get(@PathVariable Long id) {
+       try{
+           Projet projet = projetServiceImp.getProjetById(id);
+           return ResponseEntity.ok(projet);
+       }catch (Exception exception){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+       }
 
     }
     @PutMapping("/{id}/{etudiantid}/lien-github")

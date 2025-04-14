@@ -22,6 +22,7 @@ public class ITacheServiceImp implements ITacheServices {
     private final IBacklogRepository backlogRepository;
     private  final IEtudiantRepository etudiantRepository;
     private final IProjetRepository projetRepository;
+    private final IUserRepository userRepository;
 
 
     @Override
@@ -108,6 +109,7 @@ public class ITacheServiceImp implements ITacheServices {
         tache.setDescription(request.getDescription());
         tache.setComplexite(request.getComplexite());
         tache.setPriorite(request.getPriorite());
+        tache.setEtat(EtatTache.TO_DO);
         tache.setEpic(epicOpt.get());
         tache.setBacklog(backlog);
 
@@ -171,4 +173,91 @@ public class ITacheServiceImp implements ITacheServices {
 
         return backlog.getTaches();
     }
+
+
+
+    @Override
+    @Transactional
+    public ApiResponse affecterTacheAEtudiant(Long idTache, Long idEtudiantCible, Long idUserQuiAffecte) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+
+        Optional<Etudiant> etudiantCibleOpt = etudiantRepository.findById(idEtudiantCible);
+        if (etudiantCibleOpt.isEmpty()) {
+            return new ApiResponse("Étudiant cible non trouvé", false);
+        }
+
+        Optional<User> userQuiAffecteOpt = userRepository.findById(idUserQuiAffecte);
+        if (userQuiAffecteOpt.isEmpty()) {
+            return new ApiResponse("Utilisateur qui affecte non trouvé", false);
+        }
+
+        Tache tache = tacheOpt.get();
+        Etudiant etudiantCible = etudiantCibleOpt.get();
+        User userQuiAffecte = userQuiAffecteOpt.get();
+
+        // Affectation
+        tache.setEtudiant(etudiantCible);
+        tacheRepository.save(tache);
+
+        // Historique personnalisé selon le rôle
+        String message;
+        if (userQuiAffecte instanceof Etudiant etudiantQuiAffecte) {
+            if (etudiantQuiAffecte.getId().equals(etudiantCible.getId())) {
+                message = etudiantQuiAffecte.getNom() + " s’est auto-affecté la tâche '" + tache.getTitre() + "'";
+            } else {
+                message = etudiantQuiAffecte.getNom() + " a affecté la tâche '" + tache.getTitre() + "' à son camarade " + etudiantCible.getNom();
+            }
+        } else {
+            message = "Le tuteur " + userQuiAffecte.getNom() + " a affecté la tâche '" + tache.getTitre() + "' à l’étudiant " + etudiantCible.getNom();
+        }
+
+        historiqueServiceImp.enregistrerAction(
+                userQuiAffecte.getId(),
+                "AFFECTATION_TACHE_ETUDIANT",
+                message
+        );
+
+        return new ApiResponse("Tâche affectée à l'étudiant avec succès", true);
+    }
+
+    @Override
+    public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
+        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+        if (tacheOpt.isEmpty()) {
+            return new ApiResponse("Tâche non trouvée", false);
+        }
+
+        Tache tache = tacheOpt.get();
+        EtatTache ancienEtat = tache.getEtat();
+
+        // On ne fait rien si l'état ne change pas
+        if (ancienEtat == nouvelEtat) {
+            return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
+        }
+
+        tache.setEtat(nouvelEtat);
+        tacheRepository.save(tache);
+
+        // Historique
+        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+        if (etudiantOpt.isPresent()) {
+            Etudiant etudiant = etudiantOpt.get();
+            String message = etudiant.getNom() + " a changé l'état de la tâche '" +
+                    tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
+                    "' vers '" + nouvelEtat + "'";
+
+            historiqueServiceImp.enregistrerAction(
+                    idEtudiant,
+                    "CHANGEMENT_ETAT_TACHE",
+                    message
+            );
+        }
+
+        return new ApiResponse("État de la tâche mis à jour avec succès", true);
+    }
+
+
 }

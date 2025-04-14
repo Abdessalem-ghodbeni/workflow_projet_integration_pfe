@@ -102,23 +102,23 @@ public class SprintController {
     }
 
 
-    @PutMapping(path = "/deplacer/tache/to/sprint/{idTache}/{idSprint}/{idEtudiant}")
-    public ResponseEntity<ApiResponse> deplacerTacheVersSprint(
-            @PathVariable("idTache") Long idTache,
-            @PathVariable("idSprint") Long idSprint,
-            @PathVariable("idEtudiant") Long idEtudiant
-    ) {
-        try {
-            ApiResponse response = sprintServices.deplacerTacheVersSprint(idTache,idSprint,idEtudiant);
-            if (!response.isSuccess()) {
-                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-            } else {
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-        } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PutMapping(path = "/deplacer/tache/to/sprint/{idTache}/{idSprint}/{idEtudiant}")
+//    public ResponseEntity<ApiResponse> deplacerTacheVersSprint(
+//            @PathVariable("idTache") Long idTache,
+//            @PathVariable("idSprint") Long idSprint,
+//            @PathVariable("idEtudiant") Long idEtudiant
+//    ) {
+//        try {
+//            ApiResponse response = sprintServices.deplacerTacheVersSprint(idTache,idSprint,idEtudiant);
+//            if (!response.isSuccess()) {
+//                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//            } else {
+//                return new ResponseEntity<>(response, HttpStatus.OK);
+//            }
+//        } catch (Exception exception) {
+//            return new ResponseEntity<>(new ApiResponse(exception.getCause().getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 
     @PutMapping(path = "/desafecter/tache/from/sprint/{idTache}/{idEtudiant}")
@@ -139,6 +139,13 @@ public class SprintController {
         }
     }
 
-
+    @GetMapping(path = "/by/idSprint/{idsprint}")
+    public ResponseEntity<?> RecupererSprintByID(@PathVariable("idsprint")Long idSprint){
+        try{
+            return ResponseEntity.ok(sprintServices.GetSprintById(idSprint));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 
 }

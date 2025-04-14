@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.EtatTache;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tache;
 import com.abdessalem.finetudeingenieurworkflow.Entites.TacheRequest;
 
@@ -12,4 +13,6 @@ public interface ITacheServices {
     ApiResponse supprimerTache(Long tacheId, Long etudiantId);
     Tache getTacheById(Long tacheId);
     List<Tache> getTachesByProjetId(Long projetId);
+    ApiResponse affecterTacheAEtudiant(Long idTache, Long idEtudiantCible, Long idUserQuiAffecte);
+    ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant);
 }
