@@ -18,7 +18,7 @@ public class JustificationController {
     private final JustificationServiceImp justificationServiceImp;
 
     @PostMapping("/ajouter/{idTache}/{idEtudiant}")
-    public ResponseEntity<ApiResponse> ajouterTache(
+    public ResponseEntity<ApiResponse> ajouterJustification(
             @PathVariable("idTache") Long idTache, @PathVariable("idEtudiant") Long idEtudiant,
              @RequestParam(name = "objet",required = false) String objet,  @RequestParam("contenuTexte") String contenuTexte,
               @RequestParam(required = false) MultipartFile imageFile
@@ -37,6 +37,31 @@ public class JustificationController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+
+    @PostMapping("/modifier/{idJustification}/{idEtudiant}")
+    public ResponseEntity<ApiResponse> ModifierJustification(
+            @PathVariable("idJustification") Long idTache, @PathVariable("idEtudiant") Long idEtudiant,
+            @RequestParam(name = "nouvelObjet",required = false) String nouvelObjet,  @RequestParam("nouveauContenuTexte") String nouveauContenuTexte,
+            @RequestParam(required = false) MultipartFile nouvelleImage
+    ) {
+
+        try {
+            ApiResponse response = justificationServiceImp.ajouterJustification(idTache,idEtudiant,nouvelObjet,nouveauContenuTexte,nouvelleImage);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 
 }
