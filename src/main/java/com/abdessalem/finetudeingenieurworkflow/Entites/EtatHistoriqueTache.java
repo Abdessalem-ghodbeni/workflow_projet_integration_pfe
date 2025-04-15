@@ -1,10 +1,30 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class EtatHistoriqueTache {
+import java.io.Serializable;
+import java.time.LocalDateTime;
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class EtatHistoriqueTache implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private EtatTache ancienEtat;
     private EtatTache nouveauEtat;
     private LocalDateTime dateChangement;
-    private Etudiant acteur;
+    @JsonIgnore
+    @ManyToOne
+    private User acteur;
+    @JsonIgnore
+    @ManyToOne
+    private Tache tache;
 }

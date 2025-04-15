@@ -55,5 +55,7 @@ public class Tache implements Serializable {
 
     @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Suggestion> suggestions;
+    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EtatHistoriqueTache> historiqueEtats;
 
 }

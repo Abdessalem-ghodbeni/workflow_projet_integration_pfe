@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,7 @@ public class ITacheServiceImp implements ITacheServices {
     private  final IEtudiantRepository etudiantRepository;
     private final IProjetRepository projetRepository;
     private final IUserRepository userRepository;
-
+private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
 
     @Override
     @Transactional
@@ -253,8 +254,18 @@ public class ITacheServiceImp implements ITacheServices {
                     idEtudiant,
                     "CHANGEMENT_ETAT_TACHE",
                     message
+
             );
+            EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
+                    .ancienEtat(ancienEtat)
+                    .nouveauEtat(nouvelEtat)
+                    .dateChangement(LocalDateTime.now())
+                    .acteur(etudiantOpt.orElse(null))
+                    .tache(tache)
+                    .build();
+            etatHistoriqueTacheRepository.save(historique);
         }
+
 
         return new ApiResponse("État de la tâche mis à jour avec succès", true);
     }
