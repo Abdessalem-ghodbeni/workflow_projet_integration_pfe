@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -145,4 +146,17 @@ public class JustificationServiceImp implements IJustificationServices {
         }
 
     }
+
+    @Override
+    public List<Justification> findByTacheId(Long tacheId) {
+        return justificationRepository.findByTacheId(tacheId);
+    }
+
+    @Override
+    public Justification getJustificationById(Long id) {
+        return justificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Justification non trouvée avec l'ID : " + id));
+    }
+
+
 }

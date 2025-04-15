@@ -61,7 +61,27 @@ public class JustificationController {
         }
     }
 
+    @GetMapping("/{JustificationId}")
+    public ResponseEntity<?> getJustificationById(@PathVariable("JustificationId") Long JustificationId) {
+        try {
+            return ResponseEntity.ok(justificationServiceImp.getJustificationById(JustificationId));
+
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
 
 
+    @GetMapping("/{tacheId}")
+    public ResponseEntity<?> getJustificationByTacheId(@PathVariable("tacheId") Long tacheId) {
+        try {
+            return ResponseEntity.ok(justificationServiceImp.findByTacheId(tacheId));
+
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
+    }
 
 }
