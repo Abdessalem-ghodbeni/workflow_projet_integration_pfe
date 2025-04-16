@@ -55,7 +55,7 @@ public class JustificationServiceImp implements IJustificationServices {
 
     @Override
     @Transactional
-    public ApiResponse ajouterJustification(Long idTache, Long idEtudiant, String objet, String contenuTexte, MultipartFile imageFile) {
+    public ApiResponse ajouterJustification(Long idTache, Long idEtudiant, String object, String contenuTexte, MultipartFile imageFile) {
         Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
         Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
 
@@ -72,20 +72,20 @@ public class JustificationServiceImp implements IJustificationServices {
 
         String imageFilename = null;
         if (imageFile != null && !imageFile.isEmpty()) {
-            imageFilename = saveImage(imageFile); // méthode existante dans ton service
+            imageFilename = saveImage(imageFile);
         }
 
         Justification justification = Justification.builder()
-                .object(objet)
+                .object(object)
                 .contenuTexte(contenuTexte)
-                .image(imageFilename) // juste le nom du fichier
+                .image(imageFilename)
                 .tache(tache)
                 .etudiant(etudiant)
                 .build();
 
         justificationRepository.save(justification);
 
-        // Historique
+
         historiqueServiceImp.enregistrerAction(
                 idEtudiant,
                 "JUSTIFICATION_AJOUTEE",

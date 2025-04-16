@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/suggestion")
+@RequestMapping("/justification")
 @RequiredArgsConstructor
 public class JustificationController {
 
@@ -20,12 +20,12 @@ public class JustificationController {
     @PostMapping("/ajouter/{idTache}/{idEtudiant}")
     public ResponseEntity<ApiResponse> ajouterJustification(
             @PathVariable("idTache") Long idTache, @PathVariable("idEtudiant") Long idEtudiant,
-             @RequestParam(name = "objet",required = false) String objet,  @RequestParam("contenuTexte") String contenuTexte,
+             @RequestParam(name = "object",required = false) String object,  @RequestParam("contenuTexte") String contenuTexte,
               @RequestParam(required = false) MultipartFile imageFile
             ) {
 
         try {
-            ApiResponse response = justificationServiceImp.ajouterJustification(idTache,idEtudiant,objet,contenuTexte,imageFile);
+            ApiResponse response = justificationServiceImp.ajouterJustification(idTache,idEtudiant,object,contenuTexte,imageFile);
 
             if (!response.isSuccess()) {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -40,7 +40,7 @@ public class JustificationController {
 
 
 
-    @PostMapping("/modifier/{idJustification}/{idEtudiant}")
+    @PutMapping("/modifier/{idJustification}/{idEtudiant}")
     public ResponseEntity<ApiResponse> ModifierJustification(
             @PathVariable("idJustification") Long idTache, @PathVariable("idEtudiant") Long idEtudiant,
             @RequestParam(name = "nouvelObjet",required = false) String nouvelObjet,  @RequestParam("nouveauContenuTexte") String nouveauContenuTexte,
@@ -73,7 +73,7 @@ public class JustificationController {
     }
 
 
-    @GetMapping("/{tacheId}")
+    @GetMapping("/byTache/{tacheId}")
     public ResponseEntity<?> getJustificationByTacheId(@PathVariable("tacheId") Long tacheId) {
         try {
             return ResponseEntity.ok(justificationServiceImp.findByTacheId(tacheId));

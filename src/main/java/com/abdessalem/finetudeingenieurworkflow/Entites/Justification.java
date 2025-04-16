@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,7 @@ public class Justification implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "Objet")
+    @Column(name = "object")
     private String object;
     @Column( columnDefinition = "TEXT")
     private String contenuTexte;
@@ -34,6 +35,7 @@ public class Justification implements Serializable {
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
+    @JsonIgnore
     @ManyToOne
     private Tache tache;
 
