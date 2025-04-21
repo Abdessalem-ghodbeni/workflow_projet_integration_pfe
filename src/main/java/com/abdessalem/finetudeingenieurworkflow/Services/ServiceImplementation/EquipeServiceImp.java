@@ -143,6 +143,32 @@ public class EquipeServiceImp implements IEquipeService {
         );
     }
 
+    @Override
+    public List<Equipe> getEquipesByTuteurId(Long tuteurId) {
+        return equipeRepository.findByTuteurId(tuteurId);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse assignEquipeToTuteur(Long equipeId, Long tuteurId, Long idTuteurActionneur) {
+        Equipe equipe = equipeRepository.findById(equipeId)
+                .orElseThrow(() -> new RuntimeException("Équipe non trouvée"));
+        Tuteur tuteur = tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new RuntimeException("Tuteur non trouvé"));
+        Tuteur tuteurActionneur = tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new RuntimeException("Tuteur non trouvé"));
+
+        equipe.setTuteur(tuteur);
+        equipeRepository.save(equipe);
+
+
+        historiqueServiceImp.enregistrerAction(idTuteurActionneur, "MODIFICATION",
+                 tuteurActionneur.getNom()+ "' a  affectée l'Équipe'"+  equipe.getNom()+" à tuteur '"+ tuteur.getNom());
+
+        return new ApiResponse("Équipe affectée au tuteur avec succès.", true);
+
+    }
+
     private String generateInitialsAvatar(String nomEquipe) throws IOException {
         int width = 200;
         int height = 200;
@@ -343,6 +369,11 @@ public class EquipeServiceImp implements IEquipeService {
     @Override
     public Optional<Projet> getProjetByEquipeId(Long equipeId) {
         return projetRepository.findByEquipeId(equipeId);
+    }
+
+    @Override
+    public List<Equipe> getEquipesByOption(String specialite) {
+        return equipeRepository.findEquipesByEtudiantSpecialite(specialite);
     }
 
 }
