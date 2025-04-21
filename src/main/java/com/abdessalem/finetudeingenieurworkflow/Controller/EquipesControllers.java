@@ -166,5 +166,54 @@ private final EquipeServiceImp equipeService;
     }
 
 
+    @GetMapping("/liste-equipe/by-option/{option}")
+    public ResponseEntity<?> getEquipesByIds(@PathVariable("option") String option) {
+        try{
+            return  ResponseEntity.ok(equipeService.getEquipesByOption(option));
+
+        }catch (Exception exception){
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
+
+
+    @GetMapping("liste/by-tuteur/{tuteurId}")
+    public ResponseEntity<?> getEquipesByIdTuteur(@PathVariable("tuteurId") Long tuteurId) {
+        try{
+            return  ResponseEntity.ok(equipeService.getEquipesByTuteurId(tuteurId));
+
+        }catch (Exception exception){
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
+
+    @PutMapping("/{equipeId}/assign-tuteur/{tuteurId}/{actionUserId}")
+    public ResponseEntity<ApiResponse> assignEquipeToTuteur(
+            @PathVariable("equipeId") Long equipeId,
+            @PathVariable("tuteurId") Long tuteurId,
+            @PathVariable("actionUserId") Long actionUserId
+    ) {
+        try {
+            ApiResponse response =equipeService.assignEquipeToTuteur(equipeId, tuteurId, actionUserId);
+
+            if (!response.isSuccess()) {
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+
+    }
+
+
+
+
 
 }

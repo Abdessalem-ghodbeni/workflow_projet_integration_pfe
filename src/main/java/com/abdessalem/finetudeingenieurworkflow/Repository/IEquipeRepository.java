@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
+    @Query("SELECT DISTINCT e FROM Equipe e JOIN e.etudiants et WHERE et.specialite = :specialite")
+    List<Equipe> findEquipesByEtudiantSpecialite(String specialite);
+    List<Equipe> findByTuteurId(Long tuteurId);
+
+
     Optional<Equipe> findByNom(String nom);
 
     @Query("select distinct e from Equipe e " +

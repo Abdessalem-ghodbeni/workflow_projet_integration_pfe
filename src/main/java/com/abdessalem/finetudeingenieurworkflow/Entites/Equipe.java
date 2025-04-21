@@ -40,4 +40,8 @@ public class Equipe implements Serializable {
     private List<Candidature> candidatures;
     @OneToMany(mappedBy = "equipe")
     private List<Projet> projets;
+    @ManyToOne
+    @JoinColumn(name = "tuteur_id")
+    private Tuteur tuteur;
+
 }
