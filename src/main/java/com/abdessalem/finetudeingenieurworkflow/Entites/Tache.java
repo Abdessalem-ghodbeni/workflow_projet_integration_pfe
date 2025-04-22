@@ -11,7 +11,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @NoArgsConstructor
@@ -57,5 +59,15 @@ public class Tache implements Serializable {
     private List<Suggestion> suggestions;
     @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EtatHistoriqueTache> historiqueEtats;
+
+    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CodeAnalysisResult> analyses;
+
+    public Optional<CodeAnalysisResult> getDerniereAnalyse() {
+        if (analyses == null || analyses.isEmpty()) return Optional.empty();
+        return analyses.stream()
+                .max(Comparator.comparing(CodeAnalysisResult::getDateDerniereAnalyseGit));
+    }
+
 
 }
