@@ -16,7 +16,7 @@ public class CodeAnalysisResultController {
     private final CodeAnalysisResultServicesImpl codeAnalysisResultServices;
 
 
-    @PostMapping("/{tacheId}/{utilisateurId}")
+    @PostMapping("/ajouter/{tacheId}/{utilisateurId}")
     public ResponseEntity<ApiResponse> initierAnalyseCode(@PathVariable("tacheId") Long tacheId,
                                                @PathVariable("utilisateurId") Long utilisateurId,
                                                @RequestBody String nomBrancheGit) {
@@ -35,6 +35,19 @@ public class CodeAnalysisResultController {
         }
     }
 
+    @PutMapping("/modifier-nom-branche/{tacheId}/{utilisateurId}")
+    public ResponseEntity<ApiResponse> modifierNomBrancheGit(
+            @PathVariable Long tacheId,
+            @PathVariable Long utilisateurId,
+            @RequestBody String nouveauNomBranche
+    ) {
+        try {
+            ApiResponse response = codeAnalysisResultServices.modifierNomBrancheGitAnalyseActive(tacheId, nouveauNomBranche, utilisateurId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 

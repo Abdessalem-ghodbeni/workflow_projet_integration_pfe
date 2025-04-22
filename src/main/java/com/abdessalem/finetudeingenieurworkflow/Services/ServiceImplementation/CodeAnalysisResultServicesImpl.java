@@ -51,4 +51,32 @@ public class CodeAnalysisResultServicesImpl implements ICodeAnalysisResultServic
 
         return new ApiResponse( "Analyse initialisée avec succès pour la branche : ",true);
     }
+
+    @Override
+    @Transactional
+    public ApiResponse modifierNomBrancheGitAnalyseActive(Long tacheId, String nouveauNom, Long utilisateurId) {
+        Tache tache = tacheRepository.findById(tacheId)
+                .orElseThrow(() -> new RuntimeException("Tâche introuvable"));
+
+        User utilisateur = userRepository.findById(utilisateurId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        CodeAnalysisResult analyseActive = tache.getAnalyses().stream()
+                .filter(CodeAnalysisResult::isEstAnalyseActive)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Aucune analyse active trouvée pour cette tâche."));
+
+        String ancienNom = analyseActive.getNomBrancheGit();
+        analyseActive.setNomBrancheGit(nouveauNom);
+
+        codeAnalysisResultRepository.save(analyseActive);
+
+        historiqueServiceImp.enregistrerAction(
+                utilisateurId,
+                "MODIFICATION",
+                utilisateur.getNom() + " a modifié le nom de la branche Git de '" + ancienNom + "' vers '" + nouveauNom + "' pour la tâche '" + tache.getTitre() + "'"
+        );
+
+        return new ApiResponse("Nom de branche Git modifié avec succès.", true);
+    }
 }

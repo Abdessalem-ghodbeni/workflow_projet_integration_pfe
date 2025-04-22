@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,6 +35,7 @@ public class CodeAnalysisResult implements Serializable {
     private LocalDateTime dateDerniereAnalyseGit;    // pour savoir quand on a fait la dernière analyse
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "tache_id")
     private Tache tache;
 
