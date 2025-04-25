@@ -30,7 +30,9 @@ public class Tuteur extends User implements Serializable{
     private String departementName;
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
-
+    @Column(name = "github_token", length = 512)
+    @Convert(converter = GithubTokenConverter.class)
+    private String githubToken;
 
     @JsonIgnore
     @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
