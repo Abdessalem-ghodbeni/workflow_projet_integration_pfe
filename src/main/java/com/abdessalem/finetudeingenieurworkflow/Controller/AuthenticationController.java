@@ -6,7 +6,7 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
-import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
+
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.*;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
 import jakarta.websocket.server.PathParam;

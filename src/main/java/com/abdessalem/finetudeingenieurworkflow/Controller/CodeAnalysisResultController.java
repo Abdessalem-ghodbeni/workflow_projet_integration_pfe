@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.CodeAnalysisResult;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CodeAnalysisResultServicesImpl;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,17 @@ public class CodeAnalysisResultController {
         }
     }
 
+    @PostMapping("/api/analyses/taches/{tacheId}/metrics")
+    public ResponseEntity<CodeAnalysisResult> getMetrics(
+            @RequestParam Long tutorId,
+            @PathVariable Long tacheId,
+            @RequestParam String branchName
+    ) {
+        // *Pas* de principal : c'est 100 % user-fourni
+        CodeAnalysisResult result = codeAnalysisResultServices
+                .analyserEtEnregistrerMetrics(tacheId, branchName, tutorId);
+        return ResponseEntity.ok(result);
+    }
 
 
 }
