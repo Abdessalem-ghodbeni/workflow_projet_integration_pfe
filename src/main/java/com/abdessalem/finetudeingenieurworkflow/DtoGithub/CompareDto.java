@@ -4,15 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CommitSummaryDto {
-    private String sha;
-    private String url;
-
-    private CommitInfo commit;
-
+public class CompareDto {
+    private int ahead_by;
+    private int behind_by;
 }
