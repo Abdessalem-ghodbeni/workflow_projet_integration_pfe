@@ -128,46 +128,6 @@ public class GitHubIntegrationServiceImpl {
                 .collect(Collectors.toList());
     }
 
-//    public CodeAnalysisResult analyzeBranch(
-//            String owner,
-//            String repo,
-//            String branch,
-//            Tache tache,
-//            String githubToken
-//    ) {
-//        // 1. Vérifier le merge
-//        boolean merged = isBranchMerged(owner, repo, branch, githubToken);
-//
-//        // 2. Récupérer tous les commits
-//        List<String> shas = fetchAllCommitShas(owner, repo, branch, githubToken);
-//
-//        // 3. Pour chaque sha, récupérer ses stats
-//        List<CommitDetailDto> details = shas.stream()
-//                .map(sha -> fetchCommitDetail(owner, repo, sha, githubToken))
-//                .collect(Collectors.toList());
-//
-//        int totalCommits = details.size();
-//        int additions = details.stream().mapToInt(d -> d.getStats().getAdditions()).sum();
-//        int deletions = details.stream().mapToInt(d -> d.getStats().getDeletions()).sum();
-//
-//        // 4. Calcul du score de cohérence de messages
-//        double consistency = calculateConsistency(details);
-//
-//        // 5. Construction de l’entité
-//        CodeAnalysisResult result = CodeAnalysisResult.builder()
-//                .nomBrancheGit(branch)
-//                .brancheMergee(merged)
-//                .nombreCommits(totalCommits)
-//                .lignesCodeAjoutees(additions)
-//                .lignesCodeSupprimees(deletions)
-//                .scoreConsistanceCommits(consistency)
-//                .estAnalyseActive(true)
-//                .dateDerniereAnalyseGit(LocalDateTime.now())
-//                .tache(tache)
-//                .build();
-//
-//        return analysisRepo.save(result);
-//    }
 public CodeAnalysisResult analyzeBranch(
         String owner,
         String repo,
@@ -220,38 +180,7 @@ public CodeAnalysisResult analyzeBranch(
 }
 
 
-//    private List<String> fetchAllCommitShas(
-//            String owner, String repo, String branch, String token
-//    ) {
-//        List<String> shas = new ArrayList<>();
-//        String url = baseUrl + "/repos/{owner}/{repo}/commits?sha={branch}&per_page=100";
-//        String next = UriComponentsBuilder.fromUriString(url)
-//                .build(owner, repo, branch)
-//                .toString();
-//
-//        do {
-//            ClientResponse resp = webClient.get()
-//                    .uri(next)
-//                    .headers(h -> h.setBearerAuth(token))
-//                    .exchange()
-//                    .retryWhen(backoffSpec())
-//                    .block();
-//
-//            List<CommitSummaryDto> page = resp.bodyToFlux(CommitSummaryDto.class)
-//                    .collectList().block();
-//            shas.addAll(page.stream().map(CommitSummaryDto::getSha).toList());
-//
-//            next = resp.headers().asHttpHeaders()
-//                    .getFirst(HttpHeaders.LINK);
-//            if (next != null && next.contains("rel=\"next\"")) {
-//                next = extractNextLink(next);
-//            } else {
-//                next = null;
-//            }
-//        } while (next != null);
-//
-//        return shas;
-//    }
+
 
 private List<String> fetchAllCommitShas(String owner, String repo, String branch, String token) {
     List<String> shas = new ArrayList<>();
