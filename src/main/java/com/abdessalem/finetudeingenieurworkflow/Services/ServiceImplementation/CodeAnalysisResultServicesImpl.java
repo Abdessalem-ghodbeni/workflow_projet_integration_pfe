@@ -10,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +21,7 @@ public class CodeAnalysisResultServicesImpl implements ICodeAnalysisResultServic
     private final IHistoriqueServiceImp historiqueServiceImp;
     private final CodeAnalysisResultRepository codeAnalysisResultRepository;
     private final GitHubIntegrationServiceImpl gitHubService;
+    private final CodacyService codacyService;
     @Override
     @Transactional
     public ApiResponse initierAnalyseCode(Long tacheId, String nomBrancheGit, Long utilisateurId) {
@@ -42,9 +41,7 @@ public class CodeAnalysisResultServicesImpl implements ICodeAnalysisResultServic
                 .dateDerniereAnalyseGit(LocalDateTime.now())
                 .tache(tache)
                 .build();
-
         codeAnalysisResultRepository.save(analyse);
-
         // Ajouter l’analyse à la tâche
         tache.getAnalyses().add(analyse);
         tacheRepository.save(tache);
@@ -85,63 +82,137 @@ public class CodeAnalysisResultServicesImpl implements ICodeAnalysisResultServic
 
 
 
-    @Transactional
-    public CodeAnalysisResult analyserEtEnregistrerMetrics(
-            Long tacheId,
-            String branchName,
-            Long utilisateurId
-    ) {
-        // 1) Charger la tâche
-        Tache tache = tacheRepository.findById(tacheId)
-                .orElseThrow(() -> new RuntimeException("Tâche introuvable"));
+//    @Transactional
+//    public CodeAnalysisResult analyserEtEnregistrerMetrics(
+//            Long tacheId,
+//            String branchName,
+//            Long utilisateurId
+//    ) {
+//        // 1) Charger la tâche
+//        Tache tache = tacheRepository.findById(tacheId)
+//                .orElseThrow(() -> new RuntimeException("Tâche introuvable"));
+//
+//        // 2) Charger le tuteur et extraire son token
+//        Tuteur tuteur =tuteurRepository.findById(utilisateurId)
+//                .orElseThrow(() -> new RuntimeException("Tuteur introuvable"));
+//        String token = tuteur.getGithubToken();  // déjà déchiffré par le converter
+//
+//        // 3) Extraire owner et repo depuis le lien GitHub du projet
+//        String lien = tache.getBacklog().getProjet().getLienGitHub();
+//        String path = lien.replace(".git", "")
+//                .substring(lien.indexOf("github.com/") + 11);
+//        String[] parts = path.split("/");
+//
+//
+//        if (parts.length < 2) {
+//            throw new IllegalArgumentException("URL GitHub invalide : " + lien);
+//        }
+//        String owner = parts[0], repo = parts[1];
+//
+//        // 4) Désactiver l’ancienne analyse active
+//        tache.getAnalyses().forEach(a -> a.setEstAnalyseActive(false));
+//        System.out.println(" ya slouma raw URL utilisée : https://api.github.com/repos/" + owner + "/" + repo + "/pulls");
+//        System.out.println("slouma raw Token utilisé : " + token); // juste temporairement pour debug
+//
+//        // 5) Appeler GitHubIntegrationService pour récupérer toutes les métriques
+//        CodeAnalysisResult nouvelleAnalyse = gitHubService.analyzeBranch(
+//                owner, repo, branchName, tache, token
+//        );
+//
+//
+//        // 6) Marquer cette analyse comme active et persister
+//        nouvelleAnalyse.setEstAnalyseActive(true);
+//        nouvelleAnalyse.setDateDerniereAnalyseGit(LocalDateTime.now());
+//        CodeAnalysisResult saved = codeAnalysisResultRepository.save(nouvelleAnalyse);
+//
+//
+//        // 7) Lier la nouvelle analyse à la tâche et sauvegarder la tâche
+//        tache.getAnalyses().add(saved);
+//        tacheRepository.save(tache);
+//
+//
+//
+//        // 8) Historique
+//        historiqueServiceImp.enregistrerAction(
+//                utilisateurId,
+//                "ANALYSE_GITHUB",
+//                tuteur.getNom() + " a lancé l'analyse GitHub sur '"
+//                        + branchName + "' pour la tâche \""
+//                        + tache.getTitre() + "\""
+//        );
+//
+//        return saved;
+//    }
 
-        // 2) Charger le tuteur et extraire son token
-        Tuteur tuteur =tuteurRepository.findById(utilisateurId)
-                .orElseThrow(() -> new RuntimeException("Tuteur introuvable"));
-        String token = tuteur.getGithubToken();  // déjà déchiffré par le converter
+@Transactional
+public CodeAnalysisResult analyserEtEnregistrerMetrics(
+        Long tacheId,
+        String branchName,
+        Long utilisateurId
+) {
+    // 1) Charger la tâche
+    Tache tache = tacheRepository.findById(tacheId)
+            .orElseThrow(() -> new RuntimeException("Tâche introuvable"));
 
-        // 3) Extraire owner et repo depuis le lien GitHub du projet
-        String lien = tache.getBacklog().getProjet().getLienGitHub();
-        String path = lien.replace(".git", "")
-                .substring(lien.indexOf("github.com/") + 11);
-        String[] parts = path.split("/");
+    // 2) Récupérer le token GitHub du tuteur
+    Tuteur tuteur = tuteurRepository.findById(utilisateurId)
+            .orElseThrow(() -> new RuntimeException("Tuteur introuvable"));
+    String token = tuteur.getGithubToken();
 
-
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("URL GitHub invalide : " + lien);
-        }
-        String owner = parts[0], repo = parts[1];
-
-        // 4) Désactiver l’ancienne analyse active
-        tache.getAnalyses().forEach(a -> a.setEstAnalyseActive(false));
-        System.out.println(" ya slouma raw URL utilisée : https://api.github.com/repos/" + owner + "/" + repo + "/pulls");
-        System.out.println("slouma raw Token utilisé : " + token); // juste temporairement pour debug
-
-        // 5) Appeler GitHubIntegrationService pour récupérer toutes les métriques
-        CodeAnalysisResult nouvelleAnalyse = gitHubService.analyzeBranch(
-                owner, repo, branchName, tache, token
-        );
-
-        // 6) Marquer cette analyse comme active et persister
-        nouvelleAnalyse.setEstAnalyseActive(true);
-        nouvelleAnalyse.setDateDerniereAnalyseGit(LocalDateTime.now());
-        CodeAnalysisResult saved = codeAnalysisResultRepository.save(nouvelleAnalyse);
-
-        // 7) Lier la nouvelle analyse à la tâche et sauvegarder la tâche
-        tache.getAnalyses().add(saved);
-        tacheRepository.save(tache);
-
-        // 8) Historique
-        historiqueServiceImp.enregistrerAction(
-                utilisateurId,
-                "ANALYSE_GITHUB",
-                tuteur.getNom() + " a lancé l'analyse GitHub sur '"
-                        + branchName + "' pour la tâche \""
-                        + tache.getTitre() + "\""
-        );
-
-        return saved;
+    // 3) Extraire owner et repo depuis le lien GitHub
+    String lien = tache.getBacklog().getProjet().getLienGitHub();
+    String path = lien.replace(".git", "")
+            .substring(lien.indexOf("github.com/") + 11);
+    String[] parts = path.split("/");
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("URL GitHub invalide : " + lien);
     }
+    String owner = parts[0], repo = parts[1];
+
+    // 4) Désactiver l’ancienne analyse active
+    tache.getAnalyses().forEach(a -> a.setEstAnalyseActive(false));
+
+    // 5) Appeler GitHubIntegrationService pour récupérer les métriques GitHub
+    CodeAnalysisResult nouvelleAnalyse = gitHubService.analyzeBranch(
+            owner, repo, branchName, tache, token
+    );
+
+    // 6) Appeler Codacy et fusionner les résultats
+    try {
+        CodacyAnalysisResponse codacyResp = codacyService
+                .analyserBranche(lien, branchName)
+                .block(); // on bloque pour récupérer l’objet
+
+        if (codacyResp != null) {
+            nouvelleAnalyse.setCodeSmells(codacyResp.getCode_smells());
+            nouvelleAnalyse.setBugsDetectes(codacyResp.getBugs());
+            nouvelleAnalyse.setDuplications(codacyResp.getDuplications());
+            nouvelleAnalyse.setCouvertureTests(codacyResp.getCoverage());
+        }
+    } catch (Exception e) {
+        log.error("Erreur lors de l'appel à Codacy : {}", e.getMessage());
+        // Vous pouvez décider de lever l'exception ou de continuer sans Codacy
+    }
+
+    // 7) Marquer comme active et persister
+    nouvelleAnalyse.setEstAnalyseActive(true);
+    nouvelleAnalyse.setDateDerniereAnalyseGit(LocalDateTime.now());
+    CodeAnalysisResult saved = codeAnalysisResultRepository.save(nouvelleAnalyse);
+
+    // 8) Lier à la tâche
+    tache.getAnalyses().add(saved);
+    tacheRepository.save(tache);
+
+    // 9) Historique
+    historiqueServiceImp.enregistrerAction(
+            utilisateurId,
+            "ANALYSE_GLOBALE",
+            tuteur.getNom() + " a lancé l'analyse GitHub+Codacy sur '"
+                    + branchName + "' pour la tâche \"" + tache.getTitre() + "\""
+    );
+
+    return saved;
+}
 
 
 
