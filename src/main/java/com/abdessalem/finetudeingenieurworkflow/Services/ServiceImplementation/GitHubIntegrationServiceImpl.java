@@ -342,25 +342,14 @@ public class GitHubIntegrationServiceImpl {
 //    }
 private String detectWorkPattern(List<CommitDetailDto> details) {
     List<LocalDateTime> sortedDates = details.stream()
-            .map(d -> {
-                try {
-                    return Optional.ofNullable(d.getDetails())
-                            .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
-                            .map(a -> LocalDateTime.parse(
-                                    a.getDate(),
-                                    DateTimeFormatter.ISO_DATE_TIME
-                            ))
-                            .orElse(null);
-                } catch (Exception e) {
-                    return null;
-                }
-            })
+            .map(this::getCommitDate)
             .filter(Objects::nonNull)
             .sorted()
             .collect(Collectors.toList());
 
     if (sortedDates.size() < 2) {
-        if (sortedDates.size() == 1) return "Un seul commit – travail isolé";
+        if (sortedDates.isEmpty()) return "Aucun commit avec date valide";
+        else if (sortedDates.size() == 1) return "Un seul commit – travail isolé";
         else return "Pas de données exploitables";
     }
 
@@ -374,6 +363,40 @@ private String detectWorkPattern(List<CommitDetailDto> details) {
 
     return "Pattern inconnu";
 }
+//private String detectWorkPattern(List<CommitDetailDto> details) {
+//    List<LocalDateTime> sortedDates = details.stream()
+//            .map(d -> {
+//                try {
+//                    return Optional.ofNullable(d.getDetails())
+//                            .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
+//                            .map(a -> LocalDateTime.parse(
+//                                    a.getDate(),
+//                                    DateTimeFormatter.ISO_DATE_TIME
+//                            ))
+//                            .orElse(null);
+//                } catch (Exception e) {
+//                    return null;
+//                }
+//            })
+//            .filter(Objects::nonNull)
+//            .sorted()
+//            .collect(Collectors.toList());
+//
+//    if (sortedDates.size() < 2) {
+//        if (sortedDates.size() == 1) return "Un seul commit – travail isolé";
+//        else return "Pas de données exploitables";
+//    }
+//
+//    long totalDays = Duration.between(sortedDates.get(0), sortedDates.get(sortedDates.size()-1)).toDays();
+//    double commitsPerDay = (double) sortedDates.size() / Math.max(1, totalDays);
+//
+//    if (commitsPerDay < 0.5) return "Travail très sporadique";
+//    if (commitsPerDay < 1) return "Travail en avance mais rare";
+//    if (commitsPerDay <= 2) return "Travail régulier";
+//    if (commitsPerDay > 3) return "Travail intense et fréquent";
+//
+//    return "Pattern inconnu";
+//}
     private LocalDateTime getCommitDate(CommitDetailDto d) {
         try {
             return Optional.ofNullable(d.getCommit().getAuthor())
