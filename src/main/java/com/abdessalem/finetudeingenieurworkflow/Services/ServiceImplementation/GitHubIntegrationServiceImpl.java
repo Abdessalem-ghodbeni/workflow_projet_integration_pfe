@@ -175,12 +175,15 @@ public class GitHubIntegrationServiceImpl {
                 .collect(Collectors.toList());
 
         double avgHoursBetweenCommits = 0;
+
         if (commitDates.size() > 1) {
-            long totalHours = Duration.between(
-                    commitDates.get(0),
-                    commitDates.get(commitDates.size() - 1)
-            ).toHours();
+            long totalHours = 0;
+            for (int i = 1; i < commitDates.size(); i++) {
+                totalHours += Duration.between(commitDates.get(i-1), commitDates.get(i)).toHours();
+            }
             avgHoursBetweenCommits = (double) totalHours / (commitDates.size() - 1);
+        } else {
+            avgHoursBetweenCommits = -1.0; // Valeur spéciale "non calculable"
         }
 
         long lifespanDays = !commitDates.isEmpty() ?
@@ -256,11 +259,20 @@ public class GitHubIntegrationServiceImpl {
                 ));
     }
 
-    private String extractCommitType(String message) {
-        Matcher matcher = Pattern.compile("^(feat|fix|docs|style|refactor|test|chore)(\\(.*\\))?:")
-                .matcher(message);
-        return matcher.find() ? matcher.group(1) : "other";
-    }
+//    private String extractCommitType(String message) {
+//        Matcher matcher = Pattern.compile("^(feat|fix|docs|style|refactor|test|chore)(\\(.*\\))?:")
+//                .matcher(message);
+//        return matcher.find() ? matcher.group(1) : "other";
+//    }
+private String extractCommitType(String message) {
+    if (message == null) return "no-message";
+
+    Matcher matcher = Pattern.compile(
+            "^(build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert|bump)(\\([\\w-]+\\))?:\\s.+"
+    ).matcher(message);
+
+    return matcher.find() ? matcher.group(1) : "other";
+}
     private double enhancedConsistencyCheck(List<CommitDetailDto> details) {
         long validCommits = details.stream()
                 .filter(d -> {
