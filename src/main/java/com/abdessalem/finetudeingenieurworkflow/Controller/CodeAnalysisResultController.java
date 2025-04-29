@@ -3,11 +3,14 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.CodeAnalysisResult;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CodacyCliService;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CodeAnalysisResultServicesImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
@@ -16,7 +19,21 @@ import org.springframework.web.bind.annotation.*;
 public class CodeAnalysisResultController {
     private final CodeAnalysisResultServicesImpl codeAnalysisResultServices;
 
+    private final CodacyCliService analysisService;
 
+    @PostMapping(path = "/let")
+    public ResponseEntity<?> analyze(
+            @RequestParam String repoUrl,
+            @RequestParam String branch) {
+        try {
+            CodeAnalysisResult result = analysisService.analyzeAndSave(repoUrl, branch);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
     @PostMapping("/ajouter/{tacheId}/{utilisateurId}")
     public ResponseEntity<ApiResponse> initierAnalyseCode(@PathVariable("tacheId") Long tacheId,
                                                @PathVariable("utilisateurId") Long utilisateurId,
