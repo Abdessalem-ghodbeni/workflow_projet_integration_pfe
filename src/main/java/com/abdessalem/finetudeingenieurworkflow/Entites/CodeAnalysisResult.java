@@ -53,6 +53,18 @@ public class CodeAnalysisResult implements Serializable {
 
     @Column(name = "commit_types_distribution", columnDefinition = "TEXT")
     private String commitTypesDistribution;
+
+    @Column(name = "score_qualite_commit_message")
+    private Double scoreQualiteCommitMessage;
+
+    @Column(name = "heure_travail_distribution", columnDefinition = "TEXT")
+    private String heureTravailDistribution;
+
+    @Column(name = "jour_travail_distribution", columnDefinition = "TEXT")
+    private String jourTravailDistribution;
+
+    @Column(name = "pattern_travail")
+    private String patternTravail;
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "tache_id")

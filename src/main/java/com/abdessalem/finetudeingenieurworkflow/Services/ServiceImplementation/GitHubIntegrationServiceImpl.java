@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.util.retry.Retry;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -104,7 +105,7 @@ public class GitHubIntegrationServiceImpl {
             String branch,
             String token
     ) {
-        // 1) Trouver la PR pour la branche
+
         List<PullRequestDto> prs = webClient.get()
                 .uri(baseUrl + "/repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=all",
                         owner, repo, owner, branch)
@@ -164,16 +165,15 @@ public class GitHubIntegrationServiceImpl {
                                         a.getDate(),
                                         DateTimeFormatter.ISO_DATE_TIME
                                 ))
-                                .orElse(null);
-                    } catch (DateTimeParseException e) {
-                        log.warn("Format de date invalide pour le commit: {}", d.getSha());
+                                .orElseThrow(() -> new RuntimeException("Date manquante pour commit " + d.getSha()));
+                    } catch (Exception e) {
+                        log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
                         return null;
                     }
                 })
                 .filter(Objects::nonNull)
                 .sorted()
                 .collect(Collectors.toList());
-
         double avgHoursBetweenCommits = 0;
 
         if (commitDates.size() > 1) {
@@ -205,7 +205,21 @@ public class GitHubIntegrationServiceImpl {
         // Calcul des moyennes par commit
         double avgAdditions = totalCommits > 0 ? (double) additions / totalCommits : 0;
         double avgDeletions = totalCommits > 0 ? (double) deletions / totalCommits : 0;
+        double commitQualityScore = calculateCommitMessageQuality(details);
+        Map<Integer, Long> timeDistribution = analyzeCommitTimeDistribution(details);
+        Map<DayOfWeek, Long> dayDistribution = analyzeCommitWeekDistribution(details);
+        String workPattern = detectWorkPattern(details);
 
+        String timeDistributionJson = "{}";
+        String dayDistributionJson = "{}";
+        String workPatternStr = workPattern;
+
+        try {
+            timeDistributionJson = new ObjectMapper().writeValueAsString(timeDistribution);
+            dayDistributionJson = new ObjectMapper().writeValueAsString(dayDistribution);
+        } catch (JsonProcessingException e) {
+            log.error("Erreur de sérialisation des distributions horaires ou hebdomadaires", e);
+        }
         // Analyse des types de commits
         Map<String, Long> commitTypes = analyzeCommitTypes(details);
         String commitTypesJson = "{}";
@@ -230,6 +244,10 @@ public class GitHubIntegrationServiceImpl {
                 .averageDeletionsPerCommit(avgDeletions)
                 .commitTypesDistribution(commitTypesJson)
                 .estAnalyseActive(true)
+                .scoreQualiteCommitMessage(commitQualityScore)
+                .heureTravailDistribution(timeDistributionJson)
+                .jourTravailDistribution(dayDistributionJson)
+                .patternTravail(workPatternStr)
                 .dateDerniereAnalyseGit(LocalDateTime.now())
                 .tache(tache)
                 .build();
@@ -258,12 +276,136 @@ public class GitHubIntegrationServiceImpl {
                         Collectors.counting()
                 ));
     }
+    private double calculateCommitMessageQuality(List<CommitDetailDto> details) {
+        if (details.isEmpty()) return 0;
 
-//    private String extractCommitType(String message) {
-//        Matcher matcher = Pattern.compile("^(feat|fix|docs|style|refactor|test|chore)(\\(.*\\))?:")
-//                .matcher(message);
-//        return matcher.find() ? matcher.group(1) : "other";
+        long goodMessages = details.stream()
+                .map(d -> d.getCommit().getMessage())
+                .filter(msg -> msg.length() > 50 && containsContextAndReasoning(msg))
+                .count();
+
+        return (double) goodMessages / details.size();
+    }
+    private Map<Integer, Long> analyzeCommitTimeDistribution(List<CommitDetailDto> details) {
+        return details.stream()
+                .map(d -> {
+                    LocalDateTime date = getCommitDate(d);
+                    return date != null ? date.getHour() : -1;
+                })
+
+                .filter(h -> h != -1)
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
+    }
+    private Map<DayOfWeek, Long> analyzeCommitWeekDistribution(List<CommitDetailDto> details) {
+        return details.stream()
+                .map(d -> {
+                    LocalDateTime date = getCommitDate(d);
+                    return date != null ? date.getDayOfWeek() : null;
+                })
+
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
+    }
+//    private String detectWorkPattern(List<CommitDetailDto> details) {
+//        List<LocalDateTime> sortedDates = details.stream()
+//                .map(d -> {
+//                    try {
+//                        return LocalDateTime.parse(
+//                                d.getDetails().getAuthor().getDate(), // Correction ici
+//                                DateTimeFormatter.ISO_DATE_TIME
+//                        );
+//                    } catch (Exception e) {
+//                        return null;
+//                    }
+//                })
+//                .filter(Objects::nonNull)
+//                .sorted()
+//                .collect(Collectors.toList());
+//
+//        if (sortedDates.size() < 2) return "Données insuffisantes";
+//
+//        long totalDays = Duration.between(sortedDates.get(0), sortedDates.get(sortedDates.size()-1)).toDays();
+//        double commitsPerDay = (double) sortedDates.size() / Math.max(1, totalDays);
+//
+//        if (commitsPerDay < 1) return "Travail sporadique";
+//        if (sortedDates.size() >= 5 && totalDays <= 7) return "Travail intensif (essentiellement en fin de période)";
+//        if (commitsPerDay >= 1 && commitsPerDay <= 2) return "Travail régulier";
+//        if (commitsPerDay > 3) return "Travail fréquent mais potentiellement superficiel";
+//
+//        return "Pattern inconnu";
 //    }
+private String detectWorkPattern(List<CommitDetailDto> details) {
+    List<LocalDateTime> sortedDates = details.stream()
+            .map(d -> {
+                try {
+                    return Optional.ofNullable(d.getDetails())
+                            .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
+                            .map(a -> LocalDateTime.parse(
+                                    a.getDate(),
+                                    DateTimeFormatter.ISO_DATE_TIME
+                            ))
+                            .orElse(null);
+                } catch (Exception e) {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .sorted()
+            .collect(Collectors.toList());
+
+    if (sortedDates.size() < 2) {
+        if (sortedDates.size() == 1) return "Un seul commit – travail isolé";
+        else return "Pas de données exploitables";
+    }
+
+    long totalDays = Duration.between(sortedDates.get(0), sortedDates.get(sortedDates.size()-1)).toDays();
+    double commitsPerDay = (double) sortedDates.size() / Math.max(1, totalDays);
+
+    if (commitsPerDay < 0.5) return "Travail très sporadique";
+    if (commitsPerDay < 1) return "Travail en avance mais rare";
+    if (commitsPerDay <= 2) return "Travail régulier";
+    if (commitsPerDay > 3) return "Travail intense et fréquent";
+
+    return "Pattern inconnu";
+}
+    private LocalDateTime getCommitDate(CommitDetailDto d) {
+        try {
+            return Optional.ofNullable(d.getCommit().getAuthor())
+                    .map(a -> LocalDateTime.parse(
+                            a.getDate(),
+                            DateTimeFormatter.ISO_DATE_TIME
+                    ))
+                    .orElseThrow(() -> new RuntimeException("Auteur ou date absent dans le commit"));
+        } catch (DateTimeParseException e) {
+            log.warn("Format de date invalide pour le commit {}: {}", d.getSha(), e.getMessage());
+            return null;
+        } catch (Exception e) {
+            log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
+            return null;
+        }
+    }
+    private boolean containsContextAndReasoning(String message) {
+        if (message == null || message.isBlank()) return false;
+
+        // Si le message fait au moins 20 caractères ET contient un verbe
+        String lower = message.toLowerCase();
+        return message.length() >= 20 &&
+                (lower.contains("add") || lower.contains("fix") ||
+                        lower.contains("modif") || lower.contains("update") ||
+                        lower.contains("remove") || lower.contains("change"));
+    }
+//    private boolean containsContextAndReasoning(String message) {
+//        String lower = message.toLowerCase();
+//        return lower.contains("add") || lower.contains("fix") || lower.contains("improve") ||
+//                lower.contains("because") || lower.contains("fixes") || lower.contains("refs");
+//    }
+
 private String extractCommitType(String message) {
     if (message == null) return "no-message";
 
