@@ -6,7 +6,9 @@ import com.abdessalem.finetudeingenieurworkflow.DtoGithub.PullRequestDto;
 import com.abdessalem.finetudeingenieurworkflow.Entites.CodeAnalysisResult;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tache;
 import com.abdessalem.finetudeingenieurworkflow.Repository.CodeAnalysisResultRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +23,12 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -128,42 +134,152 @@ public class GitHubIntegrationServiceImpl {
                 .collect(Collectors.toList());
     }
 
-public CodeAnalysisResult analyzeBranch(
-        String owner,
-        String repo,
-        String branch,
-        Tache tache,
-        String githubToken
-) {
-    // Récupère dynamiquement tous les commits pertinents
-    List<String> shas = fetchCommitsForBranch(owner, repo, branch, githubToken);
+    public CodeAnalysisResult analyzeBranch(
+            String owner,
+            String repo,
+            String branch,
+            Tache tache,
+            String githubToken
+    ) {
+        // Récupération des commits
+        List<String> shas = fetchCommitsForBranch(owner, repo, branch, githubToken);
 
-    // Puis le reste de ta logique inchangé :
-    List<CommitDetailDto> details = shas.stream()
-            .map(sha -> fetchCommitDetail(owner, repo, sha, githubToken))
-            .collect(Collectors.toList());
+        // Extraction des détails des commits
+        List<CommitDetailDto> details = shas.stream()
+                .map(sha -> fetchCommitDetail(owner, repo, sha, githubToken))
+                .collect(Collectors.toList());
 
-    int totalCommits = details.size();
-    int additions   = details.stream().mapToInt(d -> d.getStats().getAdditions()).sum();
-    int deletions   = details.stream().mapToInt(d -> d.getStats().getDeletions()).sum();
-    double consistency = calculateConsistency(details);
+        // Calcul des métriques de base
+        int totalCommits = details.size();
+        int additions = details.stream().mapToInt(d -> d.getStats().getAdditions()).sum();
+        int deletions = details.stream().mapToInt(d -> d.getStats().getDeletions()).sum();
+        double consistency = enhancedConsistencyCheck(details);
 
-    CodeAnalysisResult result = CodeAnalysisResult.builder()
-            .nomBrancheGit(branch)
-            .brancheMergee(isBranchMerged(owner, repo, branch, githubToken))
-            .nombreCommits(totalCommits)
-            .lignesCodeAjoutees(additions)
-            .lignesCodeSupprimees(deletions)
-            .scoreConsistanceCommits(consistency)
-            .estAnalyseActive(true)
-            .dateDerniereAnalyseGit(LocalDateTime.now())
-            .tache(tache)
-            .build();
+        List<LocalDateTime> commitDates = details.stream()
+                .map(d -> {
+                    try {
+                        return Optional.ofNullable(d.getDetails())
+                                .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
+                                .map(a -> LocalDateTime.parse(
+                                        a.getDate(),
+                                        DateTimeFormatter.ISO_DATE_TIME
+                                ))
+                                .orElse(null);
+                    } catch (DateTimeParseException e) {
+                        log.warn("Format de date invalide pour le commit: {}", d.getSha());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .sorted()
+                .collect(Collectors.toList());
 
-    return analysisRepo.save(result);
-}
+        double avgHoursBetweenCommits = 0;
+        if (commitDates.size() > 1) {
+            long totalHours = Duration.between(
+                    commitDates.get(0),
+                    commitDates.get(commitDates.size() - 1)
+            ).toHours();
+            avgHoursBetweenCommits = (double) totalHours / (commitDates.size() - 1);
+        }
 
+        long lifespanDays = !commitDates.isEmpty() ?
+                Duration.between(
+                        commitDates.get(0),
+                        commitDates.get(commitDates.size() - 1)
+                ).toDays() : 0;
 
+        // Détection des conflits de fusion
+        boolean isMerged = isBranchMerged(owner, repo, branch, githubToken);
+        boolean mergeConflictDetected = false;
+        if (isMerged) {
+            Integer prNumber = getPrNumberForBranch(owner, repo, branch, githubToken);
+            if (prNumber != null) {
+                mergeConflictDetected = checkMergeConflicts(owner, repo, prNumber, githubToken);
+            }
+        }
+
+        // Calcul des moyennes par commit
+        double avgAdditions = totalCommits > 0 ? (double) additions / totalCommits : 0;
+        double avgDeletions = totalCommits > 0 ? (double) deletions / totalCommits : 0;
+
+        // Analyse des types de commits
+        Map<String, Long> commitTypes = analyzeCommitTypes(details);
+        String commitTypesJson = "{}";
+        try {
+            commitTypesJson = new ObjectMapper().writeValueAsString(commitTypes);
+        } catch (JsonProcessingException e) {
+            log.error("Erreur de sérialisation des types de commits", e);
+        }
+
+        // Construction du résultat final
+        CodeAnalysisResult result = CodeAnalysisResult.builder()
+                .nomBrancheGit(branch)
+                .brancheMergee(isMerged)
+                .nombreCommits(totalCommits)
+                .lignesCodeAjoutees(additions)
+                .lignesCodeSupprimees(deletions)
+                .scoreConsistanceCommits(consistency)
+                .averageHoursBetweenCommits(avgHoursBetweenCommits)
+                .branchLifespanDays(lifespanDays)
+                .mergeConflictDetected(mergeConflictDetected)
+                .averageAdditionsPerCommit(avgAdditions)
+                .averageDeletionsPerCommit(avgDeletions)
+                .commitTypesDistribution(commitTypesJson)
+                .estAnalyseActive(true)
+                .dateDerniereAnalyseGit(LocalDateTime.now())
+                .tache(tache)
+                .build();
+
+        return analysisRepo.save(result);
+    }
+
+    // Méthodes helper supplémentaires
+    private Integer getPrNumberForBranch(String owner, String repo, String branch, String token) {
+        List<PullRequestDto> prs = webClient.get()
+                .uri(baseUrl + "/repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=all",
+                        owner, repo, owner, branch)
+                .headers(h -> h.setBearerAuth(token))
+                .retrieve()
+                .bodyToFlux(PullRequestDto.class)
+                .collectList()
+                .block();
+        return prs.isEmpty() ? null : prs.get(0).getNumber();
+    }
+
+    private Map<String, Long> analyzeCommitTypes(List<CommitDetailDto> details) {
+        return details.stream()
+                .map(d -> extractCommitType(d.getCommit().getMessage()))
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
+    }
+
+    private String extractCommitType(String message) {
+        Matcher matcher = Pattern.compile("^(feat|fix|docs|style|refactor|test|chore)(\\(.*\\))?:")
+                .matcher(message);
+        return matcher.find() ? matcher.group(1) : "other";
+    }
+    private double enhancedConsistencyCheck(List<CommitDetailDto> details) {
+        long validCommits = details.stream()
+                .filter(d -> {
+                    String msg = d.getCommit().getMessage();
+                    return msg.matches("^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .{20,}")
+                            && msg.split("\n").length >= 2;
+                })
+                .count();
+        return details.isEmpty() ? 0 : (double) validCommits / details.size();
+    }
+    private boolean checkMergeConflicts(String owner, String repo, int prNumber, String token) {
+        PullRequestDto pr = webClient.get()
+                .uri(baseUrl + "/repos/{owner}/{repo}/pulls/{pr}", owner, repo, prNumber)
+                .headers(h -> h.setBearerAuth(token))
+                .retrieve()
+                .bodyToMono(PullRequestDto.class)
+                .block();
+        return pr != null && !pr.isMergeable();
+    }
     private boolean isBranchMerged(
         String owner, String repo, String branch, String token
 ) {
@@ -267,7 +383,6 @@ private List<String> fetchAllCommitShas(String owner, String repo, String branch
         }
         return null;
     }
-
 
 
 }
