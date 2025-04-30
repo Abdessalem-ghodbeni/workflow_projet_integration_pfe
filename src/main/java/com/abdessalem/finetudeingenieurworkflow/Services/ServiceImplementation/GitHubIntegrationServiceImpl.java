@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -155,42 +156,50 @@ public class GitHubIntegrationServiceImpl {
         int additions = details.stream().mapToInt(d -> d.getStats().getAdditions()).sum();
         int deletions = details.stream().mapToInt(d -> d.getStats().getDeletions()).sum();
         double consistency = enhancedConsistencyCheck(details);
-
         List<LocalDateTime> commitDates = details.stream()
-                .map(d -> {
-                    try {
-                        return Optional.ofNullable(d.getDetails())
-                                .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
-                                .map(a -> LocalDateTime.parse(
-                                        a.getDate(),
-                                        DateTimeFormatter.ISO_DATE_TIME
-                                ))
-                                .orElseThrow(() -> new RuntimeException("Date manquante pour commit " + d.getSha()));
-                    } catch (Exception e) {
-                        log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
-                        return null;
-                    }
-                })
+                .map(this::getCommitDate)
                 .filter(Objects::nonNull)
                 .sorted()
                 .collect(Collectors.toList());
-        double avgHoursBetweenCommits = 0;
-
+//        List<LocalDateTime> commitDates = details.stream()
+//                .map(d -> {
+//                    try {
+//                        return Optional.ofNullable(d.getDetails())
+//                                .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
+//                                .map(a -> LocalDateTime.parse(
+//                                        a.getDate(),
+//                                        DateTimeFormatter.ISO_DATE_TIME
+//                                ))
+//                                .orElseThrow(() -> new RuntimeException("Date manquante pour commit " + d.getSha()));
+//                    } catch (Exception e) {
+//                        log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
+//                        return null;
+//                    }
+//                })
+//                .filter(Objects::nonNull)
+//                .sorted()
+//                .collect(Collectors.toList());
+        double avgHoursBetweenCommits = -1.0;
         if (commitDates.size() > 1) {
             long totalHours = 0;
             for (int i = 1; i < commitDates.size(); i++) {
                 totalHours += Duration.between(commitDates.get(i-1), commitDates.get(i)).toHours();
             }
             avgHoursBetweenCommits = (double) totalHours / (commitDates.size() - 1);
-        } else {
-            avgHoursBetweenCommits = -1.0; // Valeur spéciale "non calculable"
         }
 
+        // Modifier le calcul de la durée de vie
         long lifespanDays = !commitDates.isEmpty() ?
                 Duration.between(
-                        commitDates.get(0),
-                        commitDates.get(commitDates.size() - 1)
+                        commitDates.get(0).truncatedTo(ChronoUnit.DAYS),
+                        commitDates.get(commitDates.size()-1).truncatedTo(ChronoUnit.DAYS)
                 ).toDays() : 0;
+
+// Gestion spéciale pour averageHoursBetweenCommits
+        String avgHoursDisplay = (avgHoursBetweenCommits < 0) ?
+                "Non applicable (1 commit)" :
+                String.format("%.1f heures", avgHoursBetweenCommits);
+
 
         // Détection des conflits de fusion
         boolean isMerged = isBranchMerged(owner, repo, branch, githubToken);
@@ -312,34 +321,7 @@ public class GitHubIntegrationServiceImpl {
                         Collectors.counting()
                 ));
     }
-//    private String detectWorkPattern(List<CommitDetailDto> details) {
-//        List<LocalDateTime> sortedDates = details.stream()
-//                .map(d -> {
-//                    try {
-//                        return LocalDateTime.parse(
-//                                d.getDetails().getAuthor().getDate(), // Correction ici
-//                                DateTimeFormatter.ISO_DATE_TIME
-//                        );
-//                    } catch (Exception e) {
-//                        return null;
-//                    }
-//                })
-//                .filter(Objects::nonNull)
-//                .sorted()
-//                .collect(Collectors.toList());
-//
-//        if (sortedDates.size() < 2) return "Données insuffisantes";
-//
-//        long totalDays = Duration.between(sortedDates.get(0), sortedDates.get(sortedDates.size()-1)).toDays();
-//        double commitsPerDay = (double) sortedDates.size() / Math.max(1, totalDays);
-//
-//        if (commitsPerDay < 1) return "Travail sporadique";
-//        if (sortedDates.size() >= 5 && totalDays <= 7) return "Travail intensif (essentiellement en fin de période)";
-//        if (commitsPerDay >= 1 && commitsPerDay <= 2) return "Travail régulier";
-//        if (commitsPerDay > 3) return "Travail fréquent mais potentiellement superficiel";
-//
-//        return "Pattern inconnu";
-//    }
+
 private String detectWorkPattern(List<CommitDetailDto> details) {
     List<LocalDateTime> sortedDates = details.stream()
             .map(this::getCommitDate)
@@ -363,56 +345,56 @@ private String detectWorkPattern(List<CommitDetailDto> details) {
 
     return "Pattern inconnu";
 }
-//private String detectWorkPattern(List<CommitDetailDto> details) {
-//    List<LocalDateTime> sortedDates = details.stream()
-//            .map(d -> {
-//                try {
-//                    return Optional.ofNullable(d.getDetails())
-//                            .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
-//                            .map(a -> LocalDateTime.parse(
-//                                    a.getDate(),
-//                                    DateTimeFormatter.ISO_DATE_TIME
-//                            ))
-//                            .orElse(null);
-//                } catch (Exception e) {
-//                    return null;
-//                }
-//            })
-//            .filter(Objects::nonNull)
-//            .sorted()
-//            .collect(Collectors.toList());
-//
-//    if (sortedDates.size() < 2) {
-//        if (sortedDates.size() == 1) return "Un seul commit – travail isolé";
-//        else return "Pas de données exploitables";
-//    }
-//
-//    long totalDays = Duration.between(sortedDates.get(0), sortedDates.get(sortedDates.size()-1)).toDays();
-//    double commitsPerDay = (double) sortedDates.size() / Math.max(1, totalDays);
-//
-//    if (commitsPerDay < 0.5) return "Travail très sporadique";
-//    if (commitsPerDay < 1) return "Travail en avance mais rare";
-//    if (commitsPerDay <= 2) return "Travail régulier";
-//    if (commitsPerDay > 3) return "Travail intense et fréquent";
-//
-//    return "Pattern inconnu";
-//}
+    private LocalDateTime parseGitDate(String dateStr) {
+        try {
+            // Format ISO standard (ex: "2025-04-30T19:05:57Z")
+            return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            try {
+                // Format avec fuseau horaire (ex: "2025-04-30T19:05:57+01:00")
+                return LocalDateTime.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
+            } catch (DateTimeParseException ex) {
+                log.warn("Date non analysable au format GitHub : {}", dateStr);
+                return null;
+            }
+        }
+    }
     private LocalDateTime getCommitDate(CommitDetailDto d) {
         try {
-            return Optional.ofNullable(d.getCommit().getAuthor())
-                    .map(a -> LocalDateTime.parse(
-                            a.getDate(),
-                            DateTimeFormatter.ISO_DATE_TIME
-                    ))
-                    .orElseThrow(() -> new RuntimeException("Auteur ou date absent dans le commit"));
-        } catch (DateTimeParseException e) {
-            log.warn("Format de date invalide pour le commit {}: {}", d.getSha(), e.getMessage());
-            return null;
+            // Tentative 1: Utiliser l'auteur
+            Optional<LocalDateTime> authorDate = Optional.ofNullable(d.getDetails())
+                    .flatMap(cd -> cd.getSafeAuthor())
+                    .map(a -> parseGitDate(a.getDate()))
+                    .filter(Objects::nonNull);
+
+            // Tentative 2: Si auteur absent, utiliser le committer
+            if (authorDate.isEmpty()) {
+                return Optional.ofNullable(d.getCommit().getCommitter())
+                        .map(c -> parseGitDate(c.getDate()))
+                        .orElse(null);
+            }
+            return authorDate.get();
         } catch (Exception e) {
-            log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
+            log.warn("Erreur lors de l'extraction de la date pour commit {}: {}", d.getSha(), e.getMessage());
             return null;
         }
     }
+//    private LocalDateTime getCommitDate(CommitDetailDto d) {
+//        try {
+//            return Optional.ofNullable(d.getCommit().getAuthor())
+//                    .map(a -> LocalDateTime.parse(
+//                            a.getDate(),
+//                            DateTimeFormatter.ISO_DATE_TIME
+//                    ))
+//                    .orElseThrow(() -> new RuntimeException("Auteur ou date absent dans le commit"));
+//        } catch (DateTimeParseException e) {
+//            log.warn("Format de date invalide pour le commit {}: {}", d.getSha(), e.getMessage());
+//            return null;
+//        } catch (Exception e) {
+//            log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
+//            return null;
+//        }
+//    }
     private boolean containsContextAndReasoning(String message) {
         if (message == null || message.isBlank()) return false;
 
