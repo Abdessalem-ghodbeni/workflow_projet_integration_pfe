@@ -161,24 +161,7 @@ public class GitHubIntegrationServiceImpl {
                 .filter(Objects::nonNull)
                 .sorted()
                 .collect(Collectors.toList());
-//        List<LocalDateTime> commitDates = details.stream()
-//                .map(d -> {
-//                    try {
-//                        return Optional.ofNullable(d.getDetails())
-//                                .flatMap(CommitDetailDto.CommitDetails::getSafeAuthor)
-//                                .map(a -> LocalDateTime.parse(
-//                                        a.getDate(),
-//                                        DateTimeFormatter.ISO_DATE_TIME
-//                                ))
-//                                .orElseThrow(() -> new RuntimeException("Date manquante pour commit " + d.getSha()));
-//                    } catch (Exception e) {
-//                        log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
-//                        return null;
-//                    }
-//                })
-//                .filter(Objects::nonNull)
-//                .sorted()
-//                .collect(Collectors.toList());
+
         double avgHoursBetweenCommits = -1.0;
         if (commitDates.size() > 1) {
             long totalHours = 0;
@@ -308,6 +291,9 @@ public class GitHubIntegrationServiceImpl {
                         Collectors.counting()
                 ));
     }
+
+
+
     private Map<DayOfWeek, Long> analyzeCommitWeekDistribution(List<CommitDetailDto> details) {
         return details.stream()
                 .map(d -> {
@@ -379,22 +365,7 @@ private String detectWorkPattern(List<CommitDetailDto> details) {
             return null;
         }
     }
-//    private LocalDateTime getCommitDate(CommitDetailDto d) {
-//        try {
-//            return Optional.ofNullable(d.getCommit().getAuthor())
-//                    .map(a -> LocalDateTime.parse(
-//                            a.getDate(),
-//                            DateTimeFormatter.ISO_DATE_TIME
-//                    ))
-//                    .orElseThrow(() -> new RuntimeException("Auteur ou date absent dans le commit"));
-//        } catch (DateTimeParseException e) {
-//            log.warn("Format de date invalide pour le commit {}: {}", d.getSha(), e.getMessage());
-//            return null;
-//        } catch (Exception e) {
-//            log.warn("Erreur lors de l'extraction de la date du commit {}: {}", d.getSha(), e.getMessage());
-//            return null;
-//        }
-//    }
+
     private boolean containsContextAndReasoning(String message) {
         if (message == null || message.isBlank()) return false;
 
@@ -405,11 +376,7 @@ private String detectWorkPattern(List<CommitDetailDto> details) {
                         lower.contains("modif") || lower.contains("update") ||
                         lower.contains("remove") || lower.contains("change"));
     }
-//    private boolean containsContextAndReasoning(String message) {
-//        String lower = message.toLowerCase();
-//        return lower.contains("add") || lower.contains("fix") || lower.contains("improve") ||
-//                lower.contains("because") || lower.contains("fixes") || lower.contains("refs");
-//    }
+
 
 private String extractCommitType(String message) {
     if (message == null) return "no-message";
@@ -459,7 +426,7 @@ private String extractCommitType(String message) {
 
 private List<String> fetchAllCommitShas(String owner, String repo, String branch, String token) {
     List<String> shas = new ArrayList<>();
-//    String url = baseUrl + "/repos/{owner}/{repo}/commits?sha={branch}&per_page=100";
+
     String url = baseUrl + "/repos/{owner}/{repo}/commits?sha={branch}&per_page=100&exclude_pull_requests=true";
     String next = UriComponentsBuilder.fromUriString(url)
             .build(owner, repo, branch)

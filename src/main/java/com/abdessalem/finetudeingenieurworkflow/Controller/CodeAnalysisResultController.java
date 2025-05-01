@@ -56,7 +56,7 @@ public class CodeAnalysisResultController {
             @PathVariable Long tacheId,
             @RequestParam String branchName
     ) {
-        // *Pas* de principal : c'est 100 % user-fourni
+
         CodeAnalysisResult result = codeAnalysisResultServices
                 .analyserEtEnregistrerMetrics(tacheId, branchName, tutorId);
         return ResponseEntity.ok(result);

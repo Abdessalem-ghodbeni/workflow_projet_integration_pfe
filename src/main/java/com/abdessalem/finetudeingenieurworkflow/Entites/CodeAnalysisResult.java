@@ -65,6 +65,21 @@ public class CodeAnalysisResult implements Serializable {
 
     @Column(name = "pattern_travail")
     private String patternTravail;
+
+
+
+
+
+    @Column(name = "security_vulnerabilities")
+    private Integer securityVulnerabilities;
+
+
+
+    @Column(name = "critical_bugs")
+    private Integer criticalBugs;
+
+
+
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "tache_id")
