@@ -227,6 +227,28 @@ public class ISprintServicesImp implements ISprintServices {
     public Sprint GetSprintById(Long idSprint) {
        return sprintRepository.findById(idSprint).orElseThrow(() -> new RessourceNotFound("Le sprint avec l'ID " + idSprint + " n'existe pas."));
     }
+@Transactional
+    @Override
+    public void mettreAJourTauxAvancement(Long sprintId) {
+        Optional<Sprint> sprintOpt = sprintRepository.findById(sprintId);
+        if (sprintOpt.isPresent()) {
+            Sprint sprint = sprintOpt.get();
+
+            List<Tache> taches = sprint.getTaches();
+            if (taches == null || taches.isEmpty()) {
+                sprint.setTauxAvancement(0.0);
+                return;
+            }
+            long total = taches.size();
+            long validees = taches.stream()
+                    .filter(t -> t.getEtat() == EtatTache.VALIDATED)
+                    .count();
+            double taux = (validees * 100.0) / total;
+            sprint.setTauxAvancement(taux);
+            sprintRepository.save(sprint);
+        }
+
+    }
 
 
 }

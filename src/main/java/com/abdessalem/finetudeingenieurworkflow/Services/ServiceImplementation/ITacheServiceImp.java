@@ -24,6 +24,7 @@ public class ITacheServiceImp implements ITacheServices {
     private  final IEtudiantRepository etudiantRepository;
     private final IProjetRepository projetRepository;
     private final IUserRepository userRepository;
+    private final ISprintServicesImp sprintServicesImp;
 private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
 
     @Override
@@ -224,51 +225,108 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
         return new ApiResponse("Tâche affectée à l'étudiant avec succès", true);
     }
 
-    @Override
-    public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
-        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
-        if (tacheOpt.isEmpty()) {
-            return new ApiResponse("Tâche non trouvée", false);
-        }
-
-        Tache tache = tacheOpt.get();
-        EtatTache ancienEtat = tache.getEtat();
-
-        // On ne fait rien si l'état ne change pas
-        if (ancienEtat == nouvelEtat) {
-            return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
-        }
-
-        tache.setEtat(nouvelEtat);
-        tacheRepository.save(tache);
-
-        // Historique
-        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
-        if (etudiantOpt.isPresent()) {
-            Etudiant etudiant = etudiantOpt.get();
-            String message = etudiant.getNom() + " a changé l'état de la tâche '" +
-                    tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
-                    "' vers '" + nouvelEtat + "'";
-
-            historiqueServiceImp.enregistrerAction(
-                    idEtudiant,
-                    "CHANGEMENT_ETAT_TACHE",
-                    message
-
-            );
-            EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
-                    .ancienEtat(ancienEtat)
-                    .nouveauEtat(nouvelEtat)
-                    .dateChangement(LocalDateTime.now())
-                    .acteur(etudiantOpt.orElse(null))
-                    .tache(tache)
-                    .build();
-            etatHistoriqueTacheRepository.save(historique);
-        }
-
-
-        return new ApiResponse("État de la tâche mis à jour avec succès", true);
+//    @Override
+//    public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
+//        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+//        if (tacheOpt.isEmpty()) {
+//            return new ApiResponse("Tâche non trouvée", false);
+//        }
+//
+//        Tache tache = tacheOpt.get();
+//        EtatTache ancienEtat = tache.getEtat();
+//
+//        // On ne fait rien si l'état ne change pas
+//        if (ancienEtat == nouvelEtat) {
+//            return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
+//        }
+//
+//        tache.setEtat(nouvelEtat);
+//        tacheRepository.save(tache);
+//
+//        // Historique
+//        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+//        if (etudiantOpt.isPresent()) {
+//            Etudiant etudiant = etudiantOpt.get();
+//            String message = etudiant.getNom() + " a changé l'état de la tâche '" +
+//                    tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
+//                    "' vers '" + nouvelEtat + "'";
+//
+//            historiqueServiceImp.enregistrerAction(
+//                    idEtudiant,
+//                    "CHANGEMENT_ETAT_TACHE",
+//                    message
+//
+//            );
+//            EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
+//                    .ancienEtat(ancienEtat)
+//                    .nouveauEtat(nouvelEtat)
+//                    .dateChangement(LocalDateTime.now())
+//                    .acteur(etudiantOpt.orElse(null))
+//                    .tache(tache)
+//                    .build();
+//            etatHistoriqueTacheRepository.save(historique);
+//        }
+//
+//
+//        return new ApiResponse("État de la tâche mis à jour avec succès", true);
+//    }
+@Override
+@Transactional
+public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
+    Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+    if (tacheOpt.isEmpty()) {
+        return new ApiResponse("Tâche non trouvée", false);
     }
 
+    Tache tache = tacheOpt.get();
+    EtatTache ancienEtat = tache.getEtat();
+
+    // Ne rien faire si l'état ne change pas
+    if (ancienEtat == nouvelEtat) {
+        return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
+    }
+
+    // Sauvegarder le nouvel état
+    tache.setEtat(nouvelEtat);
+    tacheRepository.save(tache);
+
+    // --- LOGIQUE POUR METTRE À JOUR LE TAUX D'AVANCEMENT ---
+    boolean besoinDeMettreAJourAvancement = false;
+
+    if (nouvelEtat == EtatTache.VALIDATED || ancienEtat == EtatTache.VALIDATED) {
+        besoinDeMettreAJourAvancement = true;
+    }
+
+    if (besoinDeMettreAJourAvancement && tache.getSprint() != null) {
+        sprintServicesImp.mettreAJourTauxAvancement(tache.getSprint().getId());
+    }
+    // -----------------------------------------------------
+
+    // Historique utilisateur
+    Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+    if (etudiantOpt.isPresent()) {
+        Etudiant etudiant = etudiantOpt.get();
+        String message = etudiant.getNom() + " a changé l'état de la tâche '" +
+                tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
+                "' vers '" + nouvelEtat + "'";
+
+        historiqueServiceImp.enregistrerAction(
+                idEtudiant,
+                "CHANGEMENT_ETAT_TACHE",
+                message
+        );
+
+        EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
+                .ancienEtat(ancienEtat)
+                .nouveauEtat(nouvelEtat)
+                .dateChangement(LocalDateTime.now())
+                .acteur(etudiantOpt.orElse(null))
+                .tache(tache)
+                .build();
+        etatHistoriqueTacheRepository.save(historique);
+    }
+
+    return new ApiResponse("État de la tâche mis à jour avec succès", true);
+}
 
 }
