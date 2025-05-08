@@ -4,12 +4,16 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITacheServices;
+import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +28,7 @@ public class ITacheServiceImp implements ITacheServices {
     private  final IEtudiantRepository etudiantRepository;
     private final IProjetRepository projetRepository;
     private final IUserRepository userRepository;
+    private final SendEmailServiceImp sendEmailService;
     private final ISprintServicesImp sprintServicesImp;
 private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
 
@@ -55,6 +60,9 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
                 .description(request.getDescription())
                 .complexite(request.getComplexite())
                 .priorite(request.getPriorite())
+                .dateDebutEstimee(request.getDateDebutEstimee())
+                .dateFinEstimee(request.getDateFinEstimee())
+                .etat(EtatTache.TO_DO)
                 .epic(epicOpt.get())
                 .backlog(backlog)
                 .build();
@@ -114,6 +122,8 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
         tache.setEtat(EtatTache.TO_DO);
         tache.setEpic(epicOpt.get());
         tache.setBacklog(backlog);
+        tache.setDateFinEstimee(request.getDateFinEstimee());
+        tache.setDateDebutEstimee(request.getDateDebutEstimee());
 
         tacheRepository.save(tache);
 
@@ -328,5 +338,56 @@ public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idE
 
     return new ApiResponse("État de la tâche mis à jour avec succès", true);
 }
+
+
+// 17:13 te3 la3chiya
+    @Scheduled(cron = "0 13 17 * * *")
+    @Transactional
+    public void checkOverdueTasks() {
+        final LocalDate today = LocalDate.now();
+        final List<EtatTache> completedStates = List.of(EtatTache.VALIDATED, EtatTache.DONE);
+
+        log.info("Lancement de la vérification des tâches en retard à {}", LocalDateTime.now());
+
+        List<Tache> tasks = tacheRepository.findOverdueTasks(today, completedStates);
+
+        log.info("{} tâches potentielles trouvées", tasks.size());
+
+        tasks.forEach(task -> {
+            try {
+                Etudiant student = task.getEtudiant();
+                Equipe team = student.getEquipe();
+
+                log.debug("Traitement de la tâche {} - Étudiant {}", task.getId(), student.getId());
+
+                if(team == null || team.getTuteur() == null) {
+                    log.warn("Équipe/tuteur manquant pour la tâche {} (Étudiant {})", task.getId(), student.getId());
+                    return;
+                }
+
+                Tuteur tutor = team.getTuteur();
+
+                if(isValidEmail(student.getEmail()) && isValidEmail(tutor.getEmail())) {
+                    sendEmailService.sendTaskOverdueEmail(student.getEmail(), tutor.getEmail(), task);
+                    task.setNotified(true);
+                    tacheRepository.save(task);
+                    log.info("Notification envoyée pour la tâche {}", task.getId());
+                } else {
+                    log.error("Email invalide pour la tâche {}", task.getId());
+                }
+
+            } catch (Exception e) {
+                log.error("Échec du traitement de la tâche {} : {}", task.getId(), e.getMessage());
+            }
+        });
+
+        log.info("Vérification terminée. Tâches traitées : {}", tasks.size());
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    }
+
+
 
 }

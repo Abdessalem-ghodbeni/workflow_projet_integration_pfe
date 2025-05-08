@@ -15,4 +15,5 @@ public interface ITacheServices {
     List<Tache> getTachesByProjetId(Long projetId);
     ApiResponse affecterTacheAEtudiant(Long idTache, Long idEtudiantCible, Long idUserQuiAffecte);
     ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant);
+
 }

@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITacheServices;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.ITacheServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ITacheController {
     private final ITacheServices tacheServices;
+    private final ITacheServiceImp tacheServiceImp;
 
     @PostMapping("/ajouter/{etudiantId}")
     public ResponseEntity<ApiResponse> ajouterTache(
@@ -119,7 +121,11 @@ public class ITacheController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+    // Dans un @RestController temporaire
+    @GetMapping("/test-scheduler")
+    public void testScheduler() {
+        tacheServiceImp.checkOverdueTasks();
+    }
 
     @PutMapping("/kanban/etat")
     public ResponseEntity<ApiResponse> ChangeEtatTache(
