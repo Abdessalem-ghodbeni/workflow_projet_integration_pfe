@@ -1,9 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
-import com.abdessalem.finetudeingenieurworkflow.Entites.EtatTache;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Tache;
-import com.abdessalem.finetudeingenieurworkflow.Entites.TacheRequest;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 
 import java.util.List;
 
@@ -15,5 +12,7 @@ public interface ITacheServices {
     List<Tache> getTachesByProjetId(Long projetId);
     ApiResponse affecterTacheAEtudiant(Long idTache, Long idEtudiantCible, Long idUserQuiAffecte);
     ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant);
+    List<TacheDTO> getTachesForEtudiant(Long etudiantId);
+    void checkOverdueTasks();
 
 }

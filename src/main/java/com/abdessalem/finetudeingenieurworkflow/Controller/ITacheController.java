@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ITacheController {
     private final ITacheServices tacheServices;
-    private final ITacheServiceImp tacheServiceImp;
+
 
     @PostMapping("/ajouter/{etudiantId}")
     public ResponseEntity<ApiResponse> ajouterTache(
@@ -71,11 +71,7 @@ public class ITacheController {
     @DeleteMapping("supprimer/{tacheId}/{etudiantId}")
     public ResponseEntity<ApiResponse> deleteEpic(@PathVariable Long tacheId,
                                                   @PathVariable Long etudiantId) {
-
-
-
-
-        try {
+         try {
             ApiResponse response = tacheServices.supprimerTache(tacheId, etudiantId);
 
             if (!response.isSuccess()) {
@@ -124,7 +120,7 @@ public class ITacheController {
     // Dans un @RestController temporaire
     @GetMapping("/test-scheduler")
     public void testScheduler() {
-        tacheServiceImp.checkOverdueTasks();
+        tacheServices.checkOverdueTasks();
     }
 
     @PutMapping("/kanban/etat")
@@ -148,5 +144,19 @@ public class ITacheController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/calendar/{etudiantId}")
+    public ResponseEntity<?> getTachesForCalendar(
+            @PathVariable Long etudiantId) {
+
+    try{
+        return ResponseEntity.ok(tacheServices.getTachesForEtudiant(etudiantId));
+
+    }catch (Exception exception){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+    }
+    }
+
+
 
 }

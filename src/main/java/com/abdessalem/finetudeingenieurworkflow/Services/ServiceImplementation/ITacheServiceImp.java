@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -339,8 +341,27 @@ public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idE
     return new ApiResponse("État de la tâche mis à jour avec succès", true);
 }
 
+    @Override
+    public List<TacheDTO> getTachesForEtudiant(Long etudiantId) {
+        int currentYear = Year.now().getValue();
+        List<Tache> taches=tacheRepository.findByEtudiantAndCurrentYear(etudiantId, currentYear);
+        return taches.stream()
+                .map(tache -> new TacheDTO(
+                        tache.getId(),
+                        tache.getTitre(),
+                        tache.getDateDebutEstimee(),
+                        tache.getDateFinEstimee(),
+                        tache.getEtat().name(),
+                        tache.getPriorite(),
+                        tache.getEpic()
 
-// 17:13 te3 la3chiya
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    // 17:13 te3 la3chiya
+    @Override
     @Scheduled(cron = "0 13 17 * * *")
     @Transactional
     public void checkOverdueTasks() {

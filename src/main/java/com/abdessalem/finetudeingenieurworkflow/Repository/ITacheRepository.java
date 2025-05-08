@@ -32,6 +32,14 @@ public interface ITacheRepository extends JpaRepository<Tache,Long> {
     List<Tache> findByEtudiantAndProjectAndYear(
             @Param("etudiantId") Long etudiantId,
             @Param("year") int year);
-
+    @Query("SELECT t FROM Tache t " +
+            "JOIN t.sprint s " +
+            "JOIN s.projet p " +
+            "WHERE t.etudiant.id = :etudiantId " +
+            "AND YEAR(p.dateCreation) = :year " +
+            "ORDER BY t.dateDebutEstimee")
+    List<Tache> findByEtudiantAndCurrentYear(
+            @Param("etudiantId") Long etudiantId,
+            @Param("year") int year);
 
 }
