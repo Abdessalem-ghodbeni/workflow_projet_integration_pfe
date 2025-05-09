@@ -340,12 +340,6 @@ else {
     }
   }
 
-//  @PostMapping("/loginn")
-//  public AuthenticationResponse login(@RequestBody User user) {
-//
-//
-//      return authenticationServices.login(user.getEmail(), user.getPassword());
-//  }
   @PostMapping("/login")
   public ResponseEntity<?> loginn(@RequestBody User user) {
    try{

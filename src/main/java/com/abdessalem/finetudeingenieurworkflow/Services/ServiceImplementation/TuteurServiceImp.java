@@ -1,5 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
+import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
@@ -10,13 +11,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.net.FileNameMap;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TuteurServiceImp implements ITuteurServices {
     private final ITuteurRepository tuteurRepository;
+    private final IHistoriqueServiceImp historiqueService;
     @Override
     public List<Tuteur> getAllTuteur() {
         return tuteurRepository.findAll();
@@ -35,5 +39,34 @@ public class TuteurServiceImp implements ITuteurServices {
     @Override
     public Page<Tuteur> searchTuteurs(String keyword, Pageable pageable) {
         return tuteurRepository.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(keyword, keyword, pageable);
+    }
+
+    @Override
+    public List<Tuteur> getAllChefOptionsTuteurs() {
+        return tuteurRepository.findAllChefOptionsTuteurs();
+    }
+
+    @Override
+    public ApiResponse toggleChefOption(Long idTuteur, Long idActionneur) {
+        Optional<Tuteur> optionalTuteur = tuteurRepository.findById(idTuteur);
+        Optional<Tuteur> optionalTuteurActinneur = tuteurRepository.findById(idActionneur);
+
+        if (!optionalTuteur.isPresent()) {
+            return new ApiResponse("Tuteur non trouvé avec l'ID : " + idTuteur, false);
+        }
+        if (!optionalTuteurActinneur.isPresent()) {
+            return new ApiResponse("Tuteur non trouvé avec l'ID : " + idActionneur, false);
+        }
+
+        Tuteur tuteur = optionalTuteur.get();
+        boolean newStatus = !tuteur.is_Chef_Options();
+        tuteur.set_Chef_Options(newStatus);
+        tuteurRepository.save(tuteur);
+
+        String action = newStatus ? "ACTIVATION_CHEF_OPTION" : "DESACTIVATION_CHEF_OPTION";
+        String description = "Changement du statut Chef d'option à : " + newStatus +"du "+tuteur.getNom();
+        historiqueService.enregistrerAction(idActionneur, action, description);
+
+        return new ApiResponse("Statut Chef d'option modifié avec succès", true);
     }
 }
