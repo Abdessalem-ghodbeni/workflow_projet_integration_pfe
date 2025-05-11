@@ -27,7 +27,6 @@ public class Tache implements Serializable {
     private Long id;
     private String titre;
     @Column(nullable = false, columnDefinition = "TEXT")
-
     private String description;
     @Enumerated(EnumType.STRING)
     private Complexity complexite;

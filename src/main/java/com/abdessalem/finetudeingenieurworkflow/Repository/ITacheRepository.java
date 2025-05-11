@@ -41,5 +41,6 @@ public interface ITacheRepository extends JpaRepository<Tache,Long> {
     List<Tache> findByEtudiantAndCurrentYear(
             @Param("etudiantId") Long etudiantId,
             @Param("year") int year);
+    List<Tache> findByEtudiantId(Long etudiantId);
 
 }

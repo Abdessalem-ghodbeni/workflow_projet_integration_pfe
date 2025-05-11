@@ -33,54 +33,33 @@ public class CodeAnalysisResult implements Serializable {
     private boolean estAnalyseActive;                // Pour savoir laquelle est la plus récente/pertinente
 
     private LocalDateTime dateDerniereAnalyseGit;    // pour savoir quand on a fait la dernière analyse
-// Dans CodeAnalysisResult.java
-// Ajouter ces nouveaux champs :
+
 
     @Column(name = "average_hours_between_commits")
     private Double averageHoursBetweenCommits;
-
     @Column(name = "branch_lifespan_days")
     private Long branchLifespanDays;
-
     @Column(name = "merge_conflict_detected")
     private Boolean mergeConflictDetected;
-
     @Column(name = "average_additions_per_commit")
     private Double averageAdditionsPerCommit;
-
     @Column(name = "average_deletions_per_commit")
     private Double averageDeletionsPerCommit;
-
     @Column(name = "commit_types_distribution", columnDefinition = "TEXT")
     private String commitTypesDistribution;
-
     @Column(name = "score_qualite_commit_message")
     private Double scoreQualiteCommitMessage;
-
     @Column(name = "heure_travail_distribution", columnDefinition = "TEXT")
     private String heureTravailDistribution;
-
     @Column(name = "jour_travail_distribution", columnDefinition = "TEXT")
     private String jourTravailDistribution;
-
     @Column(name = "pattern_travail")
     private String patternTravail;
-
-
-
-
-
     @Column(name = "security_vulnerabilities")
     private Integer securityVulnerabilities;
-
-
-
     @Column(name = "critical_bugs")
     private Integer criticalBugs;
-
-
-
-    @ManyToOne
+     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "tache_id")
     private Tache tache;
