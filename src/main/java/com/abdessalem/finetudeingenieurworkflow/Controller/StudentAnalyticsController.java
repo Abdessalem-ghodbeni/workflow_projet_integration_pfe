@@ -1,18 +1,13 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.AdvancedTaskMetrics;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.CommitImpactProfile;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.TaskEngagement;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.WorkRegularityScore;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.*;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tache;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITacheRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.StudentAnalyticsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,22 +24,34 @@ public class StudentAnalyticsController {
         return ResponseEntity.ok(analyticsService.calculateWorkRegularity(etudiantId));
     }
 
-    @GetMapping("/{etudiantId}/commit-impact")
-    public ResponseEntity<CommitImpactProfile> getCommitImpact(
-            @PathVariable Long etudiantId) {
-        return ResponseEntity.ok(analyticsService.analyzeCommitImpact(etudiantId));
+//    @GetMapping("/{etudiantId}/commit-impact")
+//    public ResponseEntity<CommitImpactProfile> getCommitImpact(
+//            @PathVariable Long etudiantId) {
+//        return ResponseEntity.ok(analyticsService.analyzeCommitImpact(etudiantId));
+//    }
+//
+//    @GetMapping("/{etudiantId}/task-engagement")
+//    public ResponseEntity<TaskEngagement> getTaskEngagement(
+//            @PathVariable Long etudiantId) {
+//        return ResponseEntity.ok(analyticsService.analyzeTaskEngagement(etudiantId));
+//    }
+//
+//    @GetMapping("/{etudiantId}/advanced-metrics")
+//    public ResponseEntity<AdvancedTaskMetrics> getAdvancedMetrics(
+//            @PathVariable Long etudiantId) {
+//        return ResponseEntity.ok(analyticsService.calculateAdvancedMetrics(etudiantId));
+//    }
+
+
+    @GetMapping("/{etudiantId}/full-report")
+    public ResponseEntity<?> getFullStudentReport(
+            @PathVariable Long etudiantId, @RequestParam(required = false) Long sprintId) {
+       try{
+           return ResponseEntity.ok(ResponseEntity.ok(analyticsService.generateAndSaveFullReport(etudiantId,sprintId)));
+       }catch (Exception exception){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+       }
     }
 
-    @GetMapping("/{etudiantId}/task-engagement")
-    public ResponseEntity<TaskEngagement> getTaskEngagement(
-            @PathVariable Long etudiantId) {
-        return ResponseEntity.ok(analyticsService.analyzeTaskEngagement(etudiantId));
-    }
-
-    @GetMapping("/{etudiantId}/advanced-metrics")
-    public ResponseEntity<AdvancedTaskMetrics> getAdvancedMetrics(
-            @PathVariable Long etudiantId) {
-        return ResponseEntity.ok(analyticsService.calculateAdvancedMetrics(etudiantId));
-    }
 
 }

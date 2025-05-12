@@ -1,10 +1,10 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.CodeAnalysisResult;
+import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Entites.DTOsStudentAnalytics.*;
-import com.abdessalem.finetudeingenieurworkflow.Entites.EtatHistoriqueTache;
-import com.abdessalem.finetudeingenieurworkflow.Entites.EtatTache;
-import com.abdessalem.finetudeingenieurworkflow.Entites.Tache;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISprintRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IStudentAnalysisReportRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITacheRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 public class StudentAnalyticsService {
     private final ITacheRepository tacheRepository;
     private final ObjectMapper objectMapper;
+    private final ISprintRepository sprintRepository;
+    private final IStudentAnalysisReportRepository reportRepository;
+    private final IEtudiantRepository etudiantRepository;
 
     // Métrique clé 1: Régularité du travail
     public WorkRegularityScore calculateWorkRegularity(Long etudiantId) {
@@ -336,6 +339,11 @@ public class StudentAnalyticsService {
 
         return transitions;
     }
+    private List<Tache> getTasks(Long etudiantId, Long sprintId) {
+        return (sprintId != null)
+                ? tacheRepository.findByEtudiantIdAndSprintId(etudiantId, sprintId)
+                : tacheRepository.findByEtudiantId(etudiantId);
+    }
     public Map<String, TransitionMetrics> calculateTransitionMetrics(List<Tache> tasks) {
         Map<String, List<Duration>> transitions = new HashMap<>();
 
@@ -371,8 +379,17 @@ public class StudentAnalyticsService {
                                 .build()
                 ));
     }
-    public AdvancedTaskMetrics calculateAdvancedMetrics(Long etudiantId) {
-        List<Tache> tasks = tacheRepository.findByEtudiantId(etudiantId);
+//    public AdvancedTaskMetrics calculateAdvancedMetrics(Long etudiantId) {
+//        List<Tache> tasks = tacheRepository.findByEtudiantId(etudiantId);
+private void validateSprint(Long sprintId) {
+    if (sprintId != null && !sprintRepository.existsById(sprintId)) {
+        throw new IllegalArgumentException("Sprint non trouvé");
+    }
+}
+
+    public AdvancedTaskMetrics calculateAdvancedMetrics(Long etudiantId, Long sprintId) {
+        validateSprint(sprintId);
+    List<Tache> tasks = getTasks(etudiantId, sprintId);
         Map<String, TransitionMetrics> transitions = calculateTransitions(tasks);
 
         return AdvancedTaskMetrics.builder()
@@ -462,5 +479,50 @@ public class StudentAnalyticsService {
         }
 
         return metrics;
+    }
+
+
+
+    //////// exposer api qui englobe tous si slouma
+    public StudentAnalyticsReport generateFullAnalyticsReport(Long etudiantId,Long sprintId) {
+        return StudentAnalyticsReport.builder()
+                .workRegularity(calculateWorkRegularity(etudiantId))
+                .commitImpact(analyzeCommitImpact(etudiantId))
+                .taskEngagement(analyzeTaskEngagement(etudiantId))
+                .advancedMetrics(calculateAdvancedMetrics(etudiantId,sprintId))
+                .build();
+    }
+
+
+
+
+
+
+
+
+
+
+    public StudentAnalyticsReport generateAndSaveFullReport(Long etudiantId, Long sprintId) throws Exception {
+        // 1. Générer le rapport DTO
+        StudentAnalyticsReport reportDTO = generateFullAnalyticsReport(etudiantId, sprintId);
+
+        // 2. Récupérer les entités associées
+        Etudiant etudiant = etudiantRepository.getReferenceById(etudiantId); // ✅ Méthode JPA
+        Sprint sprint = sprintId != null ? sprintRepository.getReferenceById(sprintId) : null;
+
+        // 3. Convertir en JSON
+        String jsonReport = objectMapper.writeValueAsString(reportDTO);
+
+        // 4. Construire l'entité de rapport
+        StudentAnalysisReport entity = StudentAnalysisReport.builder()
+                .etudiant(etudiant)
+                .sprint(sprint)
+                .fullReportJson(jsonReport)
+                .build();
+
+        // 5. Sauvegarder
+        reportRepository.save(entity);
+
+        return reportDTO;
     }
 }
