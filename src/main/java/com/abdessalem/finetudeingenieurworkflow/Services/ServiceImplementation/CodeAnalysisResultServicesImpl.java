@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -83,6 +84,10 @@ public class CodeAnalysisResultServicesImpl implements ICodeAnalysisResultServic
         return new ApiResponse("Nom de branche Git modifié avec succès.", true);
     }
 
+    @Override
+    public List<CodeAnalysisResult> FetchAllAnalyseByIdTache(Long idTache) {
+        return codeAnalysisResultRepository.findByTacheIdOrderByDateDerniereAnalyseGitDesc(idTache);
+    }
 
 
     @Transactional

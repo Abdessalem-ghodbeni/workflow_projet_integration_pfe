@@ -54,8 +54,12 @@ public class StudentAnalyticsController {
     }
 
     @GetMapping("/evaluate-task/{taskId}")
-    public ResponseEntity<EnhancedEvaluationResult> evaluateTask(@PathVariable Long taskId) {
-        EnhancedEvaluationResult result = analyticsService.evaluateTask(taskId);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> evaluateTask(@PathVariable Long taskId) {
+        try{
+            return ResponseEntity.ok(analyticsService.evaluateTask(taskId));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+
     }
 }

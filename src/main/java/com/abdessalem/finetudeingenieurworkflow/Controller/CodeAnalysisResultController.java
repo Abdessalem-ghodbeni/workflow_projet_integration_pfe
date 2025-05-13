@@ -4,6 +4,7 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.CodeAnalysisResult;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Epic;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.CodeAnalysisResultServicesImpl;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.StudentAnalyticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CodeAnalysisResultController {
     private final CodeAnalysisResultServicesImpl codeAnalysisResultServices;
+
 
 
     @PostMapping("/ajouter/{tacheId}/{utilisateurId}")
@@ -61,6 +63,15 @@ public class CodeAnalysisResultController {
                 .analyserEtEnregistrerMetrics(tacheId, branchName, tutorId);
         return ResponseEntity.ok(result);
     }
+
+@GetMapping(path = "liste/analyses/{idTache}")
+    public ResponseEntity<?>FetchiliListe(@PathVariable("idTache")Long idTache){
+        try {
+return ResponseEntity.ok(codeAnalysisResultServices.FetchAllAnalyseByIdTache(idTache));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+}
 
 
 }
