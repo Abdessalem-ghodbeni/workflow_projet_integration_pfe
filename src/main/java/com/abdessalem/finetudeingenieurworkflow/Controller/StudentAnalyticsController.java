@@ -53,5 +53,9 @@ public class StudentAnalyticsController {
        }
     }
 
-
+    @GetMapping("/evaluate-task/{taskId}")
+    public ResponseEntity<EnhancedEvaluationResult> evaluateTask(@PathVariable Long taskId) {
+        EnhancedEvaluationResult result = analyticsService.evaluateTask(taskId);
+        return ResponseEntity.ok(result);
+    }
 }

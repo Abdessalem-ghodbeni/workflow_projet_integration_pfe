@@ -12,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -493,15 +494,6 @@ private void validateSprint(Long sprintId) {
                 .build();
     }
 
-
-
-
-
-
-
-
-
-
     public StudentAnalyticsReport generateAndSaveFullReport(Long etudiantId, Long sprintId) throws Exception {
         // 1. Générer le rapport DTO
         StudentAnalyticsReport reportDTO = generateFullAnalyticsReport(etudiantId, sprintId);
@@ -525,4 +517,226 @@ private void validateSprint(Long sprintId) {
 
         return reportDTO;
     }
+///////////////////////////////////////////dfdsfdsfsdfsdfdsfsdfsdfsdfsdfdfsdf
+public EnhancedEvaluationResult evaluateTask(Long taskId) {
+    Tache tache = tacheRepository.findById(taskId)
+            .orElseThrow(() -> new RuntimeException("Tâche non trouvée"));
+
+    List<CodeAnalysisResult> analyses = tache.getAnalyses();
+    if (analyses == null || analyses.isEmpty()) {
+        throw new RuntimeException("Aucune analyse disponible");
+    }
+
+    // Calcul des métriques
+    CodeAnalysisResult latestAnalysis = analyses.stream()
+            .max(Comparator.comparing(CodeAnalysisResult::getDateDerniereAnalyseGit))
+            .orElseThrow();
+
+    // Calcul des différentes catégories
+    EnhancedEvaluationResult.CodeHealthMetrics codeHealth = calculateCodeHealth(analyses);
+    EnhancedEvaluationResult.DevelopmentBehavior behavior = calculateDevelopmentBehavior(latestAnalysis);
+    EnhancedEvaluationResult.CollaborationMetrics collaboration = calculateCollaborationMetrics(analyses);
+    EnhancedEvaluationResult.TemporalAnalysis temporal = calculateTemporalAnalysis(analyses);
+    EnhancedEvaluationResult.CompositeScores scores = calculateCompositeScores(codeHealth, behavior, collaboration, temporal);
+    List<String> recommendations = generateRecommendations(scores);
+
+    return EnhancedEvaluationResult.builder()
+            .codeHealth(codeHealth)
+            .behavior(behavior)
+            .collaboration(collaboration)
+            .progression(temporal)
+            .scores(scores)
+            .recommendations(recommendations)
+            .build();
+}
+
+    private EnhancedEvaluationResult.CodeHealthMetrics calculateCodeHealth(List<CodeAnalysisResult> analyses) {
+        double stabilityIndex = calculateCodeStability(analyses);
+        int criticalIssues = analyses.stream()
+                .mapToInt(a -> (a.getCriticalBugs() != null ? a.getCriticalBugs() : 0) +
+                        (a.getSecurityVulnerabilities() != null ? a.getSecurityVulnerabilities() : 0))
+                .sum();
+
+        return EnhancedEvaluationResult.CodeHealthMetrics.builder()
+                .codeStabilityIndex(stabilityIndex)
+                .criticalIssuesDensity(criticalIssues)
+                .codeSustainability(analyses.stream()
+                        .mapToDouble(a -> a.getLignesCodeAjoutees() - a.getLignesCodeSupprimees())
+                        .average().orElse(0))
+                .testCoverageTrend(0) // À implémenter avec données de couverture tests
+                .build();
+    }
+
+    private Map<String, Integer> parseJson(String json) {
+        if (json == null || json.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        try {
+            return objectMapper.readValue(json, new TypeReference<Map<String, Integer>>() {});
+        } catch (Exception e) {
+            log.warn("Erreur de parsing JSON : {}", e.getMessage());
+            return new HashMap<>();
+        }
+    }
+    private EnhancedEvaluationResult.DevelopmentBehavior calculateDevelopmentBehavior(CodeAnalysisResult analysis) {
+        Map<String, Integer> hours = parseJson(analysis.getHeureTravailDistribution());
+        double focusFactor = calculateFocusFactor(analysis);
+
+        return EnhancedEvaluationResult.DevelopmentBehavior.builder()
+                .focusFactor(focusFactor)
+                .workflowConsistency(calculateWorkflowConsistency(hours))
+                .refactoringRatio(calculateRefactoringRatio(analysis))
+                .crisisIndicator(calculateCrisisIndicator(analysis))
+                .build();
+    }
+
+    private EnhancedEvaluationResult.CollaborationMetrics calculateCollaborationMetrics(List<CodeAnalysisResult> analyses) {
+        return EnhancedEvaluationResult.CollaborationMetrics.builder()
+                .mergeEfficiency(analyses.stream()
+                        .mapToDouble(a -> a.getBranchLifespanDays() != null ?
+                                a.getBranchLifespanDays() : 0)
+                        .average().orElse(0))
+                .conflictResolutionSkill(analyses.stream()
+                        .filter(a -> a.isBrancheMergee())
+                        .count() / (double) analyses.size())
+                .reviewResponsiveness(0) // À implémenter avec données de revue
+                .documentationQuality(0) // À implémenter avec analyse de documentation
+                .build();
+    }
+
+    private EnhancedEvaluationResult.TemporalAnalysis calculateTemporalAnalysis(List<CodeAnalysisResult> analyses) {
+        return EnhancedEvaluationResult.TemporalAnalysis.builder()
+                .learningCurve(calculateLearningCurve(analyses))
+                .consistencyScore(analyses.size() > 1 ? 1 : 0)
+                .phaseTransitions(Collections.singletonList("Initial→Development"))
+                .recoveryCapacity(0.8) // À affiner avec analyse des régressions
+                .build();
+    }
+
+    private EnhancedEvaluationResult.CompositeScores calculateCompositeScores(
+            EnhancedEvaluationResult.CodeHealthMetrics code,
+            EnhancedEvaluationResult.DevelopmentBehavior behavior,
+            EnhancedEvaluationResult.CollaborationMetrics collaboration,
+            EnhancedEvaluationResult.TemporalAnalysis temporal) {
+
+        return EnhancedEvaluationResult.CompositeScores.builder()
+                .technicalMastery(0.3*code.getCodeStabilityIndex() +
+                        0.4*behavior.getRefactoringRatio() +
+                        0.3*((double) 1 /(code.getCriticalIssuesDensity()+1)))
+                .teamContribution(0.5*collaboration.getMergeEfficiency() +
+                        0.5*behavior.getFocusFactor())
+                .projectOwnership(0.6*temporal.getConsistencyScore() +
+                        0.4*code.getCodeSustainability())
+                .agileMaturity(0.4*collaboration.getConflictResolutionSkill() +
+                        0.3*temporal.getLearningCurve() +
+                        0.3*behavior.getWorkflowConsistency())
+                .build();
+    }
+
+    private List<String> generateRecommendations(EnhancedEvaluationResult.CompositeScores scores) {
+        List<String> recs = new ArrayList<>();
+
+//        if (scores.getTechnicalMastery() < 0.6) {
+//            recs.add("Améliorer la qualité technique du code");
+//        }
+//        if (scores.getTeamContribution() < 0.7) {
+//            recs.add("Renforcer la collaboration avec l'équipe");
+//        }
+//        if (scores.getProjectOwnership() < 0.5) {
+//            recs.add("Développer un engagement plus fort vis-à-vis du projet");
+//        }
+        if (scores.getTechnicalMastery() < 5.0) {  // Ancien seuil : 0.6
+            recs.add("Améliorer la qualité technique du code (refactoring, tests, documentation)");
+        }
+        if (scores.getTeamContribution() < 10.0) { // Ancien seuil : 0.7
+            recs.add("Renforcer la collaboration avec l'équipe (revues de code, communication)");
+        }
+        if (scores.getProjectOwnership() < 2000.0) { // Ancien seuil : 0.5
+            recs.add("Développer un engagement plus fort vis-à-vis du projet");
+        }
+
+        // Recommandation par défaut si aucune autre condition n'est remplie
+        if (recs.isEmpty()) {
+            recs.add("Bon travail général ! Aucun point critique identifié.");
+        }
+
+        return recs;
+    }
+
+    // Vos méthodes existantes à intégrer ici
+    double calculateCodeStability(List<CodeAnalysisResult> analyses) {
+        return analyses.stream()
+                .mapToDouble(a -> (a.getLignesCodeAjoutees() + 1.0) /
+                        (a.getLignesCodeSupprimees() + 1.0))
+                .average().orElse(0.0);
+    }
+
+    double calculateCrisisIndicator(CodeAnalysisResult analysis) {
+        Map<String, Integer> hours = parseJson(analysis.getHeureTravailDistribution());
+        return hours.entrySet().stream()
+                .filter(e -> Integer.parseInt(e.getKey()) < 6 ||
+                        Integer.parseInt(e.getKey()) > 22)
+                .mapToInt(Map.Entry::getValue)
+                .sum() / (double) analysis.getNombreCommits();
+    }
+
+    double calculateRefactoringRatio(CodeAnalysisResult analysis) {
+        Map<String, Integer> commitTypes = parseJson(analysis.getCommitTypesDistribution());
+        return commitTypes.getOrDefault("refactor", 0) /
+                (double) analysis.getNombreCommits();
+    }
+
+    double calculateLearningCurve(List<CodeAnalysisResult> analyses) {
+        List<Double> qualityScores = analyses.stream()
+                .sorted(Comparator.comparing(CodeAnalysisResult::getDateDerniereAnalyseGit))
+                .map(this::calculateQualityScore)
+                .collect(Collectors.toList());
+
+        SimpleRegression regression = new SimpleRegression();
+        for (int i = 0; i < qualityScores.size(); i++) {
+            regression.addData(i, qualityScores.get(i));
+        }
+
+        return regression.getSlope();
+    }
+    private double calculateQualityScore(CodeAnalysisResult analysis) {
+        // Poids des différentes métriques (ajustables)
+        double stabilityWeight = 0.4;
+        double commitQualityWeight = 0.3;
+        double commitFrequencyWeight = 0.2;
+        double conflictFreeWeight = 0.1;
+
+        // Calcul de la stabilité du code (ajouts / suppressions)
+        double stability = (analysis.getLignesCodeAjoutees() + 1.0) /
+                (analysis.getLignesCodeSupprimees() + 1.0);
+
+        // Qualité des messages de commit (si disponible)
+        double commitQuality = Optional.ofNullable(analysis.getScoreQualiteCommitMessage())
+                .orElse(0.5); // Valeur par défaut si null
+
+        // Fréquence des commits (inverse du nombre de commits)
+        double commitFrequency = 1.0 / (analysis.getNombreCommits() + 1);
+
+        // Absence de conflits (1 si aucun conflit, 0 sinon)
+        double conflictFree = analysis.isBrancheMergee() && !analysis.getMergeConflictDetected() ? 1.0 : 0.0;
+
+        // Score final basé sur les poids
+        return stability * stabilityWeight +
+                commitQuality * commitQualityWeight +
+                commitFrequency * commitFrequencyWeight +
+                conflictFree * conflictFreeWeight;
+    }
+    double calculateWorkflowConsistency(Map<String, Integer> hours) {
+        double moyenne = hours.values().stream().mapToInt(Integer::intValue).average().orElse(0);
+        return Math.sqrt(hours.values().stream()
+                .mapToDouble(v -> Math.pow(v - moyenne, 2))
+                .average().orElse(0));
+    }
+
+    double calculateFocusFactor(CodeAnalysisResult analysis) {
+        Map<String, Integer> days = parseJson(analysis.getJourTravailDistribution());
+        return days.size() / 7.0;
+    }
+
 }
