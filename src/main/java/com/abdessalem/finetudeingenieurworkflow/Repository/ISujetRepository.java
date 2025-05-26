@@ -207,6 +207,29 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
   @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND s.etat = 'REFUSER' AND YEAR(s.dateCreation) = :year")
   int countRejectedSujetsByYear(Long tuteurId, Integer year);
 
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE YEAR(s.dateCreation) = :year")
+  int countTotalSujetsByYear(@Param("year") Integer year);
+  @Query("SELECT COUNT(s) FROM Sujet s")
+  int countTotalSujetsAllTime();
 
 
+
+
+
+
+
+  // SujetRepository.java
+// Pour l'année sélectionnée
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND YEAR(s.dateCreation) = :year")
+  int countSujetsTuteurByYear(Long tuteurId, Integer year);
+
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE YEAR(s.dateCreation) = :year")
+  int countSujetsPlateformeByYear(Integer year);
+
+  // Toutes années
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId")
+  int countSujetsTuteurAllTime(Long tuteurId);
+
+  @Query("SELECT COUNT(s) FROM Sujet s")
+  int countSujetsPlateformeAllTime();
 }

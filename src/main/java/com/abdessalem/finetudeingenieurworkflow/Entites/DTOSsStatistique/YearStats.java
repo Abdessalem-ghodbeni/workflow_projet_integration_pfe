@@ -14,4 +14,10 @@ public class YearStats {
     private int sujetsRefuses;
     private int etudiantsEncadres;
     private int equipesLiees;
+    private int sujetsTuteur;      //  Nombre de sujets du tuteur (validees + refusees)
+    private int sujetsPlateforme;
+    private int equipesLieesTuteur;     // 👈 Équipes du tuteur (année)
+    private int equipesPlateforme;      // 👈 Total équipes plateforme (année)
+    private int etudiantsEncadresTuteur; // 👈 Étudiants encadrés (année)
+    private int etudiantsPlateforme;
 }

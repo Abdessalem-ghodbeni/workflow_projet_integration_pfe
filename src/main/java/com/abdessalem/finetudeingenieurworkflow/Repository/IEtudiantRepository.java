@@ -14,4 +14,21 @@ public interface IEtudiantRepository extends JpaRepository<Etudiant,Long> {
     int countEtudiantsByYear(Long tuteurId, Integer year);
     @Query("SELECT COUNT(et) FROM Etudiant et WHERE et.equipe.tuteur.id = :tuteurId")
     int countTotalEtudiants(Long tuteurId);
+
+
+
+
+    // Pour l'année spécifique
+    @Query("SELECT COUNT(et) FROM Etudiant et WHERE et.equipe.tuteur.id = :tuteurId AND YEAR(et.equipe.dateCreation) = :year")
+    int countEtudiantsTuteurByYear(Long tuteurId, Integer year);
+
+    @Query("SELECT COUNT(et) FROM Etudiant et WHERE YEAR(et.equipe.dateCreation) = :year")
+    int countEtudiantsPlateformeByYear(Integer year);
+
+    // Toutes années
+    @Query("SELECT COUNT(et) FROM Etudiant et WHERE et.equipe.tuteur.id = :tuteurId")
+    int countEtudiantsTuteurAllTime(Long tuteurId);
+
+    @Query("SELECT COUNT(et) FROM Etudiant et")
+    int countEtudiantsPlateformeAllTime();
 }

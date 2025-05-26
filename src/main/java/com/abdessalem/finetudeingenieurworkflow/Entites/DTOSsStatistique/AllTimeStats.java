@@ -13,4 +13,9 @@ public class AllTimeStats {
     private int totalSujets;
     private int totalEtudiants;
     private int totalEquipes;
+    private int sujetsPlateformeAllTime;
+
+
+    private int equipesPlateformeAllTime;
+    private int etudiantsPlateformeAllTime;
 }

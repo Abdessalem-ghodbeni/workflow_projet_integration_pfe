@@ -85,21 +85,36 @@ public class TuteurServiceImp implements ITuteurServices {
         int selectedYear = (year != null) ? year : Year.now().getValue();
 
         YearStats yearStats = new YearStats();
+
+        // Sujets
         yearStats.setSujetsValides(sujetRepository.countValidatedSujetsByYear(tuteurId, selectedYear));
         yearStats.setSujetsRefuses(sujetRepository.countRejectedSujetsByYear(tuteurId, selectedYear));
-        yearStats.setEtudiantsEncadres(etudiantRepository.countEtudiantsByYear(tuteurId, selectedYear));
-        yearStats.setEquipesLiees(equipeRepository.countEquipesByYear(tuteurId, selectedYear));
+        yearStats.setSujetsTuteur(yearStats.getSujetsValides() + yearStats.getSujetsRefuses());
+        yearStats.setSujetsPlateforme(sujetRepository.countTotalSujetsByYear(selectedYear));
+
+        // Équipes
+        yearStats.setEquipesLieesTuteur(equipeRepository.countEquipesTuteurByYear(tuteurId, selectedYear));
+        yearStats.setEquipesPlateforme(equipeRepository.countEquipesPlateformeByYear(selectedYear));
+
+        // Étudiants
+        yearStats.setEtudiantsEncadresTuteur(etudiantRepository.countEtudiantsTuteurByYear(tuteurId, selectedYear));
+        yearStats.setEtudiantsPlateforme(etudiantRepository.countEtudiantsPlateformeByYear(selectedYear));
 
         AllTimeStats allTimeStats = new AllTimeStats();
+
+        // Sujets
         allTimeStats.setTotalSujets(sujetRepository.countTotalSujets(tuteurId));
-        allTimeStats.setTotalEtudiants(etudiantRepository.countTotalEtudiants(tuteurId));
-        allTimeStats.setTotalEquipes(equipeRepository.countTotalEquipes(tuteurId));
+        allTimeStats.setSujetsPlateformeAllTime(sujetRepository.countTotalSujetsAllTime());
 
-        StatsDTO stats = new StatsDTO();
-        stats.setSelectedYear(selectedYear);
-        stats.setSelectedYearStats(yearStats);
-        stats.setAllTimeStats(allTimeStats);
+        // Équipes
+        allTimeStats.setTotalEquipes(equipeRepository.countEquipesTuteurAllTime(tuteurId));
+        allTimeStats.setEquipesPlateformeAllTime(equipeRepository.countEquipesPlateformeAllTime());
 
-        return stats;
+        // Étudiants
+        allTimeStats.setTotalEtudiants(etudiantRepository.countEtudiantsTuteurAllTime(tuteurId));
+        allTimeStats.setEtudiantsPlateformeAllTime(etudiantRepository.countEtudiantsPlateformeAllTime());
+
+        return new StatsDTO(selectedYear, yearStats, allTimeStats);
     }
+
 }

@@ -46,4 +46,21 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
     @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur.id = :tuteurId")
     int countTotalEquipes(Long tuteurId);
 
+
+
+
+    // Pour l'année spécifique
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur.id = :tuteurId AND YEAR(e.dateCreation) = :year")
+    int countEquipesTuteurByYear(Long tuteurId, Integer year);
+
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE YEAR(e.dateCreation) = :year")
+    int countEquipesPlateformeByYear(Integer year);
+
+    // Toutes années
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur.id = :tuteurId")
+    int countEquipesTuteurAllTime(Long tuteurId);
+
+    @Query("SELECT COUNT(e) FROM Equipe e")
+    int countEquipesPlateformeAllTime();
+
 }
