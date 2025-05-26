@@ -1,6 +1,7 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.SujetEvolutionDTO;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITuteurServices;
 import lombok.RequiredArgsConstructor;
@@ -97,6 +98,11 @@ public class TuteurController {
         }
     }
 
-
+    @GetMapping("/{tuteurId}/sujets/evolution")
+    public ResponseEntity<List<SujetEvolutionDTO>> getEvolutionSujets(
+            @PathVariable Long tuteurId
+    ) {
+        return ResponseEntity.ok(tuteurServices.getEvolutionSujets(tuteurId));
+    }
 
 }

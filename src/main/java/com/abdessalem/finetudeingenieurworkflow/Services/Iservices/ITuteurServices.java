@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Services.Iservices;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.StatsDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.SujetEvolutionDTO;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,5 +16,6 @@ public interface ITuteurServices {
      List<Tuteur> getAllChefOptionsTuteurs();
     ApiResponse toggleChefOption(Long idTuteur,Long idActionneur);
     StatsDTO getTuteurStats(Long tuteurId, Integer year);
+     List<SujetEvolutionDTO> getEvolutionSujets(Long tuteurId);
 
 }

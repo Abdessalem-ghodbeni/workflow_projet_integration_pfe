@@ -3,6 +3,7 @@ package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
 import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.AllTimeStats;
 import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.StatsDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.SujetEvolutionDTO;
 import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.YearStats;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
@@ -21,6 +22,7 @@ import java.net.FileNameMap;
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -115,6 +117,18 @@ public class TuteurServiceImp implements ITuteurServices {
         allTimeStats.setEtudiantsPlateformeAllTime(etudiantRepository.countEtudiantsPlateformeAllTime());
 
         return new StatsDTO(selectedYear, yearStats, allTimeStats);
+    }
+
+    @Override
+    public List<SujetEvolutionDTO> getEvolutionSujets(Long tuteurId) {
+        List<Object[]> results = sujetRepository.findSujetEvolutionByTuteur(tuteurId);
+
+        return results.stream()
+                .map(result -> new SujetEvolutionDTO(
+                        ((Number) result[0]).intValue(),
+                        ((Number) result[1]).longValue()
+                ))
+                .collect(Collectors.toList());
     }
 
 }

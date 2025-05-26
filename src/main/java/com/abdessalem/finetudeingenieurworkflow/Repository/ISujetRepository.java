@@ -232,4 +232,14 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
 
   @Query("SELECT COUNT(s) FROM Sujet s")
   int countSujetsPlateformeAllTime();
+
+
+
+  //evolution te3 subject and tuteur
+  @Query("SELECT YEAR(s.dateCreation) as annee, COUNT(s) as nombreSujets " +
+          "FROM Sujet s " +
+          "WHERE s.tuteur.id = :tuteurId " +
+          "GROUP BY YEAR(s.dateCreation) " +
+          "ORDER BY YEAR(s.dateCreation) DESC")
+  List<Object[]> findSujetEvolutionByTuteur(@Param("tuteurId") Long tuteurId);
 }
