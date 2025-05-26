@@ -41,6 +41,9 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
     List<Etudiant> findBySpecialiteAndCurrentYear(@Param("specialite") String specialite);
 
 
-
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur.id = :tuteurId AND YEAR(e.dateCreation) = :year")
+    int countEquipesByYear(Long tuteurId, Integer year);
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur.id = :tuteurId")
+    int countTotalEquipes(Long tuteurId);
 
 }

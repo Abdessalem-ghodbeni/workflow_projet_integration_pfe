@@ -85,7 +85,17 @@ public class TuteurController {
         return ResponseEntity.ok(tuteursPage);
     }
 
-
+    @GetMapping("/{tuteurId}/stats")
+    public ResponseEntity<?> getTuteurStats(
+            @PathVariable Long tuteurId,
+            @RequestParam(required = false) Integer year
+    ) {
+        try {
+           return ResponseEntity.ok(tuteurServices.getTuteurStats(tuteurId, year));
+        }catch (Exception exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 
 
 

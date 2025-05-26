@@ -12,4 +12,5 @@ public interface ITuteurRepository extends JpaRepository<Tuteur,Long> {
     Page<Tuteur> findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(String nom, String prenom, Pageable pageable);
     @Query("SELECT t FROM Tuteur t WHERE t.is_Chef_Options = true")
     List<Tuteur> findAllChefOptionsTuteurs();
+
 }

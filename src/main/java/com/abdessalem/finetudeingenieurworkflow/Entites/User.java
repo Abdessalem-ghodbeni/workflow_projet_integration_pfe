@@ -25,10 +25,10 @@ import java.util.List;
         @UniqueConstraint(name = "unique_email_identifiantEsprit", columnNames = {"email", "identifiantEsprit"})
 })
 public class User implements Serializable, UserDetails {
-     @Id
+    @Id
 //    @GeneratedValue(strategy =GenerationType.IDENTITY)
-      @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-      @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
     Long id;
 
     String nom;
@@ -42,7 +42,7 @@ public class User implements Serializable, UserDetails {
     @Column(name = "password_reset_token_expiration")
     LocalDateTime passwordResetTokenExpiration;
     String password;
-     String secret;
+    String secret;
     @Enumerated(EnumType.STRING)
     Role role;
 
@@ -55,14 +55,14 @@ public class User implements Serializable, UserDetails {
     @Column(name = "is_active")
     private boolean isActive = true;
 
-//    @Override
+    //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return List.of(new SimpleGrantedAuthority(role.name()));
 //    }
-@Override
-public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority(role.name()));
-}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
 
 
 

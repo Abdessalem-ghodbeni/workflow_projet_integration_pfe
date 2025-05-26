@@ -14,6 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/student-analytics")
 @RequiredArgsConstructor
+@CrossOrigin("*")
+
 public class StudentAnalyticsController {
     private final StudentAnalyticsService analyticsService;
     private final ITacheRepository tacheRepository;

@@ -196,4 +196,17 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
         LocalDateTime startOfYear,
         LocalDateTime endOfYear);
   Optional<Sujet> findByTitre(String title);
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId")
+  int countTotalSujets(Long tuteurId);
+
+  // Pour les sujets validés (année spécifique ou courante)
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND s.etat = 'ACCEPTED' AND YEAR(s.dateCreation) = :year")
+  int countValidatedSujetsByYear(Long tuteurId, Integer year);
+
+  // Pour les sujets refusés
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND s.etat = 'REFUSER' AND YEAR(s.dateCreation) = :year")
+  int countRejectedSujetsByYear(Long tuteurId, Integer year);
+
+
+
 }

@@ -1,8 +1,14 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.ApiResponse;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.AllTimeStats;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.StatsDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.YearStats;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IEquipeRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
+import com.abdessalem.finetudeingenieurworkflow.Repository.ISujetRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITuteurServices;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.net.FileNameMap;
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +28,9 @@ import java.util.Optional;
 public class TuteurServiceImp implements ITuteurServices {
     private final ITuteurRepository tuteurRepository;
     private final IHistoriqueServiceImp historiqueService;
+    private final IEtudiantRepository etudiantRepository;
+    private final IEquipeRepository equipeRepository;
+    private final ISujetRepository sujetRepository;
     @Override
     public List<Tuteur> getAllTuteur() {
         return tuteurRepository.findAll();
@@ -68,5 +78,28 @@ public class TuteurServiceImp implements ITuteurServices {
         historiqueService.enregistrerAction(idActionneur, action, description);
 
         return new ApiResponse("Statut Chef d'option modifié avec succès", true);
+    }
+
+    @Override
+    public StatsDTO getTuteurStats(Long tuteurId, Integer year) {
+        int selectedYear = (year != null) ? year : Year.now().getValue();
+
+        YearStats yearStats = new YearStats();
+        yearStats.setSujetsValides(sujetRepository.countValidatedSujetsByYear(tuteurId, selectedYear));
+        yearStats.setSujetsRefuses(sujetRepository.countRejectedSujetsByYear(tuteurId, selectedYear));
+        yearStats.setEtudiantsEncadres(etudiantRepository.countEtudiantsByYear(tuteurId, selectedYear));
+        yearStats.setEquipesLiees(equipeRepository.countEquipesByYear(tuteurId, selectedYear));
+
+        AllTimeStats allTimeStats = new AllTimeStats();
+        allTimeStats.setTotalSujets(sujetRepository.countTotalSujets(tuteurId));
+        allTimeStats.setTotalEtudiants(etudiantRepository.countTotalEtudiants(tuteurId));
+        allTimeStats.setTotalEquipes(equipeRepository.countTotalEquipes(tuteurId));
+
+        StatsDTO stats = new StatsDTO();
+        stats.setSelectedYear(selectedYear);
+        stats.setSelectedYearStats(yearStats);
+        stats.setAllTimeStats(allTimeStats);
+
+        return stats;
     }
 }
