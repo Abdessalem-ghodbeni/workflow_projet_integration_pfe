@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Repository;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ISujetRepository extends JpaRepository<Sujet,Long> {
@@ -242,4 +244,26 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
           "GROUP BY YEAR(s.dateCreation) " +
           "ORDER BY YEAR(s.dateCreation) DESC")
   List<Object[]> findSujetEvolutionByTuteur(@Param("tuteurId") Long tuteurId);
+
+
+
+
+//statitique requetes
+long countByEtat(Etat etat);
+
+//  @Query("SELECT s.etat AS status, COUNT(s) AS count FROM Sujet s GROUP BY s.etat")
+//  Map<String, Long> countSubjectsByStatus();
+@Query("SELECT s.etat, COUNT(s) FROM Sujet s GROUP BY s.etat")
+List<Object[]> countSubjectsByStatusGrouped();
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur = :tutor AND YEAR(s.dateCreation) = :year")
+  int countByTuteurAndYear(@Param("tutor") Tuteur tutor, @Param("year") int year);
+
+
+
+
+
+
+
+
+
 }

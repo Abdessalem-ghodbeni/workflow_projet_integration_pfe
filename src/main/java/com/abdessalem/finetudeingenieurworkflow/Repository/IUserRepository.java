@@ -3,7 +3,9 @@ package com.abdessalem.finetudeingenieurworkflow.Repository;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Role;
 import com.abdessalem.finetudeingenieurworkflow.Entites.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface IUserRepository extends JpaRepository<User,Long> {

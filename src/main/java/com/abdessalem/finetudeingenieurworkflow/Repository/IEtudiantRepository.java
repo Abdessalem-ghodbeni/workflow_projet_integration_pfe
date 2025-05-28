@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IEtudiantRepository extends JpaRepository<Etudiant,Long> {
@@ -31,4 +32,9 @@ public interface IEtudiantRepository extends JpaRepository<Etudiant,Long> {
 
     @Query("SELECT COUNT(et) FROM Etudiant et")
     int countEtudiantsPlateformeAllTime();
+
+
+    ///statistique
+    @Query("SELECT e.specialite, COUNT(e) FROM Etudiant e GROUP BY e.specialite")
+    List<Object[]> countStudentsBySpecialty();
 }

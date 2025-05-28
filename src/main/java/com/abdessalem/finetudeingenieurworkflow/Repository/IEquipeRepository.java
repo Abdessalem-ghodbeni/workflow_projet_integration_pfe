@@ -1,12 +1,15 @@
 package com.abdessalem.finetudeingenieurworkflow.Repository;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Equipe;
+import com.abdessalem.finetudeingenieurworkflow.Entites.EtatEquipe;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etudiant;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
@@ -62,5 +65,19 @@ public interface IEquipeRepository extends JpaRepository<Equipe,Long> {
 
     @Query("SELECT COUNT(e) FROM Equipe e")
     int countEquipesPlateformeAllTime();
+
+//requete statistique
+long countByEtat(EtatEquipe etat);
+
+    @Query("SELECT e.etat AS status, COUNT(e) AS count FROM Equipe e GROUP BY e.etat")
+    Map<String, Long> countTeamsByStatus();
+
+    @Query("SELECT COUNT(e) FROM Equipe e WHERE e.tuteur = :tutor AND YEAR(e.dateCreation) = :year")
+    int countByTuteurAndYear(@Param("tutor") Tuteur tutor, @Param("year") int year);
+
+    @Query("SELECT AVG(SIZE(e.etudiants)) FROM Equipe e WHERE e.tuteur = :tutor")
+    Double averageTeamSize(@Param("tutor") Tuteur tutor);
+    @Query("SELECT e.etat, COUNT(e) FROM Equipe e GROUP BY e.etat")
+    List<Object[]> countTeamsByStatusGrouped();
 
 }
