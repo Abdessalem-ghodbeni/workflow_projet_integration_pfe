@@ -2,8 +2,9 @@ package com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique;
 
 import java.util.Map;
 
-public record StatisticsDTO(long totalTutors,
-                            long totalSubjects,
+public record StatisticsDTO(
+        long totalTutors,    long totalForms,
+        long totalSubjects,
                             long validatedSubjects,
                             long rejectedSubjects,
                             long pendingSubjects,

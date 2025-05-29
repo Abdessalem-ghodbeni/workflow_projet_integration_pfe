@@ -1,8 +1,6 @@
 package com.abdessalem.finetudeingenieurworkflow.Controller;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.ProductivityComparisonRequest;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.StatisticsDTO;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.TutorProductivityDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.StatisticsService;
 import lombok.RequiredArgsConstructor;
 
@@ -45,4 +43,30 @@ public class AdminStatisticsController {
     public ResponseEntity<Map<Integer, Long>> getProjectTimeline(@PathVariable Long tutorId) {
         return ResponseEntity.ok(statisticsService.getProjectTimeline(tutorId));
     }
+
+    // API 1: GET /api/stats/forms
+    @GetMapping("/forms")
+    public ResponseEntity<List<FormStatsDTO>> getFormsStats() {
+        return ResponseEntity.ok(statisticsService.getGlobalFormsStats());
+    }
+
+    // API 2: GET /api/stats/tuteurs/{tuteurId} traj3 nombre des formimlairte  w rep par id tuteur
+
+    @GetMapping("/tuteurs/{tuteurId}")
+    public ResponseEntity<TuteurFormStatsDTO> getFormsStatsByTuteur(
+            @PathVariable Long tuteurId) {
+        return ResponseEntity.ok(statisticsService.getFormsStatsByTuteur(tuteurId));
+    }
+    @GetMapping("/{formId}/responses-count")
+    public ResponseEntity<Map<String, Object>> getResponseCount(
+            @PathVariable Long formId) {
+
+        Long count = statisticsService.getResponseCountForForm(formId);
+
+        return ResponseEntity.ok(Map.of(
+                "formId", formId,
+                "responseCount", count
+        ));
+    }
+
 }

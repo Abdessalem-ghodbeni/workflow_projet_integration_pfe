@@ -1,13 +1,13 @@
 package com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation;
 
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.ProductivityComparisonRequest;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.StatisticsDTO;
-import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.TutorProductivityDTO;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.*;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.EtatEquipe;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Societe;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Repository.*;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,8 @@ public class StatisticsService {
     private final IEtudiantRepository etudiantRepository;
     private final IEquipeRepository equipeRepository;
     private final IProjetRepository projetRepository;
-
+    private final IFormRepository formRepository;
+    private final IFormResponseRepository formResponseRepository;
     public StatisticsDTO getPlatformStatistics() {
         Map<String, Long> subjectsByStatus = sujetRepository.countSubjectsByStatusGrouped()
                 .stream()
@@ -43,6 +44,7 @@ public class StatisticsService {
                 ));
         return new StatisticsDTO(
                 tuteurRepository.count(),
+                formRepository.count(),
                 sujetRepository.count(),
                 sujetRepository.countByEtat(Etat.ACCEPTED),
                 sujetRepository.countByEtat(Etat.REFUSER),
@@ -108,5 +110,39 @@ public class StatisticsService {
                         result -> (Integer) result[0],
                         result -> ((Number) result[1]).longValue()
                 ));
+    }
+
+    // API 1
+    public List<FormStatsDTO> getGlobalFormsStats() {
+        return formRepository.getFormsStats();
+    }
+
+    // API 2
+    public TuteurFormStatsDTO getFormsStatsByTuteur(Long tuteurId) {
+        // Vérifier que le tuteur existe
+          tuteurRepository.findById(tuteurId)
+                .orElseThrow(() -> new EntityNotFoundException("Tuteur non trouvé"));
+
+        List<FormStatsDTO> formsStats = formRepository.getFormsStatsByTuteur(tuteurId);
+
+        long totalResponses = formsStats.stream()
+                .mapToLong(FormStatsDTO::getResponseCount)
+                .sum();
+
+        return new TuteurFormStatsDTO(
+                tuteurId,
+                (long) formsStats.size(),
+                totalResponses,
+                formsStats
+        );
+    }
+
+
+    public Long getResponseCountForForm(Long formId) {
+
+        formRepository.findById(formId)
+                .orElseThrow(() -> new EntityNotFoundException("Form not found with id: " + formId));
+
+        return formResponseRepository.countByFormId(formId);
     }
 }

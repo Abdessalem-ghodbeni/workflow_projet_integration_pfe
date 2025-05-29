@@ -4,7 +4,7 @@ import java.util.List;
 
 public record ProductivityComparisonRequest(
         List<Long> tutorIds,
-        Integer year,
-        String comparisonMetric
+        Integer year
+//        String comparisonMetric
 ) {
 }

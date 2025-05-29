@@ -1,4 +1,5 @@
 package com.abdessalem.finetudeingenieurworkflow.Repository;
+import com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.FormStatsDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Form;
@@ -22,5 +23,22 @@ public interface IFormRepository extends JpaRepository<Form,Long> {
             "AND f.tuteur.specialiteUp = :specialiteUp")
     List<Form> findVisibleFormsForStudents(@Param("annee") int annee, @Param("specialiteUp") String specialiteUp);
 
+
+    // API 1: Stats globales
+    @Query("SELECT " +
+            "NEW com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.FormStatsDTO(f.id, f.titre, COUNT(fr.id)) " +
+            "FROM Form f " +
+            "LEFT JOIN FormResponse fr ON f.id = fr.form.id " +
+            "GROUP BY f.id")
+    List<FormStatsDTO> getFormsStats();
+
+    // API 2: Stats par tuteur
+    @Query("SELECT " +
+            "NEW com.abdessalem.finetudeingenieurworkflow.Entites.DTOSsStatistique.FormStatsDTO(f.id, f.titre, COUNT(fr.id)) " +
+            "FROM Form f " +
+            "LEFT JOIN FormResponse fr ON f.id = fr.form.id " +
+            "WHERE f.tuteur.id = :tuteurId " +
+            "GROUP BY f.id")
+    List<FormStatsDTO> getFormsStatsByTuteur(@Param("tuteurId") Long tuteurId);
 
 }
