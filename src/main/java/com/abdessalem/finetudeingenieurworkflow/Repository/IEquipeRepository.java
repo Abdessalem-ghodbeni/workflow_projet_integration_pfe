@@ -79,5 +79,9 @@ long countByEtat(EtatEquipe etat);
     Double averageTeamSize(@Param("tutor") Tuteur tutor);
     @Query("SELECT e.etat, COUNT(e) FROM Equipe e GROUP BY e.etat")
     List<Object[]> countTeamsByStatusGrouped();
-
+    @Query("SELECT DISTINCT e FROM Equipe e " +
+            "JOIN e.projets p " +
+            "JOIN p.sujet s " +
+            "WHERE s.societe.id = :societeId")
+    List<Equipe> findEquipesBySocieteAuteur(@Param("societeId") Long societeId);
 }

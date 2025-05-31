@@ -376,4 +376,9 @@ public class EquipeServiceImp implements IEquipeService {
         return equipeRepository.findEquipesByEtudiantSpecialite(specialite);
     }
 
+    @Override
+    public List<Equipe> getEquipesBySocieteAuteur(Long societeId) {
+        return equipeRepository.findEquipesBySocieteAuteur(societeId);
+    }
+
 }

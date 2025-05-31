@@ -353,7 +353,7 @@ else {
      return new ResponseEntity<>(response,HttpStatus.OK);
      }
    }catch (Exception exception){
-     return new ResponseEntity<>(exception.getCause().getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+     return new ResponseEntity<>(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
    }
   }
 
