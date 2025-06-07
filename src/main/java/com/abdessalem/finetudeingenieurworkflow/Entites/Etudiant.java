@@ -45,5 +45,7 @@ public class Etudiant extends User implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Justification> justifications = new ArrayList<>();
+    @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
 
+    private List<Appreciation> appreciations = new ArrayList<>();
 }

@@ -211,8 +211,6 @@ private final EquipeServiceImp equipeService;
 
 
     }
-
-
     @GetMapping("/by-societe-auteur/{societeId}")
     public ResponseEntity<?> getEquipesBySocieteAuteur(
             @PathVariable Long societeId) {

@@ -46,4 +46,7 @@ public class Tuteur extends User implements Serializable{
     @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Form> forms;
 
+    @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Appreciation> appreciations = new ArrayList<>();
 }
