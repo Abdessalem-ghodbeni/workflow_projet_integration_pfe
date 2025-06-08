@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Appreciation;
 import com.abdessalem.finetudeingenieurworkflow.Entites.AppreciationDTO;
+import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.AppreciationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,4 +27,32 @@ public class AppreciationController {
        }
 
     }
+
+    @GetMapping("/{etudiantId}/appreciations")
+    public ResponseEntity<?> getAppreciations(
+            @PathVariable Long etudiantId) {
+       try {
+           return ResponseEntity.ok(appreciationService.listerParEtudiant(etudiantId));
+       }catch (Exception exception){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+       }
+    }
+
+    @PutMapping(path = "/modifier/{id}")
+    public ResponseEntity<?> updateAppreciation(@PathVariable Long id, @RequestBody AppreciationDTO dto) {
+        try {
+            Appreciation updated = appreciationService.updateAppreciation(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RessourceNotFound e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
 }
