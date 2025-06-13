@@ -6,6 +6,7 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import com.abdessalem.finetudeingenieurworkflow.Exception.InvalidScoreException;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.*;
+import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IEvaluationServicesImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +17,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class EvaluationService {
+public class EvaluationService implements IEvaluationServicesImp {
     private final IStudentEvaluationRepository evaluationRepository;
     private final IEtudiantRepository studentRepository;
     private final ITuteurRepository tuteurRepository;
     private final IEvaluationGridRepository gridRepository;
     private final IEvaluationCriterionRepository criterionRepository;
     private final ICriterionLevelRepository levelRepository;
-
+@Override
     @Transactional
     public StudentEvaluation evaluateStudent(StudentEvaluationRequest request) {
         // Validation des IDs
@@ -86,7 +87,7 @@ public class EvaluationService {
 
         return evaluationRepository.save(evaluation);
     }
-
+    @Override
     public List<CriterionLevel> suggestLevels(Long criterionId, double score) {
         if (criterionId == null) throw new IllegalArgumentException("Criterion ID is required");
 
@@ -97,7 +98,7 @@ public class EvaluationService {
                 .filter(level -> score >= level.getMinScore() && score <= level.getMaxScore())
                 .toList();
     }
-
+    @Override
     @Transactional
     public EvaluationGrid createEvaluationGrid(EvaluationGridRequest request) {
         EvaluationGrid grid = EvaluationGrid.builder()
@@ -131,4 +132,10 @@ public class EvaluationService {
 
         return gridRepository.save(grid);
     }
+    @Override
+    public List<EvaluationGrid> getEvaluationGridsByYearAndOption(int academicYear, String option) {
+        return gridRepository.findByAcademicYearAndOption(academicYear, option);
+    }
 }
+
+

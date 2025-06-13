@@ -52,4 +52,19 @@ public class EvaluationGrilleController {
             @RequestBody EvaluationGridRequest request) {
         return ResponseEntity.ok(evaluationService.createEvaluationGrid(request));
     }
+
+
+    //liste evaluation created by chef d'option
+    @GetMapping(path = "evaluation/listes")
+    public ResponseEntity<List<EvaluationGrid>> getEvaluationGrids(
+            @RequestParam("academicYear") int academicYear,
+            @RequestParam("option") String option) {
+
+        List<EvaluationGrid> grids = evaluationService.getEvaluationGridsByYearAndOption(academicYear, option);
+
+        if(grids.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(grids);
+    }
 }
