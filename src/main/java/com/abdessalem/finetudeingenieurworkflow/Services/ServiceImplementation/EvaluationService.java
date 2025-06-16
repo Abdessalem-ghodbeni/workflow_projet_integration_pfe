@@ -82,8 +82,7 @@ public ApiResponse evaluateStudent(StudentEvaluationRequest request) {
 
             evaluation.getCriterionEvaluations().add(criterionEvaluation);
         }
-
-        // Calcul du score total
+ 
         double totalScore = evaluation.getCriterionEvaluations().stream()
                 .mapToDouble(CriterionEvaluation::getAssignedScore)
                 .sum();
