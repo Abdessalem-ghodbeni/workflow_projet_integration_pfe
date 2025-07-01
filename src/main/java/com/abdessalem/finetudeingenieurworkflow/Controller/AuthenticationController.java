@@ -6,7 +6,7 @@ import com.abdessalem.finetudeingenieurworkflow.Repository.IEtudiantRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ISocieteRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.ITuteurRepository;
 import com.abdessalem.finetudeingenieurworkflow.Repository.IUserRepository;
-import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.IAuthenticationServices;
+
 import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.*;
 import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
 import jakarta.websocket.server.PathParam;
@@ -340,12 +340,6 @@ else {
     }
   }
 
-//  @PostMapping("/loginn")
-//  public AuthenticationResponse login(@RequestBody User user) {
-//
-//
-//      return authenticationServices.login(user.getEmail(), user.getPassword());
-//  }
   @PostMapping("/login")
   public ResponseEntity<?> loginn(@RequestBody User user) {
    try{
@@ -359,7 +353,7 @@ else {
      return new ResponseEntity<>(response,HttpStatus.OK);
      }
    }catch (Exception exception){
-     return new ResponseEntity<>(exception.getCause().getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+     return new ResponseEntity<>(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
    }
   }
 
@@ -482,6 +476,7 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
                                              @RequestParam(required = false) String specialiteUp,
                                              @RequestParam(required = false) String nationality,
                                              @RequestParam(required = false) Boolean is_Chef_Options,
+                                             @RequestParam(required = false) String githubToken,
                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateEmbauche,
                                              @RequestParam(required = false) MultipartFile image) {
     Optional<Tuteur> optionalTuteur = tuteurRepository.findById(id);
@@ -502,16 +497,18 @@ public ResponseEntity<String> forgotPassword(@RequestParam String email) {
     if (nationality != null) tuteur.setNationality(nationality);
     if (is_Chef_Options != null) tuteur.set_Chef_Options(is_Chef_Options);
     if (dateEmbauche != null) tuteur.setDateEmbauche(dateEmbauche);
-
+    if (githubToken != null && !githubToken.isBlank()) {
+      tuteur.setGithubToken(githubToken);
+    }
     // Gestion de l'image
     if (image != null && !image.isEmpty()) {
-      String imageName = saveImage(image); // Méthode pour sauvegarder l'image
+      String imageName = saveImage(image);
       tuteur.setImage(imageName);
     }
 
-    // Sauvegarder les modifications
     Tuteur updatedTuteur = tuteurRepository.save(tuteur);
-
+    // maraja3ch tocken te3 github 5atrou secure
+    updatedTuteur.setGithubToken(null);
     return ResponseEntity.ok(updatedTuteur);
   }
 

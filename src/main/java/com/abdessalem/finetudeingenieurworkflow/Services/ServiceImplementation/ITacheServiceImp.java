@@ -4,14 +4,20 @@ import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Exception.RessourceNotFound;
 import com.abdessalem.finetudeingenieurworkflow.Repository.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITacheServices;
+import com.abdessalem.finetudeingenieurworkflow.utils.SendEmailServiceImp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -24,6 +30,8 @@ public class ITacheServiceImp implements ITacheServices {
     private  final IEtudiantRepository etudiantRepository;
     private final IProjetRepository projetRepository;
     private final IUserRepository userRepository;
+    private final SendEmailServiceImp sendEmailService;
+    private final ISprintServicesImp sprintServicesImp;
 private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
 
     @Override
@@ -54,6 +62,9 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
                 .description(request.getDescription())
                 .complexite(request.getComplexite())
                 .priorite(request.getPriorite())
+                .dateDebutEstimee(request.getDateDebutEstimee())
+                .dateFinEstimee(request.getDateFinEstimee())
+                .etat(EtatTache.TO_DO)
                 .epic(epicOpt.get())
                 .backlog(backlog)
                 .build();
@@ -113,6 +124,8 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
         tache.setEtat(EtatTache.TO_DO);
         tache.setEpic(epicOpt.get());
         tache.setBacklog(backlog);
+        tache.setDateFinEstimee(request.getDateFinEstimee());
+        tache.setDateDebutEstimee(request.getDateDebutEstimee());
 
         tacheRepository.save(tache);
 
@@ -224,51 +237,178 @@ private final EtatHistoriqueTacheRepository etatHistoriqueTacheRepository;
         return new ApiResponse("Tâche affectée à l'étudiant avec succès", true);
     }
 
-    @Override
-    public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
-        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
-        if (tacheOpt.isEmpty()) {
-            return new ApiResponse("Tâche non trouvée", false);
-        }
-
-        Tache tache = tacheOpt.get();
-        EtatTache ancienEtat = tache.getEtat();
-
-        // On ne fait rien si l'état ne change pas
-        if (ancienEtat == nouvelEtat) {
-            return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
-        }
-
-        tache.setEtat(nouvelEtat);
-        tacheRepository.save(tache);
-
-        // Historique
-        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
-        if (etudiantOpt.isPresent()) {
-            Etudiant etudiant = etudiantOpt.get();
-            String message = etudiant.getNom() + " a changé l'état de la tâche '" +
-                    tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
-                    "' vers '" + nouvelEtat + "'";
-
-            historiqueServiceImp.enregistrerAction(
-                    idEtudiant,
-                    "CHANGEMENT_ETAT_TACHE",
-                    message
-
-            );
-            EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
-                    .ancienEtat(ancienEtat)
-                    .nouveauEtat(nouvelEtat)
-                    .dateChangement(LocalDateTime.now())
-                    .acteur(etudiantOpt.orElse(null))
-                    .tache(tache)
-                    .build();
-            etatHistoriqueTacheRepository.save(historique);
-        }
-
-
-        return new ApiResponse("État de la tâche mis à jour avec succès", true);
+//    @Override
+//    public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
+//        Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+//        if (tacheOpt.isEmpty()) {
+//            return new ApiResponse("Tâche non trouvée", false);
+//        }
+//
+//        Tache tache = tacheOpt.get();
+//        EtatTache ancienEtat = tache.getEtat();
+//
+//        // On ne fait rien si l'état ne change pas
+//        if (ancienEtat == nouvelEtat) {
+//            return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
+//        }
+//
+//        tache.setEtat(nouvelEtat);
+//        tacheRepository.save(tache);
+//
+//        // Historique
+//        Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+//        if (etudiantOpt.isPresent()) {
+//            Etudiant etudiant = etudiantOpt.get();
+//            String message = etudiant.getNom() + " a changé l'état de la tâche '" +
+//                    tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
+//                    "' vers '" + nouvelEtat + "'";
+//
+//            historiqueServiceImp.enregistrerAction(
+//                    idEtudiant,
+//                    "CHANGEMENT_ETAT_TACHE",
+//                    message
+//
+//            );
+//            EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
+//                    .ancienEtat(ancienEtat)
+//                    .nouveauEtat(nouvelEtat)
+//                    .dateChangement(LocalDateTime.now())
+//                    .acteur(etudiantOpt.orElse(null))
+//                    .tache(tache)
+//                    .build();
+//            etatHistoriqueTacheRepository.save(historique);
+//        }
+//
+//
+//        return new ApiResponse("État de la tâche mis à jour avec succès", true);
+//    }
+@Override
+@Transactional
+public ApiResponse changerEtatTache(Long idTache, EtatTache nouvelEtat, Long idEtudiant) {
+    Optional<Tache> tacheOpt = tacheRepository.findById(idTache);
+    if (tacheOpt.isEmpty()) {
+        return new ApiResponse("Tâche non trouvée", false);
     }
+
+    Tache tache = tacheOpt.get();
+    EtatTache ancienEtat = tache.getEtat();
+
+    // Ne rien faire si l'état ne change pas
+    if (ancienEtat == nouvelEtat) {
+        return new ApiResponse("L'état de la tâche est déjà '" + nouvelEtat + "'", false);
+    }
+
+    // Sauvegarder le nouvel état
+    tache.setEtat(nouvelEtat);
+    tacheRepository.save(tache);
+
+    // --- LOGIQUE POUR METTRE À JOUR LE TAUX D'AVANCEMENT ---
+    boolean besoinDeMettreAJourAvancement = false;
+
+    if (nouvelEtat == EtatTache.VALIDATED || ancienEtat == EtatTache.VALIDATED) {
+        besoinDeMettreAJourAvancement = true;
+    }
+
+    if (besoinDeMettreAJourAvancement && tache.getSprint() != null) {
+        sprintServicesImp.mettreAJourTauxAvancement(tache.getSprint().getId());
+    }
+    // -----------------------------------------------------
+
+    // Historique utilisateur
+    Optional<Etudiant> etudiantOpt = etudiantRepository.findById(idEtudiant);
+    if (etudiantOpt.isPresent()) {
+        Etudiant etudiant = etudiantOpt.get();
+        String message = etudiant.getNom() + " a changé l'état de la tâche '" +
+                tache.getTitre() + "' (ID : " + tache.getId() + ") de '" + ancienEtat +
+                "' vers '" + nouvelEtat + "'";
+
+        historiqueServiceImp.enregistrerAction(
+                idEtudiant,
+                "CHANGEMENT_ETAT_TACHE",
+                message
+        );
+
+        EtatHistoriqueTache historique = EtatHistoriqueTache.builder()
+                .ancienEtat(ancienEtat)
+                .nouveauEtat(nouvelEtat)
+                .dateChangement(LocalDateTime.now())
+                .acteur(etudiantOpt.orElse(null))
+                .tache(tache)
+                .build();
+        etatHistoriqueTacheRepository.save(historique);
+    }
+
+    return new ApiResponse("État de la tâche mis à jour avec succès", true);
+}
+
+    @Override
+    public List<TacheDTO> getTachesForEtudiant(Long etudiantId) {
+        int currentYear = Year.now().getValue();
+        List<Tache> taches=tacheRepository.findByEtudiantAndCurrentYear(etudiantId, currentYear);
+        return taches.stream()
+                .map(tache -> new TacheDTO(
+                        tache.getId(),
+                        tache.getTitre(),
+                        tache.getDateDebutEstimee(),
+                        tache.getDateFinEstimee(),
+                        tache.getEtat().name(),
+                        tache.getPriorite(),
+                        tache.getEpic()
+
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    // 17:13 te3 la3chiya
+    @Override
+    @Scheduled(cron = "0 13 17 * * *")
+    @Transactional
+    public void checkOverdueTasks() {
+        final LocalDate today = LocalDate.now();
+        final List<EtatTache> completedStates = List.of(EtatTache.VALIDATED, EtatTache.DONE);
+
+        log.info("Lancement de la vérification des tâches en retard à {}", LocalDateTime.now());
+
+        List<Tache> tasks = tacheRepository.findOverdueTasks(today, completedStates);
+
+        log.info("{} tâches potentielles trouvées", tasks.size());
+
+        tasks.forEach(task -> {
+            try {
+                Etudiant student = task.getEtudiant();
+                Equipe team = student.getEquipe();
+
+                log.debug("Traitement de la tâche {} - Étudiant {}", task.getId(), student.getId());
+
+                if(team == null || team.getTuteur() == null) {
+                    log.warn("Équipe/tuteur manquant pour la tâche {} (Étudiant {})", task.getId(), student.getId());
+                    return;
+                }
+
+                Tuteur tutor = team.getTuteur();
+
+                if(isValidEmail(student.getEmail()) && isValidEmail(tutor.getEmail())) {
+                    sendEmailService.sendTaskOverdueEmail(student.getEmail(), tutor.getEmail(), task);
+                    task.setNotified(true);
+                    tacheRepository.save(task);
+                    log.info("Notification envoyée pour la tâche {}", task.getId());
+                } else {
+                    log.error("Email invalide pour la tâche {}", task.getId());
+                }
+
+            } catch (Exception e) {
+                log.error("Échec du traitement de la tâche {} : {}", task.getId(), e.getMessage());
+            }
+        });
+
+        log.info("Vérification terminée. Tâches traitées : {}", tasks.size());
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    }
+
 
 
 }

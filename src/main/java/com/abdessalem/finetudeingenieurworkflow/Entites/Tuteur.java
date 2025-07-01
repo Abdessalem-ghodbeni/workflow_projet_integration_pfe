@@ -30,8 +30,15 @@ public class Tuteur extends User implements Serializable{
     private String departementName;
     @Temporal(TemporalType.DATE)
     private Date dateEmbauche;
+    @Column(name = "github_token", length = 512)
+    @Convert(converter = GithubTokenConverter.class)
+    private String githubToken;
+    @Column(name = "sonar_organization")
+    private String sonarOrganization; // Organisation SonarCloud
 
-
+    @Column(name = "sonar_token", length = 512)
+    @Convert(converter = GithubTokenConverter.class) // 👈 Même convertisseur
+    private String sonarToken;
     @JsonIgnore
     @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sujet> sujets;
@@ -39,4 +46,7 @@ public class Tuteur extends User implements Serializable{
     @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Form> forms;
 
+    @OneToMany(mappedBy = "tuteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Appreciation> appreciations = new ArrayList<>();
 }

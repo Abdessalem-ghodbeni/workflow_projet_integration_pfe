@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Controller;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.*;
 import com.abdessalem.finetudeingenieurworkflow.Services.Iservices.ITacheServices;
+import com.abdessalem.finetudeingenieurworkflow.Services.ServiceImplementation.ITacheServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ITacheController {
     private final ITacheServices tacheServices;
+
 
     @PostMapping("/ajouter/{etudiantId}")
     public ResponseEntity<ApiResponse> ajouterTache(
@@ -69,11 +71,7 @@ public class ITacheController {
     @DeleteMapping("supprimer/{tacheId}/{etudiantId}")
     public ResponseEntity<ApiResponse> deleteEpic(@PathVariable Long tacheId,
                                                   @PathVariable Long etudiantId) {
-
-
-
-
-        try {
+         try {
             ApiResponse response = tacheServices.supprimerTache(tacheId, etudiantId);
 
             if (!response.isSuccess()) {
@@ -119,7 +117,11 @@ public class ITacheController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+    // Dans un @RestController temporaire
+    @GetMapping("/test-scheduler")
+    public void testScheduler() {
+        tacheServices.checkOverdueTasks();
+    }
 
     @PutMapping("/kanban/etat")
     public ResponseEntity<ApiResponse> ChangeEtatTache(
@@ -142,5 +144,19 @@ public class ITacheController {
             return new ResponseEntity<>(new ApiResponse(exception.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/calendar/{etudiantId}")
+    public ResponseEntity<?> getTachesForCalendar(
+            @PathVariable Long etudiantId) {
+
+    try{
+        return ResponseEntity.ok(tacheServices.getTachesForEtudiant(etudiantId));
+
+    }catch (Exception exception){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+    }
+    }
+
+
 
 }

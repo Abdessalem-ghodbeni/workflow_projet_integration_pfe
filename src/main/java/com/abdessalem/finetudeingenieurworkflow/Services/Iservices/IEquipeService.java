@@ -19,4 +19,5 @@ public interface IEquipeService {
     List<Equipe> getEquipesByIds(List<Long> ids);
     Optional<Projet> getProjetByEquipeId(Long equipeId);
     List<Equipe> getEquipesByOption(String specialite);
+    List<Equipe> getEquipesBySocieteAuteur(Long societeId);
 }

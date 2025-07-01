@@ -10,8 +10,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @NoArgsConstructor
@@ -23,6 +26,7 @@ public class Tache implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String titre;
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     @Enumerated(EnumType.STRING)
     private Complexity complexite;
@@ -36,7 +40,9 @@ public class Tache implements Serializable {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;
-
+    private LocalDate dateDebutEstimee;
+    private LocalDate dateFinEstimee;
+    private boolean notified = false;
     @UpdateTimestamp
     private LocalDateTime dateModification;
     @JsonIgnore
@@ -57,5 +63,15 @@ public class Tache implements Serializable {
     private List<Suggestion> suggestions;
     @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EtatHistoriqueTache> historiqueEtats;
+
+    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CodeAnalysisResult> analyses;
+
+    public Optional<CodeAnalysisResult> getDerniereAnalyse() {
+        if (analyses == null || analyses.isEmpty()) return Optional.empty();
+        return analyses.stream()
+                .max(Comparator.comparing(CodeAnalysisResult::getDateDerniereAnalyseGit));
+    }
+
 
 }

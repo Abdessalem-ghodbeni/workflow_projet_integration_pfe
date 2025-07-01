@@ -2,6 +2,7 @@ package com.abdessalem.finetudeingenieurworkflow.Repository;
 
 import com.abdessalem.finetudeingenieurworkflow.Entites.Etat;
 import com.abdessalem.finetudeingenieurworkflow.Entites.Sujet;
+import com.abdessalem.finetudeingenieurworkflow.Entites.Tuteur;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ISujetRepository extends JpaRepository<Sujet,Long> {
@@ -196,4 +198,72 @@ List<Sujet>findByVisibleAuxEtudiantsTrueAndSpecialiteAndDateCreationBetween(
         LocalDateTime startOfYear,
         LocalDateTime endOfYear);
   Optional<Sujet> findByTitre(String title);
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId")
+  int countTotalSujets(Long tuteurId);
+
+  // Pour les sujets validés (année spécifique ou courante)
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND s.etat = 'ACCEPTED' AND YEAR(s.dateCreation) = :year")
+  int countValidatedSujetsByYear(Long tuteurId, Integer year);
+
+  // Pour les sujets refusés
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND s.etat = 'REFUSER' AND YEAR(s.dateCreation) = :year")
+  int countRejectedSujetsByYear(Long tuteurId, Integer year);
+
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE YEAR(s.dateCreation) = :year")
+  int countTotalSujetsByYear(@Param("year") Integer year);
+  @Query("SELECT COUNT(s) FROM Sujet s")
+  int countTotalSujetsAllTime();
+
+
+
+
+
+
+
+  // SujetRepository.java
+// Pour l'année sélectionnée
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId AND YEAR(s.dateCreation) = :year")
+  int countSujetsTuteurByYear(Long tuteurId, Integer year);
+
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE YEAR(s.dateCreation) = :year")
+  int countSujetsPlateformeByYear(Integer year);
+
+  // Toutes années
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur.id = :tuteurId")
+  int countSujetsTuteurAllTime(Long tuteurId);
+
+  @Query("SELECT COUNT(s) FROM Sujet s")
+  int countSujetsPlateformeAllTime();
+
+
+
+  //evolution te3 subject and tuteur
+  @Query("SELECT YEAR(s.dateCreation) as annee, COUNT(s) as nombreSujets " +
+          "FROM Sujet s " +
+          "WHERE s.tuteur.id = :tuteurId " +
+          "GROUP BY YEAR(s.dateCreation) " +
+          "ORDER BY YEAR(s.dateCreation) DESC")
+  List<Object[]> findSujetEvolutionByTuteur(@Param("tuteurId") Long tuteurId);
+
+
+
+
+//statitique requetes
+long countByEtat(Etat etat);
+
+//  @Query("SELECT s.etat AS status, COUNT(s) AS count FROM Sujet s GROUP BY s.etat")
+//  Map<String, Long> countSubjectsByStatus();
+@Query("SELECT s.etat, COUNT(s) FROM Sujet s GROUP BY s.etat")
+List<Object[]> countSubjectsByStatusGrouped();
+  @Query("SELECT COUNT(s) FROM Sujet s WHERE s.tuteur = :tutor AND YEAR(s.dateCreation) = :year")
+  int countByTuteurAndYear(@Param("tutor") Tuteur tutor, @Param("year") int year);
+
+
+
+
+
+
+
+
+
 }

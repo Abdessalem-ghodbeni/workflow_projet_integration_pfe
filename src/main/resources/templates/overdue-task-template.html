@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification de retard</title>
+    <style>
+        .container { max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #e0e0e0; }
+        .header { color: #d32f2f; font-size: 24px; border-bottom: 2px solid #d32f2f; padding-bottom: 10px; }
+        .content { margin: 20px 0; line-height: 1.6; }
+        .highlight { color: #d32f2f; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        Notification de retard de tâche
+    </div>
+
+    <div class="content">
+        <p>Bonjour <span th:text="${student.nom}"></span>,</p>
+
+        <p>La tâche <span class="highlight" th:text="${task.titre}"></span>
+            (échéance prévue le <span class="highlight" th:text="${#temporals.format(task.dateFinEstimee, 'dd/MM/yyyy')}"></span>)
+            n'a pas été finalisée dans les délais.</p>
+
+        <p>Veuillez prendre contact avec votre tuteur
+            <span class="highlight" th:text="${tutor.nom}"></span>
+            pour régulariser cette situation au plus vite.</p>
+    </div>
+
+    <div class="footer">
+        <p>Cordialement,<br>L'équipe de suivi pédagogique</p>
+    </div>
+</div>
+</body>
+</html>

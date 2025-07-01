@@ -211,7 +211,16 @@ private final EquipeServiceImp equipeService;
 
 
     }
+    @GetMapping("/by-societe-auteur/{societeId}")
+    public ResponseEntity<?> getEquipesBySocieteAuteur(
+            @PathVariable Long societeId) {
+        try {
+            return ResponseEntity.ok(equipeService.getEquipesBySocieteAuteur(societeId));
 
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
 
 
 
