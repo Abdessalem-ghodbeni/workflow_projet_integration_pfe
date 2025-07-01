@@ -28,6 +28,7 @@ public class EvaluationGrid implements Serializable {
     @OneToMany(mappedBy = "evaluationGrid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EvaluationCriterion> criteria;
     private int version;
+    private boolean isvisibleToEtudiant;
     @ManyToOne
     private EvaluationGrid previousVersion;
 }

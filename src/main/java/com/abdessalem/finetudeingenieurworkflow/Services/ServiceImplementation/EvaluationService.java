@@ -114,6 +114,7 @@ public ApiResponse evaluateStudent(StudentEvaluationRequest request) {
                 .title(request.getTitle())
                 .option(request.getOption())
                 .academicYear(request.getAcademicYear())
+                .isvisibleToEtudiant(request.isIsvisibleToEtudiant())
                 .criteria(new ArrayList<>())
                 .build();
 

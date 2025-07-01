@@ -11,5 +11,6 @@ public class EvaluationGridRequest {
     private String title;
     private int academicYear;
     private String option;
+    private boolean isvisibleToEtudiant;
     private List<CriterionRequest> criteria;
 }
